@@ -1,32 +1,47 @@
+/*
+ * Acm testing system
+ * https://github.com/IPRIT
+ *
+ * Copyright (c) 2015 "IPRIT" Alex Belov, contributors
+ * Licensed under the BSD license.
+ */
+
+'use strict';
+
 var express = require('express');
 var router = express.Router();
 var mysqlPool = require('../db/mysql-connection');
-var timus = require('../internal/systems/timus/timus');
+var testingManager = require('../internal/systems/manager');
 
 router.get('/', function(req, res) {
     var source = "" +
         "#include <iostream>\n    \nusing namespace std;\n    \nint main() {\n    int a, b;\n    cin >> a >> b;\n    cout << a + b;\n    return 0;\n}";
 
-    var callback = function (err, verdict) {
+    testingManager.send('cf', {
+        language: 7,
+        task_type: 'gym',
+        contest_id: 100773,
+        problem_index: 'A',
+        source: source
+    }, function (err, verdict) {
         if (err) {
-            console.log('Try to send the solution one more time');
-            setTimeout(function () {
-                timus.send({
-                    language    : '38',
-                    task_num    : '1000',
-                    source      : source
-                }, callback);
-            }, 1000);
             return console.log(err);
         }
         console.log(verdict);
-    };
+    });
 
-    timus.send({
-        language    : '38',
-        task_num    : '1000',
-        source      : source
-    }, callback);
+    testingManager.send('cf', {
+        language: 7,
+        task_type: 'archive',
+        problem_code: '33A',
+        source: source
+    }, function (err, verdict) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log(verdict);
+    });
+
     res.end();
 });
 

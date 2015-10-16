@@ -129,8 +129,8 @@ function SendAndGetExternalAcmSolutionId(solution, account, callback, numOfTry) 
                     return callback(new Error('Table no contains the row'));
                 }
                 setTimeout(function () {
-                    console.log('Try one more time. Times: ' + numOfTry || 0);
                     numOfTry = numOfTry || 1;
+                    console.log('Try one more time. Times: ' + numOfTry || 0);
                     SendAndGetExternalAcmSolutionId(solution, account, callback, ++numOfTry);
                 }, 1000);
             }
