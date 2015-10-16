@@ -36,22 +36,32 @@ function Init() {
                     rest: object.rest_params
                 };
             }) );
+
+            codeforces.send({
+                language: 7,
+                task_type: 'archive',
+                problem_code: '456B',
+                source: "n = input()\nif n % 4 == 0:\n    print(4)\nelse:\n    print(0) "
+            }, function (err, verdict) {
+                if (err) {
+                    return console.log(err);
+                }
+                console.log(verdict);
+            });
         });
     });
 
-    /*var cookie = 'lastOnlineTimeUpdaterInvocation=' + (new Date().getTime()) + '; nocturne.language=ru; __atuvc=1%7C40; JSESSIONID=50DDDDCD5EFCCE8B56310B185320FEA8-n1; 39ce7=CFwaFZfe; evercookie_png=9yy33egseuoqd7vivw; evercookie_etag=9yy33egseuoqd7vivw; evercookie_cache=9yy33egseuoqd7vivw; 70a7c28f3de=9yy33egseuoqd7vivw; X-User=""; __utmt=1; __utma=71512449.134535337.1444174233.1444174233.1444915211.2; __utmb=71512449.110.10.1444915211; __utmc=71512449; __utmz=71512449.1444174233.1.1.utmcsr=vk.com|utmccn=(referral)|utmcmd=referral|utmcct=/mikemirzayanov';
-    var csrf_token = '3181e94f5445d31d20e5f2b69f2230ac';
+    return;
+    var cookie = 'JSESSIONID=7AC8D205FC38FDF4C82030CAC05D0471-n1; 39ce7=CFwuo8WC';
+    var csrf_token = '79616af380d4e8c478e4b3e07021485f';
 
     var data = {
         'csrf_token': csrf_token,
-        'ftaa': '9yy33egseuoqd7vivw',
-        'bfaa': 'f3bce49d929535a378832f7bcdf18e2c',
         'action': 'submitSolutionFormSubmitted',
         'submittedProblemIndex': 'A',
         'programTypeId': '7',
-        'source': "wew23wq23ew2e",
-        'sourceFile': '',
-        '_tta': '70'
+        'source': "code" + (Math.random() * 1000000000).toString().replace('.', ''),
+        'sourceFile': ''
     };
 
     restler.post('http://codeforces.com/gym/100773/submit?csrf_token=' + csrf_token, {
@@ -73,5 +83,5 @@ function Init() {
         data: data
     }).on('complete', function(data) {
         console.log(data);
-    });*/
+    });
 }
