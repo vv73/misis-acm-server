@@ -11,7 +11,8 @@
 var async = require('async');
 var request = require('request');
 var cheerio = require('cheerio');
-var restler = require('restler');
+var querystring = require('querystring');
+var url = require('url');
 
 var system_accounts = [];
 var processing_accounts = [];
@@ -19,7 +20,7 @@ var async_queue = [];
 
 var ACCOUNT_TIMEOUT = 10 * 1000; // ms
 
-var ACM_BASE_URI = 'http://codeforces.com';
+var ACM_BASE_URI = 'http://acmp.ru';
 var QUEUE_LENGTH_LIMIT = 2000;
 
 module.exports = {
@@ -33,23 +34,41 @@ function Init(accounts, callback) {
 
     async.each(system_accounts, function(account, callback) {
         console.log('Processing account:', account.login);
-        var loginUrl = ACM_BASE_URI,
+        var loginUrl = ACM_BASE_URI + '/index.asp?main=enter&r=222759433412512318356085',
             data = {
-                action: 'enter',
-                handle: account.login,
-                password: account.password,
-                csrf_token: null
+                lgn: account.login,
+                password: account.password
             };
 
         var cookieJar = request.jar();
 
-        request.get({url: loginUrl, jar: cookieJar}, function (err, response, body) {
+        request.post({url: loginUrl, jar: cookieJar, form: data}, function (err, response, body) {
             var bodyResponse = body;
-            if (!bodyResponse) {
-                return callback(new Error('Resource no reached'));
+            if (!bodyResponse || err) {
+                return callback(new Error('Resource no reached.'));
+            } else if (response.statusCode !== 200) {
+                return callback(new Error('Wrong status code.'));
             }
             var $ = cheerio.load(bodyResponse);
-            var csrf_token = $('meta[name=X-Csrf-Token]').attr('content');
+            var curjQueryObj = $('.menu_title'),
+                accountId = 1;
+            if (curjQueryObj.length) {
+                curjQueryObj = curjQueryObj.eq(0).parent().parent();
+                if (curjQueryObj.length) {
+                    var links = curjQueryObj.find('a'),
+                        curHref;
+                    for (var i = 0; i < links.length; ++i) {
+                        curHref = links.eq(i).attr('href');
+                        if (!/main\=user\&id\=(\d+)/i.test(curHref)) {
+                            continue;
+                        }
+                        accountId = curHref.match(/main\=user\&id\=(\d+)/i)[1];
+                        break;
+                    }
+                }
+            }
+            console.log(accountId);
+            return;
 
             if (!csrf_token || typeof csrf_token !== 'string') {
                 return callback(new Error('Codeforces CSRF Token not found'));
@@ -225,4 +244,11 @@ function GetIdle(callback) {
             callback(new Error('Some error with accounts queue'));
         }
     }
+}
+
+function extractParam(str, key) {
+    if (typeof str !== 'string' || typeof key !== 'string') {
+        return null;
+    }
+    return querystring.parse(url.parse(str).query)[ key ];
 }

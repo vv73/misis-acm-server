@@ -10,6 +10,7 @@
 
 var timus = require('./timus/timus');
 var codeforces = require('./codeforces/codeforces');
+var sgu = require('./sgu/sgu');
 
 module.exports = {
     send: SendSolution
@@ -17,61 +18,85 @@ module.exports = {
 
 var timeoutAttempts = 1000; // ms
 
-function SendSolution(system_type, solution, callback) {
+function SendSolution(system_type, solution, callback, progressCallback) {
     if (typeof system_type !== 'string') {
         return callback(new Error('System type should be a string.'));
     }
+    var args = Array.prototype.slice.call(arguments);
     var differentHandlers = {
         'timus': SendToTimus,
+        'sgu': SendToSgu,
         'cf': SendToCodeforces
     };
     if (system_type in differentHandlers) {
-        differentHandlers[system_type](system_type, solution, callback);
+        differentHandlers[system_type].apply(this, args);
     } else {
         return callback(new Error('The type of system does not exist.'));
     }
 }
 
-function SendToTimus(system_type, solution, callback) {
-    var numOfTries = 1;
+function SendToTimus(system_type, solution, callback, progressCallback) {
+    var numOfAttempts = 1;
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfTries > 5) {
+            if (numOfAttempts > 5) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
-            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfTries);
-            setTimeout(function () {
-                numOfTries++;
-                timus.send(solution, internalCallback);
+            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
+            return setTimeout(function () {
+                numOfAttempts++;
+                timus.send(solution, internalCallback, progressCallback);
             }, timeoutAttempts);
-            return console.log(err);
         }
         callback(null, verdict);
     };
 
-    timus.send(solution, internalCallback);
+    timus.send(solution, internalCallback, progressCallback);
 }
 
-function SendToCodeforces(system_type, solution, callback) {
-    var numOfTries = 1;
+
+function SendToSgu(system_type, solution, callback, progressCallback) {
+    var numOfAttempts = 1;
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfTries > 5) {
+            if (numOfAttempts > 5) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
-            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfTries);
-            setTimeout(function () {
-                numOfTries++;
-                codeforces.send(solution, internalCallback);
+            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
+            return setTimeout(function () {
+                numOfAttempts++;
+                sgu.send(solution, internalCallback, progressCallback);
             }, timeoutAttempts);
-            return console.log(err);
         }
         callback(null, verdict);
     };
 
-    codeforces.send(solution, internalCallback);
+    sgu.send(solution, internalCallback, progressCallback);
+}
+
+
+function SendToCodeforces(system_type, solution, callback, progressCallback) {
+    var numOfAttempts = 1;
+
+    var internalCallback = function (err, verdict) {
+        if (err) {
+            console.log(err);
+            if (numOfAttempts > 3) {
+                console.log('Reached maximum number of attempts to send solution.', solution);
+                return callback(new Error('Reached maximum number of attempts to send solution.'));
+            }
+            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
+            return setTimeout(function () {
+                numOfAttempts++;
+                codeforces.send(solution, internalCallback, progressCallback);
+            }, timeoutAttempts);
+        }
+        callback(null, verdict);
+    };
+
+    codeforces.send(solution, internalCallback, progressCallback);
 }

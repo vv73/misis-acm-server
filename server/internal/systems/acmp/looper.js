@@ -12,7 +12,7 @@ var async = require('async');
 var cheerio = require('cheerio');
 var unirest = require('unirest');
 
-var ACM_BASE_URI = 'http://acm.timus.ru';
+var ACM_BASE_URI = 'http://acmp.ru';
 var looperTimeout = 500;
 var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
 

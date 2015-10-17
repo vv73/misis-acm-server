@@ -11,8 +11,10 @@
 var async = require('async');
 var cheerio = require('cheerio');
 var unirest = require('unirest');
+var querystring = require('querystring');
+var url = require('url');
 
-var ACM_BASE_URI = 'http://acm.timus.ru';
+var ACM_BASE_URI = 'http://acm.sgu.ru';
 var looperTimeout = 500;
 var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
 
@@ -21,14 +23,17 @@ module.exports = {
 };
 
 function Watch(params, callback, progressCallback) {
-    var authorStatusUrl = ACM_BASE_URI + '/status.aspx?author=' + params.acmAccount.id,
-        beginTime = new Date().getTime();
+    var authorStatusUrl = ACM_BASE_URI + '/status.php?id=' + params.acmAccount.login,
+        beginTime = new Date().getTime(),
+        finish = false;
 
     async.forever(function (next) {
         var curTime = new Date().getTime();
         if (curTime - beginTime >= MAX_WAITING_TIMEOUT) {
             callback(new Error('Max timeout limit has exceeded.'));
             return next(true);
+        } else if (finish) {
+            return;
         }
         unirest.get(authorStatusUrl)
             .end(function (response) {
@@ -42,23 +47,31 @@ function Watch(params, callback, progressCallback) {
                 var $ = cheerio.load(bodyResponse);
                 var found, terminalExistence;
 
-                $('table.status').find('tr').slice(1).each(function () {
+                $('.st1').parent().find('tr').slice(1).each(function () {
                     if (found) {
                         return;
                     }
-                    var _ = $(this);
-                    var lSolutionId = parseInt(_.find('.id').text(), 10),
-                        verdict = _.find('.verdict_wt, .verdict_ac, .verdict_rj').text(),
-                        testNum = _.find('.test').text(),
-                        timeConsumed = _.find('.runtime').text(),
-                        memoryConsumed = _.find('.memory').text();
+                    var _ = $(this),
+                        tds = _.find('td');
 
-                    if (lSolutionId !== params.externalId || typeof verdict !== 'string') {
+                    var lSolutionId = parseInt(tds.eq(0).text(), 10),
+                        verdict = tds.eq(5).text(),
+                        testNum = 0,
+                        timeConsumed = tds.eq(6).text(),
+                        memoryConsumed = tds.eq(7).text(),
+                        loginId = extractParam(tds.eq(2).find('a').attr('href'), 'id');
+
+                    if (loginId !== params.acmAccount.login || typeof verdict !== 'string') {
                         return;
                     }
                     found = true;
                     verdict = verdict.trim();
-                    testNum = testNum ? parseInt(testNum, 10) : 0;
+
+                    if (/on\stest\s(\d+)/i.test(verdict)) {
+                        testNum = verdict.match(/on\stest\s(\d+)/i)[1];
+                    } else if (/Running\:\s(\d+)/i.test(verdict)) {
+                        testNum = verdict.match(/Running\:\s(\d+)/i)[1];
+                    }
 
                     var terminalStates = [
                         'Accepted',
@@ -69,20 +82,25 @@ function Watch(params, callback, progressCallback) {
                         'Output limit exceeded',
                         'Idleness limit exceeded',
                         'Runtime error',
-                        'Restricted function'
+                        'Restricted function',
+                        'Presentation Error',
+                        'Global Error'
                     ];
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;
                     });
 
                     if (terminalExistence) {
-                        callback(null, {
-                            solutionId: lSolutionId,
-                            verdict: verdict,
-                            testNum: testNum,
-                            timeConsumed: timeConsumed,
-                            memoryConsumed: memoryConsumed
-                        });
+                        if (!finish) {
+                            callback(null, {
+                                solutionId: lSolutionId,
+                                verdict: verdict,
+                                testNum: testNum,
+                                timeConsumed: timeConsumed,
+                                memoryConsumed: memoryConsumed
+                            });
+                        }
+                        finish = true;
                         return next(true);
                     } else if (typeof progressCallback === 'function') {
                         async.nextTick(function () {
@@ -104,4 +122,11 @@ function Watch(params, callback, progressCallback) {
                 }
             });
     });
+}
+
+function extractParam(str, key) {
+    if (typeof str !== 'string' || typeof key !== 'string') {
+        return null;
+    }
+    return querystring.parse(url.parse(str).query)[ key ];
 }

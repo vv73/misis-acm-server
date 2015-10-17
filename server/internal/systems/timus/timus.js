@@ -42,7 +42,7 @@ function GetAcmAccounts() {
 }
 
 
-function SendSolution(solution, callback) {
+function SendSolution(solution, callback, progressCallback) {
     if (!solution) {
         return callback(new Error('Solution must be an object'));
     }
@@ -64,7 +64,7 @@ function SendSolution(solution, callback) {
                     return callback(err);
                 }
                 callback(null, verdict);
-            });
+            }, progressCallback);
         });
     });
 }

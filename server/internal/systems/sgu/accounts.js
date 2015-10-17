@@ -14,7 +14,7 @@ var system_accounts = [];
 var processing_accounts = [];
 var async_queue = [];
 
-var ACCOUNT_TIMEOUT = 12 * 1000; // ms
+var ACCOUNT_TIMEOUT = 10 * 1000; // ms
 var QUEUE_LENGTH_LIMIT = 2000;
 
 module.exports = {
@@ -93,7 +93,7 @@ function GetIdle(callback) {
         });
 
         if (!found) {
-            callback(new Error('Some error with accounts queue'));
+            callback(new Error('Some error with accounts\' queue.'));
         }
     }
 }
