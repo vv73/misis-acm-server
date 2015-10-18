@@ -21,7 +21,6 @@
 npm install bower -g
 npm install grunt-cli -g
 gem install sass
-[optional] npm install phantomjs -g
 ```
 ####3. Installation
 #####1. Cloning repo
