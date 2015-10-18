@@ -25,7 +25,7 @@ gem install sass
 ####3. Installation
 #####1. Cloning repo
 ```
-$ git clone https://github.com/IPRIT/qemy-nodejs-boilerplate.git
+$ git clone https://github.com/IPRIT/misis-acm-server.git
 ```
 #####2. Install required **node** modules
 ```
