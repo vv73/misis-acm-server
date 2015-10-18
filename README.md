@@ -1,4 +1,4 @@
-#Qemy
+#MISIS ACM Server
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/) [![NPM](https://img.shields.io/badge/npm-2.9.0-green.svg)](http://npmjs.com)
 
 ----------
@@ -17,7 +17,6 @@
 * [Grunt](http://gruntjs.com/) (task automation)
 * [Bower](http://bower.io/) (Web package management)
 * [Sass](http://sass-lang.com/) (css tool)
-* **[Optional]** [PhantomJS](http://phantomjs.org/) (Full web stack on server) (Uses for search crawlers)
 ```
 npm install bower -g
 npm install grunt-cli -g
@@ -41,14 +40,11 @@ bower install
 ```
 grunt 
 ```
-#####5. [Optional] Running **PhantomJS Server** (Not implement now)
-```
-npm run-script seo
-```
+
 ####4. Running application
-To start the web server, run:
+To start the web server for production, run:
 ```
-npm start
+npm build-all-start
 ```
 
 To access the local server, enter the following URL into your web browser:
