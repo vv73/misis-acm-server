@@ -11,6 +11,7 @@
 var timus = require('./timus/timus');
 var codeforces = require('./codeforces/codeforces');
 var sgu = require('./sgu/sgu');
+var acmp = require('./acmp/acmp');
 
 module.exports = {
     send: SendSolution
@@ -26,7 +27,8 @@ function SendSolution(system_type, solution, callback, progressCallback) {
     var differentHandlers = {
         'timus': SendToTimus,
         'sgu': SendToSgu,
-        'cf': SendToCodeforces
+        'cf': SendToCodeforces,
+        'acmp': SendToAcmp
     };
     if (system_type in differentHandlers) {
         differentHandlers[system_type].apply(this, args);
@@ -40,7 +42,7 @@ function SendToTimus(system_type, solution, callback, progressCallback) {
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfAttempts > 5) {
+            if (numOfAttempts > 2) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -62,7 +64,7 @@ function SendToSgu(system_type, solution, callback, progressCallback) {
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfAttempts > 5) {
+            if (numOfAttempts > 2) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -85,7 +87,7 @@ function SendToCodeforces(system_type, solution, callback, progressCallback) {
     var internalCallback = function (err, verdict) {
         if (err) {
             console.log(err);
-            if (numOfAttempts > 3) {
+            if (numOfAttempts > 2) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -99,4 +101,27 @@ function SendToCodeforces(system_type, solution, callback, progressCallback) {
     };
 
     codeforces.send(solution, internalCallback, progressCallback);
+}
+
+
+function SendToAcmp(system_type, solution, callback, progressCallback) {
+    var numOfAttempts = 1;
+
+    var internalCallback = function (err, verdict) {
+        if (err) {
+            console.log(err);
+            if (numOfAttempts > 2) {
+                console.log('Reached maximum number of attempts to send solution.', solution);
+                return callback(new Error('Reached maximum number of attempts to send solution.'));
+            }
+            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
+            return setTimeout(function () {
+                numOfAttempts++;
+                acmp.send(solution, internalCallback, progressCallback);
+            }, timeoutAttempts);
+        }
+        callback(null, verdict);
+    };
+
+    acmp.send(solution, internalCallback, progressCallback);
 }

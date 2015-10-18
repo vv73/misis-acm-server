@@ -10,7 +10,6 @@
 
 var express = require('express');
 var router = express.Router();
-var mysqlPool = require('../db/mysql-connection');
 var acmManager = require('../internal/systems/manager');
 
 router.get('/', function(req, res) {
@@ -65,10 +64,23 @@ router.get('/', function(req, res) {
         });
     }*/
 
-    res.end('234234324');
-    var obj = {};
+    /*for (var i = 0; i < 1; ++i) {
+        acmManager.send('acmp', {
+            language: 'CPP',
+            task_num: 1,
+            source: "#include <iostream>\n\n    using namespace std;\n\n    int main() {\n    int a, b;\n    cin >> a >> b;\n    cout << a + b << endl;\n    return 0;\n    }" +
+                getTestSpaces()
+        }, function (err, verdict) {
+            if (err) {
+                return console.log(err);
+            }
+            console.log(verdict);
+        }, function (progressCurrentTest) {
+            console.log(progressCurrentTest);
+        });
+    }*/
 
-    obj.id.id++;
+    res.end('Works!');
 });
 
 router.get('/index', function(req, res) {

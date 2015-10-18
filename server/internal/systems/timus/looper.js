@@ -50,8 +50,8 @@ function Watch(params, callback, progressCallback) {
                     var lSolutionId = parseInt(_.find('.id').text(), 10),
                         verdict = _.find('.verdict_wt, .verdict_ac, .verdict_rj').text(),
                         testNum = _.find('.test').text(),
-                        timeConsumed = _.find('.runtime').text(),
-                        memoryConsumed = _.find('.memory').text();
+                        timeConsumed = _.find('.runtime').text() || 0,
+                        memoryConsumed = _.find('.memory').text().replace(/[^0-9]/gi, '') || 0;
 
                     if (lSolutionId !== params.externalId || typeof verdict !== 'string') {
                         return;
@@ -59,6 +59,8 @@ function Watch(params, callback, progressCallback) {
                     found = true;
                     verdict = verdict.trim();
                     testNum = testNum ? parseInt(testNum, 10) : 0;
+                    timeConsumed = parseFloat(timeConsumed);
+                    memoryConsumed = parseInt(memoryConsumed);
 
                     var terminalStates = [
                         'Accepted',

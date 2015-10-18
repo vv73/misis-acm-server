@@ -57,8 +57,8 @@ function Watch(params, callback, progressCallback) {
                     var lSolutionId = parseInt(tds.eq(0).text(), 10),
                         verdict = tds.eq(5).text(),
                         testNum = 0,
-                        timeConsumed = tds.eq(6).text(),
-                        memoryConsumed = tds.eq(7).text(),
+                        timeConsumed = parseInt(tds.eq(6).text().replace(/[^0-9]/gi, '')),
+                        memoryConsumed = parseInt(tds.eq(7).text().replace(/[^0-9]/gi, '')),
                         loginId = extractParam(tds.eq(2).find('a').attr('href'), 'id');
 
                     if (loginId !== params.acmAccount.login || typeof verdict !== 'string') {
@@ -66,12 +66,14 @@ function Watch(params, callback, progressCallback) {
                     }
                     found = true;
                     verdict = verdict.trim();
+                    timeConsumed /= 1000;
 
                     if (/on\stest\s(\d+)/i.test(verdict)) {
                         testNum = verdict.match(/on\stest\s(\d+)/i)[1];
                     } else if (/Running\:\s(\d+)/i.test(verdict)) {
                         testNum = verdict.match(/Running\:\s(\d+)/i)[1];
                     }
+                    testNum = parseInt(testNum);
 
                     var terminalStates = [
                         'Accepted',

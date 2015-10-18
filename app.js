@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var pmx = require('pmx');
 var routes = require('./server/routers/router');
 var serverInit = require('./server/init');
 
@@ -34,6 +35,7 @@ app.get('/partials\/*:filename', routes.partials);
 app.use('/', routes.index);
 app.use('/test', routes.test);
 
+app.use(pmx.expressErrorHandler());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

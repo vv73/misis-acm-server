@@ -70,8 +70,8 @@ function Watch(params, callback, progressCallback) {
                                 solutionId: currentSolution.id,
                                 verdict: currentSolution.verdict,
                                 testNum: currentSolution.passedTestCount,
-                                timeConsumed: currentSolution.timeConsumedMillis,
-                                memoryConsumed: currentSolution.memoryConsumedBytes
+                                timeConsumed: parseFloat((currentSolution.timeConsumedMillis / 1000).toFixed(4)),
+                                memoryConsumed: Math.floor(currentSolution.memoryConsumedBytes / 1024)
                             });
                             return next(true);
                         }
@@ -80,8 +80,8 @@ function Watch(params, callback, progressCallback) {
                                 solutionId: currentSolution.id,
                                 verdict: currentSolution.verdict,
                                 testNum: currentSolution.passedTestCount,
-                                timeConsumed: currentSolution.timeConsumedMillis,
-                                memoryConsumed: currentSolution.memoryConsumedBytes
+                                timeConsumed: parseFloat((currentSolution.timeConsumedMillis / 1000).toFixed(4)),
+                                memoryConsumed: Math.floor(currentSolution.memoryConsumedBytes / 1024)
                             });
                         }
                         found = true;

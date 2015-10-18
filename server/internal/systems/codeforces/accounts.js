@@ -32,7 +32,6 @@ function Init(accounts, callback) {
     system_accounts = accounts;
 
     async.each(system_accounts, function(account, callback) {
-        console.log('Processing account:', account.login);
         var loginUrl = ACM_BASE_URI,
             data = {
                 action: 'enter',

@@ -11,9 +11,11 @@
 var async = require('async');
 var cheerio = require('cheerio');
 var unirest = require('unirest');
+var querystring = require('querystring');
+var url = require('url');
 
 var ACM_BASE_URI = 'http://acmp.ru';
-var looperTimeout = 500;
+var looperTimeout = 300;
 var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
 
 module.exports = {
@@ -21,7 +23,7 @@ module.exports = {
 };
 
 function Watch(params, callback, progressCallback) {
-    var authorStatusUrl = ACM_BASE_URI + '/status.aspx?author=' + params.acmAccount.id,
+    var authorStatusUrl = ACM_BASE_URI + '/index.asp?main=status&id_mem=' + params.acmAccount.id,
         beginTime = new Date().getTime();
 
     async.forever(function (next) {
@@ -42,23 +44,31 @@ function Watch(params, callback, progressCallback) {
                 var $ = cheerio.load(bodyResponse);
                 var found, terminalExistence;
 
-                $('table.status').find('tr').slice(1).each(function () {
+                $('.white').each(function () {
                     if (found) {
                         return;
                     }
-                    var _ = $(this);
-                    var lSolutionId = parseInt(_.find('.id').text(), 10),
-                        verdict = _.find('.verdict_wt, .verdict_ac, .verdict_rj').text(),
-                        testNum = _.find('.test').text(),
-                        timeConsumed = _.find('.runtime').text(),
-                        memoryConsumed = _.find('.memory').text();
+                    var _ = $(this),
+                        tds = _.find('td');
 
-                    if (lSolutionId !== params.externalId || typeof verdict !== 'string') {
+                    var lSolutionId = parseInt(tds.eq(0).text(), 10),
+                        verdict = tds.eq(5).text(),
+                        taskNumber = extractParam(tds.eq(3).find('a').attr('href'), 'id_task'),
+                        testNum = tds.eq(6).text().trim(),
+                        timeConsumed = tds.eq(7).text().trim().replace(',', '.'),
+                        memoryConsumed = tds.eq(8).text().trim().replace(/[^0-9]/gi, ''),
+                        loginId = extractParam(tds.eq(2).find('a').attr('href'), 'id');
+
+                    if (params.acmAccount.id != loginId
+                        || typeof verdict !== 'string'
+                        || taskNumber != params.solution.task_num) {
                         return;
                     }
                     found = true;
                     verdict = verdict.trim();
                     testNum = testNum ? parseInt(testNum, 10) : 0;
+                    timeConsumed = timeConsumed ? parseFloat(timeConsumed, 10) : 0;
+                    memoryConsumed = memoryConsumed ? parseFloat(memoryConsumed, 10) : 0;
 
                     var terminalStates = [
                         'Accepted',
@@ -104,4 +114,11 @@ function Watch(params, callback, progressCallback) {
                 }
             });
     });
+}
+
+function extractParam(str, key) {
+    if (typeof str !== 'string' || typeof key !== 'string') {
+        return null;
+    }
+    return querystring.parse(url.parse(str).query)[ key ];
 }

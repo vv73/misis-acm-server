@@ -33,8 +33,7 @@ function Init(accounts, callback) {
     system_accounts = accounts;
 
     async.each(system_accounts, function(account, callback) {
-        console.log('Processing account:', account.login);
-        var loginUrl = ACM_BASE_URI + '/index.asp?main=enter&r=222759433412512318356085',
+        var loginUrl = ACM_BASE_URI + '/index.asp?main=enter&r=' + Math.floor(Math.random() * 1000000000),
             data = {
                 lgn: account.login,
                 password: account.password
@@ -42,14 +41,77 @@ function Init(accounts, callback) {
 
         var cookieJar = request.jar();
 
-        request.post({url: loginUrl, jar: cookieJar, form: data}, function (err, response, body) {
-            var bodyResponse = body;
-            if (!bodyResponse || err) {
+        request.post({url: loginUrl, jar: cookieJar, form: data, followRedirect: true}, function (err, response, body) {
+            if (!body || err) {
+                return callback(new Error('Resource no reached.'));
+            } else if (response.statusCode !== 302 && response.statusCode !== 200) {
+                return callback(new Error('Wrong status code: ' + response.statusCode));
+            }
+            request.post({url: ACM_BASE_URI, jar: cookieJar, followRedirect: true}, function (err, response, body) {
+                if (!body || err) {
+                    return callback(new Error('Resource no reached.'));
+                } else if (response.statusCode !== 302 && response.statusCode !== 200) {
+                    return callback(new Error('Wrong status code: ' + response.statusCode));
+                }
+
+                var $ = cheerio.load(body);
+                var curjQueryObj = $('.menu_title'),
+                    accountId = 1;
+                if (curjQueryObj.length) {
+                    curjQueryObj = curjQueryObj.eq(0).parent().parent();
+                    if (curjQueryObj.length) {
+                        var links = curjQueryObj.find('a'),
+                            curHref;
+                        for (var i = 0; i < links.length; ++i) {
+                            curHref = links.eq(i).attr('href');
+                            if (!/main\=user\&id\=(\d+)/i.test(curHref)) {
+                                continue;
+                            }
+                            accountId = curHref.match(/main\=user\&id\=(\d+)/i)[1];
+                            break;
+                        }
+                    }
+                }
+                account.id = accountId;
+                account.rest = {
+                    cookieJar: cookieJar
+                };
+                callback();
+            });
+        });
+    }, function(err) {
+        if (err) {
+            return callback(err);
+        }
+        console.log('All ACMP.ru accounts have been processed successfully');
+        callback(null);
+    });
+}
+
+function RefreshAccount(neededAccount, callback) {
+    console.log('Refreshing account:', neededAccount.login);
+    var loginUrl = ACM_BASE_URI + '/index.asp?main=enter&r=' + Math.floor(Math.random() * 1000000000),
+        data = {
+            lgn: neededAccount.login,
+            password: neededAccount.password
+        };
+
+    var cookieJar = request.jar();
+
+    request.post({url: loginUrl, jar: cookieJar, form: data, followRedirect: true}, function (err, response, body) {
+        if (!body || err) {
+            return callback(new Error('Resource no reached.'));
+        } else if (response.statusCode !== 302) {
+            return callback(new Error('Wrong status code: ' + response.statusCode));
+        }
+        request.post({url: ACM_BASE_URI, jar: cookieJar, followRedirect: true}, function (err, response, body) {
+            if (!body || err) {
                 return callback(new Error('Resource no reached.'));
             } else if (response.statusCode !== 200) {
-                return callback(new Error('Wrong status code.'));
+                return callback(new Error('Wrong status code: ' + response.statusCode));
             }
-            var $ = cheerio.load(bodyResponse);
+
+            var $ = cheerio.load(body);
             var curjQueryObj = $('.menu_title'),
                 accountId = 1;
             if (curjQueryObj.length) {
@@ -67,109 +129,11 @@ function Init(accounts, callback) {
                     }
                 }
             }
-            console.log(accountId);
-            return;
-
-            if (!csrf_token || typeof csrf_token !== 'string') {
-                return callback(new Error('Codeforces CSRF Token not found'));
-            }
-            data.csrf_token = csrf_token;
-
-            var options = {
-                jar: cookieJar,
-                form: data,
-                method: 'POST',
-                followAllRedirects: true,
-                followRedirect: true,
-                encoding: 'utf8',
-                headers: {
-                    Host: 'codeforces.com',
-                    Connection: 'keep-alive',
-                    Origin: 'http://codeforces.com',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 YaBrowser/15.9.2403.3043 Safari/537.36',
-                    'Content-Type': 'application/x-www-form-urlencoded; utf-8',
-                    Accept: '*/*',
-                    'Accept-Language': 'ru,en;q=0.8'
-                }
-            };
-
-            request.post(ACM_BASE_URI + '/enter', options, function (err, response, body) {
-                if (response.statusCode !== 200 || err || !body) {
-                    return callback(new Error('Auth failed'));
-                }
-                var $ = cheerio.load(body);
-                var csrf_token = $('meta[name=X-Csrf-Token]').attr('content');
-                account.rest = {
-                    csrf_token: csrf_token,
-                    cookieJar: cookieJar
-                };
-                callback();
-            });
-        });
-    }, function(err) {
-        if (err) {
-            return callback(err);
-        }
-        console.log('All Codeforces accounts have been processed successfully');
-        callback(null);
-    });
-}
-
-function RefreshAccount(neededAccount, callback) {
-    console.log('Refreshing account:', neededAccount.login);
-    var loginUrl = ACM_BASE_URI,
-        data = {
-            action: 'enter',
-            handle: neededAccount.login,
-            password: neededAccount.password,
-            csrf_token: null
-        };
-
-    var cookieJar = request.jar();
-
-    request.get({url: loginUrl, jar: cookieJar}, function (err, response, body) {
-        var bodyResponse = body;
-        if (!bodyResponse) {
-            return callback(new Error('Resource no reached'));
-        }
-        var $ = cheerio.load(bodyResponse);
-        var csrf_token = $('meta[name=X-Csrf-Token]').attr('content');
-
-        if (!csrf_token || typeof csrf_token !== 'string') {
-            return callback(new Error('Codeforces CSRF Token not found'));
-        }
-        data.csrf_token = csrf_token;
-
-        var options = {
-            jar: cookieJar,
-            form: data,
-            method: 'POST',
-            followAllRedirects: true,
-            followRedirect: true,
-            encoding: 'utf8',
-            headers: {
-                Host: 'codeforces.com',
-                Connection: 'keep-alive',
-                Origin: 'http://codeforces.com',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 YaBrowser/15.9.2403.3043 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded; utf-8',
-                Accept: '*/*',
-                'Accept-Language': 'ru,en;q=0.8'
-            }
-        };
-
-        request.post(ACM_BASE_URI + '/enter', options, function (err, response, body) {
-            if (response.statusCode !== 200 || err || !body) {
-                return callback(new Error('Auth failed'));
-            }
-            var $ = cheerio.load(body);
-            var csrf_token = $('meta[name=X-Csrf-Token]').attr('content');
+            neededAccount.id = accountId;
             neededAccount.rest = {
-                csrf_token: csrf_token,
                 cookieJar: cookieJar
             };
-            console.log('Account was refreshed:', neededAccount.login);
-            callback(null, neededAccount);
+            callback();
         });
     });
 }

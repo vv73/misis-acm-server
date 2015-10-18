@@ -63,7 +63,7 @@ function SendSolution(solution, callback, progressCallback) {
         TrySend(solution, acmAccount, function (err, statusCode) {
             if (err) {
                 return callback(err);
-            } else if (statusCode !== 200) {
+            } else if (statusCode !== 302) {
                 accounts_manager.refreshAccount(acmAccount, function (err, refreshedAccount) {
                     if (err) {
                         return callback(new Error('Error when the account was refreshed.'));
