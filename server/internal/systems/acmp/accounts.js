@@ -185,7 +185,7 @@ function GetIdle(callback) {
                         processing_accounts.splice(operationIndex, 1);
                         async.nextTick(function () {
                             if (async_queue.length) {
-                                GetIdle(async_queue.pop().callback);
+                                GetIdle(async_queue.shift().callback);
                                 console.log('Async queue length: ' + async_queue.length);
                             }
                         });

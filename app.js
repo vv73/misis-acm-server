@@ -1,10 +1,22 @@
+/*
+ * Acm system
+ * https://github.com/IPRIT
+ *
+ * Copyright (c) 2015 "IPRIT" Alex Belov, contributors
+ * Licensed under the BSD license.
+ */
+
+'use strict';
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var pmx = require('pmx');
+var session = require('express-session');
+var auth = require('./server/internal/user/auth/auth');
+//var pmx = require('pmx');
 var routes = require('./server/routers/router');
 var serverInit = require('./server/init');
 
@@ -20,7 +32,13 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true
+}));
 app.use(express.static(path.join(__dirname, 'app')));
+app.use(auth.restore);
 
 /**
  * Fills acm accounts for async queue
@@ -35,7 +53,7 @@ app.get('/partials\/*:filename', routes.partials);
 app.use('/', routes.index);
 app.use('/test', routes.test);
 
-app.use(pmx.expressErrorHandler());
+//app.use(pmx.expressErrorHandler());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

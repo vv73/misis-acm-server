@@ -1,9 +1,18 @@
+/*
+ * Acm system
+ * https://github.com/IPRIT
+ *
+ * Copyright (c) 2015 "IPRIT" Alex Belov, contributors
+ * Licensed under the BSD license.
+ */
+
+'use strict';
+
 var mysql = require('./db/mysql-connection');
 var timus = require('./internal/systems/timus/timus');
 var codeforces = require('./internal/systems/codeforces/codeforces');
 var sgu = require('./internal/systems/sgu/sgu');
 var acmp = require('./internal/systems/acmp/acmp');
-var acmManager = require('./internal/systems/manager');
 
 module.exports = Init;
 

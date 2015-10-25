@@ -88,7 +88,7 @@ function SendSolution(solution, callback, progressCallback) {
 
 function flushQueue() {
     while (initQueue.length) {
-        SendSolution.apply(this, initQueue.pop());
+        SendSolution.apply(this, initQueue.shift());
     }
 }
 

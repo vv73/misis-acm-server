@@ -13,6 +13,8 @@ var router = express.Router();
 var acmManager = require('../internal/systems/manager');
 
 router.get('/', function(req, res) {
+    console.log(req.session);
+    console.log(req.currentUser);
 
     /*for (var i = 0; i < 1; ++i) {
         acmManager.send('timus', {
