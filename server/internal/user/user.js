@@ -10,8 +10,13 @@
 
 var mysql = require('../../db/mysql-connection');
 var crypto = require('crypto');
+var stray = require('stray').bind(this, {
+    set: 'alnum',
+    size: 32
+});
 
 var ACCESS_KEYS_LIMIT = 5;
+var noop = function() {};
 
 function User() {
     this._userRow = {};
@@ -22,45 +27,82 @@ User.prototype.isEmpty = function () {
 };
 
 User.prototype.allocate = function (user_id, callback) {
+    callback = callback || noop;
     if (!user_id) {
         return callback(new Error('User id not specified'));
     }
     var _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
+            connection.release();
             return callback(new Error('An error with db connection'));
         }
         connection.query('SELECT * FROM `users` WHERE `id` = ? LIMIT 0, 1', [ user_id ], function (error, results, fields) {
             if (err) {
+                connection.release();
                 return callback(new Error('An error with db process'));
             }
             if (!results.length) {
+                connection.release();
                 return callback(new Error('User not found'));
             }
             _this._userRow = results[0];
             callback(null);
+            connection.release();
+        });
+    });
+};
+
+User.prototype.allocateByLogin = function (login, callback) {
+    callback = callback || noop;
+    if (!login) {
+        return callback(new Error('Login not specified'));
+    }
+    var _this = this;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            connection.release();
+            return callback(new Error('An error with db connection'));
+        }
+        connection.query('SELECT * FROM `users` WHERE `username` = ?', [ login ], function (error, results, fields) {
+            if (err) {
+                connection.release();
+                return callback(new Error('An error with db process'));
+            }
+            if (!results.length) {
+                connection.release();
+                return callback(new Error('User not found'));
+            }
+            _this._userRow = results[0];
+            callback(null);
+            connection.release();
         });
     });
 };
 
 User.prototype.allocateByAccessKey = function (accessKey, callback) {
-    if (!user_id) {
-        return callback(new Error('User id not specified'));
+    callback = callback || noop;
+    if (!accessKey) {
+        return callback(new Error('Access key not specified'));
     }
     var _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
+            connection.release();
             return callback(new Error('An error with db connection'));
         }
         connection.query('SELECT * FROM `users` WHERE `access_keys` LIKE ? LIMIT 0, 1', [ '%' + accessKey + '%' ], function (error, results, fields) {
             if (err) {
+                connection.release();
                 return callback(new Error('An error with db process'));
             }
             if (!results.length) {
+                connection.release();
                 return callback(new Error('User not found'));
             }
             _this._userRow = results[0];
             callback(null);
+            connection.release();
         });
     });
 };
@@ -71,6 +113,18 @@ User.prototype.getId = function () {
 
 User.prototype.getUsername = function () {
     return this._userRow.username;
+};
+
+User.prototype.getFirstName = function () {
+    return this._userRow.first_name;
+};
+
+User.prototype.getLastName = function () {
+    return this._userRow.last_name;
+};
+
+User.prototype.getDisplayName = function () {
+    return [this.getFirstName(), this.getLastName()].join(' ').trim();
 };
 
 User.prototype.getPasswordHash = function () {
@@ -89,25 +143,30 @@ User.prototype.getSolvedCount = function () {
 };
 
 User.prototype.setUsername = function (username, callback) {
+    callback = callback || noop;
     if (!username) {
         return;
     }
     var _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            return callback(new Error('An error with db connection'));
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `username` = ? WHERE `id` = ?', [ username, _this.getId() ], function (error, results, fields) {
             if (err) {
-                return callback(new Error('An error with db process'));
+                connection.release();
+                return callback(new Error('An error with db process', 1001));
             }
             _this._userRow.username = username;
             callback(null, username);
+            connection.release();
         });
     });
 };
 
 User.prototype.setPassword = function (password, callback) {
+    callback = callback || noop;
     if (!password) {
         return;
     }
@@ -115,21 +174,25 @@ User.prototype.setPassword = function (password, callback) {
         _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            return callback(new Error('An error with db connection'));
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `password` = ? WHERE `id` = ?', [ passwordHash, _this.getId() ], function (error, results, fields) {
             if (err) {
-                return callback(new Error('An error with db process'));
+                connection.release();
+                return callback(new Error('An error with db process', 1001));
             }
             _this._userRow.password = passwordHash;
             callback(null, passwordHash);
+            connection.release();
         });
     });
 };
 
 User.prototype.addAccessKey = function (accessKey, callback) {
-    if (!password) {
-        return;
+    callback = callback || noop;
+    if (!accessKey) {
+        return callback(new Error('Access key is empty'));
     }
     var _this = this,
         accessKeys = this.getAccessKeys();
@@ -139,21 +202,25 @@ User.prototype.addAccessKey = function (accessKey, callback) {
     }
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            return callback(new Error('An error with db connection'));
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
             if (err) {
-                return callback(new Error('An error with db process'));
+                connection.release();
+                return callback(new Error('An error with db process', 1001));
             }
             _this._userRow.access_keys = accessKeys.join(',');
             callback(null, accessKeys);
+            connection.release();
         });
     });
 };
 
 User.prototype.deleteAccessKey = function (accessKey, callback) {
-    if (!password) {
-        return;
+    callback = callback || noop;
+    if (!accessKey) {
+        return callback(new Error('Access key is empty'));
     }
     var _this = this,
         accessKeys = this.getAccessKeys();
@@ -164,32 +231,101 @@ User.prototype.deleteAccessKey = function (accessKey, callback) {
     accessKeys.splice(deleteIndex, 1);
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            return callback(new Error('An error with db connection'));
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
             if (err) {
-                return callback(new Error('An error with db process'));
+                connection.release();
+                return callback(new Error('An error with db process', 1001));
             }
             _this._userRow.access_keys = accessKeys.join(',');
             callback(null, accessKey);
+            connection.release();
         });
     });
 };
 
 User.prototype.incrementSolvedCount = function (callback) {
     var _this = this;
+    callback = callback || noop;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            return callback(new Error('An error with db connection'));
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
         }
-        connection.query('UPDATE `users` SET `solved_count` = `solved_count` + 1 WHERE `id` = ?', [ _this.getId() ], function (error, results, fields) {
-            if (err) {
-                return callback(new Error('An error with db process'));
+        connection.query(
+            'UPDATE `users` SET `solved_count` = `solved_count` + 1 WHERE `id` = ?', [ _this.getId() ],
+            function (error, results, fields) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._userRow.solved_count++;
+                callback(null, _this._userRow.solved_count);
+                connection.release();
             }
-            _this._userRow.solved_count++;
-            callback(null, _this._userRow.solved_count);
-        });
+        );
     });
+};
+
+User.prototype.updateLastLoggedTime = function (callback) {
+    var _this = this;
+    callback = callback || noop;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
+        }
+        var curDate = new Date();
+        connection.query(
+            'UPDATE `users` SET `last_logged_time` = ? WHERE `id` = ?', [ curDate.getTime(), _this.getId() ],
+            function (error) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._userRow.last_logged_time = curDate.getTime();
+                callback(null, _this._userRow.last_logged_time);
+                connection.release();
+            }
+        );
+    });
+};
+
+User.prototype.updateRecentActionTime = function (callback) {
+    var _this = this;
+    callback = callback || noop;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            connection.release();
+            return callback(new Error('An error with db connection', 1001));
+        }
+        var curDate = new Date();
+        connection.query(
+            'UPDATE `users` SET `recent_action_time` = ? WHERE `id` = ?', [ curDate.getTime(), _this.getId() ],
+            function (error) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._userRow.recent_action_time = curDate.getTime();
+                callback(null, _this._userRow.recent_action_time);
+                connection.release();
+            }
+        );
+    });
+};
+
+User.prototype.generateAccessKey = function () {
+    return stray();
+};
+
+User.prototype.isPasswordEquals = function (anotherPassword) {
+    if (this.isEmpty()) {
+        return false;
+    }
+    return this.getPasswordHash() === crypto.createHash('md5').update(anotherPassword).digest('hex');
 };
 
 

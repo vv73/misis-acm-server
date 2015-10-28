@@ -11,10 +11,42 @@
 var express = require('express');
 var router = express.Router();
 var acmManager = require('../internal/systems/manager');
+var test = require('../internal/user/manager');
+var auth = require('../internal/user/auth/auth');
 
 router.get('/', function(req, res) {
     console.log(req.session);
+    //req.currentUser.updateRecentActionTime();
     console.log(req.currentUser);
+
+    if (!req.session.user_id) {
+        auth.auth(req, res, 'Test2', '115563', function (err, user) {
+            if (err) {
+                res.end('<h1>Server running</h1>');
+                return console.log(err);
+            }
+            console.log('Authed user:', user);
+            res.end(user.getDisplayName());
+        });
+    } else {
+        req.session.views = req.session.views ? req.session.views : 0;
+        req.session.views++;
+        console.log(req.session.views);
+        res.end(req.currentUser.getDisplayName());
+    }
+
+
+    /*test.create({
+        username: 'Test3',
+        password: '123456',
+        first_name: 'Alexxxxx',
+        last_name: 'Beloffffffffffffffffffff'
+    }, function (err, user) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log(user);
+    });*/
 
     /*for (var i = 0; i < 1; ++i) {
         acmManager.send('timus', {
@@ -82,7 +114,7 @@ router.get('/', function(req, res) {
         });
     }*/
 
-    res.end('Works!');
+
 });
 
 router.get('/index', function(req, res) {

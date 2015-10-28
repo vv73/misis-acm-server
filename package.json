@@ -52,6 +52,7 @@
     "request": "^2.65.0",
     "restler": "^3.4.0",
     "serve-favicon": "~2.2.1",
+    "stray": "^0.1.2",
     "unirest": "^0.4.2"
   }
 }

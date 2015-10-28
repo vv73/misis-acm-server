@@ -14,12 +14,12 @@ var crypto = require('crypto');
 var AUTH_COOKIE_NAME = 'auth.sid';
 
 module.exports = {
-    restore: RestoreUser
+    restore: RestoreUser,
+    auth: AuthUser
 };
 
 function RestoreUser(req, res, next) {
     var session = req.session;
-    req.session.user_id = 1;
     if (!session || !session.user_id) {
         return RestoreUserByCookie.apply(this, arguments);
     }
@@ -43,7 +43,7 @@ function RestoreUserByCookie(req, res, next) {
             return next();
         }
         req.currentUser = user;
-        req.session.user_id = user.id;
+        req.session.user_id = user.getId();
         next();
     });
 }
@@ -65,5 +65,35 @@ function GetUserById(user_id, callback) {
             return callback(err);
         }
         callback(null, user);
+    });
+}
+
+function AuthUser(req, res, login, password, callback) {
+    if (!login || !login.length || !password || !password.length) {
+        return;
+    }
+    var user = new User();
+    user.allocateByLogin(login, function (err) {
+        if (err) {
+            return callback(err);
+        }
+        if (user.isPasswordEquals(password)) {
+            var newAccessToken = user.generateAccessKey();
+            user.addAccessKey(newAccessToken, function (err, accessKeys) {
+                if (err) {
+                    return callback(err);
+                }
+                res.cookie(AUTH_COOKIE_NAME, newAccessToken, {
+                    expires: new Date(Date.now() + 1e3 * 3600 * 24 * 365),
+                    httpOnly: true
+                });
+                req.session.user_id = user.getId();
+                user.updateLastLoggedTime();
+                user.updateRecentActionTime();
+                callback(null, user);
+            });
+        } else {
+            callback(new Error('Wrong password'));
+        }
     });
 }

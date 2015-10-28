@@ -8,6 +8,7 @@ var pool = mysql.createPool(config.db);
 module.exports.connection = function(callback) {
 
     pool.getConnection(function(err, connection) {
+        console.log(connection.threadId);
         callback(err, connection);
     });
 };

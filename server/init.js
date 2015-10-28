@@ -76,6 +76,7 @@ function Init() {
                 };
             }) );
         });
+        connection.release();
     });
 }
 
