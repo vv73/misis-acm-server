@@ -22,6 +22,13 @@ function User() {
     this._userRow = {};
 }
 
+User.prototype.setObjectRow = function (userRow) {
+    if (typeof userRow !== 'object') {
+        return;
+    }
+    this._userRow = userRow;
+};
+
 User.prototype.isEmpty = function () {
     return !Object.keys(this._userRow).length || !this._userRow.id;
 };
@@ -37,19 +44,27 @@ User.prototype.allocate = function (user_id, callback) {
             connection.release();
             return callback(new Error('An error with db connection'));
         }
-        connection.query('SELECT * FROM `users` WHERE `id` = ? LIMIT 0, 1', [ user_id ], function (error, results, fields) {
-            if (err) {
+        connection.query(
+            'SELECT users.*, groups.group_name ' +
+            'FROM `users` ' +
+            'LEFT JOIN access_groups AS groups ON users.access_level = groups.access_level ' +
+            'WHERE `id` = ? ' +
+            'LIMIT 0, 1',
+            [ user_id ],
+            function (error, results, fields) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process'));
+                }
+                if (!results.length) {
+                    connection.release();
+                    return callback(new Error('User not found'));
+                }
+                _this._userRow = results[0];
+                callback(null);
                 connection.release();
-                return callback(new Error('An error with db process'));
             }
-            if (!results.length) {
-                connection.release();
-                return callback(new Error('User not found'));
-            }
-            _this._userRow = results[0];
-            callback(null);
-            connection.release();
-        });
+        );
     });
 };
 
@@ -64,19 +79,27 @@ User.prototype.allocateByLogin = function (login, callback) {
             connection.release();
             return callback(new Error('An error with db connection'));
         }
-        connection.query('SELECT * FROM `users` WHERE `username` = ?', [ login ], function (error, results, fields) {
-            if (err) {
+        connection.query(
+            'SELECT users.*, groups.group_name ' +
+            'FROM `users` ' +
+            'LEFT JOIN access_groups AS groups ON users.access_level = groups.access_level ' +
+            'WHERE `username` = ? ' +
+            'LIMIT 0, 1',
+            [ login ],
+            function (error, results, fields) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process'));
+                }
+                if (!results.length) {
+                    connection.release();
+                    return callback(new Error('User not found'));
+                }
+                _this._userRow = results[0];
+                callback(null);
                 connection.release();
-                return callback(new Error('An error with db process'));
             }
-            if (!results.length) {
-                connection.release();
-                return callback(new Error('User not found'));
-            }
-            _this._userRow = results[0];
-            callback(null);
-            connection.release();
-        });
+        );
     });
 };
 
@@ -91,19 +114,27 @@ User.prototype.allocateByAccessKey = function (accessKey, callback) {
             connection.release();
             return callback(new Error('An error with db connection'));
         }
-        connection.query('SELECT * FROM `users` WHERE `access_keys` LIKE ? LIMIT 0, 1', [ '%' + accessKey + '%' ], function (error, results, fields) {
-            if (err) {
+        connection.query(
+            'SELECT users.*, groups.group_name ' +
+            'FROM `users` ' +
+            'LEFT JOIN access_groups AS groups ON users.access_level = groups.access_level ' +
+            'WHERE `access_keys` LIKE ? ' +
+            'LIMIT 0, 1',
+            [ '%' + accessKey + '%' ],
+            function (error, results, fields) {
+                if (err) {
+                    connection.release();
+                    return callback(new Error('An error with db process'));
+                }
+                if (!results.length) {
+                    connection.release();
+                    return callback(new Error('User not found'));
+                }
+                _this._userRow = results[0];
+                callback(null);
                 connection.release();
-                return callback(new Error('An error with db process'));
             }
-            if (!results.length) {
-                connection.release();
-                return callback(new Error('User not found'));
-            }
-            _this._userRow = results[0];
-            callback(null);
-            connection.release();
-        });
+        );
     });
 };
 
@@ -140,6 +171,13 @@ User.prototype.getAccessKeys = function () {
 
 User.prototype.getSolvedCount = function () {
     return this._userRow.solved_count;
+};
+
+User.prototype.getAccessGroup = function () {
+    return {
+        id: this._userRow.access_level,
+        name: this._userRow.group_name
+    };
 };
 
 User.prototype.setUsername = function (username, callback) {
@@ -326,6 +364,20 @@ User.prototype.isPasswordEquals = function (anotherPassword) {
         return false;
     }
     return this.getPasswordHash() === crypto.createHash('md5').update(anotherPassword).digest('hex');
+};
+
+User.prototype.getObjectFactory = function () {
+    if (this.isEmpty()) {
+        return {};
+    }
+    return {
+        id: this.getId(),
+        username: this.getUsername(),
+        first_name: this.getFirstName(),
+        last_name: this.getLastName(),
+        rate: this.getSolvedCount(),
+        access_group: this.getAccessGroup()
+    }
 };
 
 

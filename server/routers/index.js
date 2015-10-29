@@ -15,9 +15,9 @@ var test = require('../internal/user/manager');
 var auth = require('../internal/user/auth/auth');
 
 router.get('/', function(req, res) {
-    console.log(req.session);
+    //console.log(req.session);
     //req.currentUser.updateRecentActionTime();
-    console.log(req.currentUser);
+    //console.log(req.currentUser);
 
     if (!req.session.user_id) {
         auth.auth(req, res, 'Test2', '115563', function (err, user) {
@@ -31,7 +31,7 @@ router.get('/', function(req, res) {
     } else {
         req.session.views = req.session.views ? req.session.views : 0;
         req.session.views++;
-        console.log(req.session.views);
+        console.log(req.currentUser.getObjectFactory());
         res.end(req.currentUser.getDisplayName());
     }
 
