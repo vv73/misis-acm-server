@@ -10,7 +10,8 @@
 'use strict';
 
 angular.module('Qemy.ui.contests', [
-    'ui.router'
+    'ui.router',
+    'Qemy.controllers.contests'
 ])
     .config(['$stateProvider', '$urlRouterProvider',
         function($stateProvider, $urlRouterProvider) {
@@ -18,26 +19,22 @@ angular.module('Qemy.ui.contests', [
             $stateProvider
                 .state('contests', {
                     url: '/contests',
-                    template: 'New layer:' +
-                    '<br>' +
-                    '<a ui-sref="contests.list">Next</a> <div ui-view></div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>' +
-                    'test' +
-                    '<div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>' +
-                    'test' +
-                    'test' +
-                    '<div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>' +
-                    'test',
+                    template: '<ui-view/>',
                     abstract: true
                 })
                 .state('contests.list', {
                     url: '',
-                    template: '<br>' +
-                    '<a ui-sref="contests.smth">Next</a> <div ui-view></div>'
+                    templateUrl: templateUrl('contests', 'index'),
+                    controller: 'ContestsListCtrl'
                 })
-                .state('contests.smth', {
-                    url: '/test',
-                    template: '<br>' +
-                    '<a ui-sref="contests.list">Back</a> <div ui-view></div>'
+                .state('contests.list.pagination', {
+                    url: '/page/:pageNumber',
+                    templateUrl: templateUrl('contests', 'index'),
+                    controller: 'ContestsListCtrl'
+                })
+                .state('contests.item', {
+                    url: '/{contestId:[0-9]+}',
+                    template: '<h3>Contest item</h3>'
                 })
         }
     ]);

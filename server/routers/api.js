@@ -14,6 +14,7 @@ var router = express.Router();
 var app = express();
 
 var authManager = require('../internal/user/auth/auth');
+var contestManager = require('../internal/contest/manager');
 
 router.all('/', function (req, res) {
     res.json({
@@ -82,6 +83,28 @@ router.get('/auth/isAuth', function (req, res) {
             }
             callback(null, result);
         })
+    }
+});
+
+router.get('/contests/get', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query;
+        contestManager.getContests(q.count, q.offset, q.category, q.sort, q.sort_order, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString
+                });
+            }
+            callback(null, result);
+        });
     }
 });
 

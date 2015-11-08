@@ -22,6 +22,7 @@ var noop = function() {};
 function Contest() {
     this._contestRow = {};
     this._author = null;
+    this._allowedGroups = null;
 }
 
 Contest.prototype.setObjectRow = function (contestRow) {
@@ -111,7 +112,6 @@ Contest.prototype.getAuthorId = function () {
 };
 
 Contest.prototype.allocateAuthor = function (callback) {
-    console.log(1);
     if (this._author) {
         return callback(null, this._author);
     }
@@ -161,7 +161,7 @@ Contest.prototype.getAllowedGroupsId = function () {
     });
 };
 
-Contest.prototype.getAllowedGroups = function (callback) {
+Contest.prototype.allocateAllowedGroups = function (callback) {
     var allowedGroupsId = this.getAllowedGroupsId();
     if (!allowedGroupsId.length) {
         return callback(null, []);
@@ -194,6 +194,7 @@ Contest.prototype.getAllowedGroups = function (callback) {
                 if (!groups) {
                     groups = [];
                 }
+                _this._allowedGroups = groups;
                 callback(null, groups);
             }
         );
@@ -233,10 +234,13 @@ Contest.prototype.getObjectFactory = function () {
         isEnabled: this.isEnabled(),
         creationTime: this.getCreationTimeMs(),
         isRemoved: this.isRemoved(),
-        allowedGroups: this.getAllowedGroupsId()
+        allowedGroupIds: this.getAllowedGroupsId()
     };
     if (this._author) {
         retObj.author = this._author.getObjectFactory();
+    }
+    if (this._allowedGroups) {
+        retObj.allowedGroups = this._allowedGroups;
     }
     return retObj;
 };

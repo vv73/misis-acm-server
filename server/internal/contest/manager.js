@@ -125,9 +125,12 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
         var availableSorts = {
             byId: 'contests.id',
             byStart: 'contests.start_time',
-            byEnd: 'contests.start_time + contests.duration_time',
+            byEnd: 'finish_time',
             byCreation: 'contests.creation_time'
         };
+        if (!(sort in availableSorts)) {
+            sort = DEFAULT_CONTESTS_SORT;
+        }
 
         var readyWhereStatements = {},
             statementExistence = true,
@@ -165,20 +168,13 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
                     ' <= contests.start_time + contests.duration_time';
                 break;
         }
-        if (statementExistence) {
-            if (category !== 'showOnlyRemoved') {
-                for (var statementIndex in readyWhereStatements) {
-                    readyWhereStatements[statementIndex] += ' AND contests.removed = 0';
-                }
-            }
-        } else if (category !== 'showOnlyRemoved') {
-            for (statementIndex in readyWhereStatements) {
-                readyWhereStatements[statementIndex] += 'contests.removed = 0';
+        if (category !== 'showOnlyRemoved') {
+            for (var statementIndex in readyWhereStatements) {
+                readyWhereStatements[statementIndex] += statementExistence ? ' AND ' : '' + 'contests.removed = 0';
             }
         }
-        console.log(category, readyWhereStatements);
 
-        var sql = 'SELECT contests.* ' +
+        var sql = 'SELECT contests.*, contests.start_time + contests.duration_time AS finish_time ' +
             'FROM contests ' +
             'WHERE ' + readyWhereStatements[category] + ' ' +
             'ORDER BY ?? ' + sort_order.toUpperCase() + ' ' +
@@ -193,8 +189,6 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
             count
         ]);
 
-        console.log(sql);
-
         connection.query(sql, function (err, results, fields) {
             if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
                 return callback(err);
@@ -206,7 +200,10 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
             });
             var authorAllocates = [];
             contests.forEach(function (contest) {
-                authorAllocates.push(contest.allocateAuthor.bind(contest));
+                authorAllocates.push(
+                    contest.allocateAuthor.bind(contest),
+                    contest.allocateAllowedGroups.bind(contest)
+                );
             });
             async.parallel(authorAllocates, function(err, asyncResults) {
                 if (err) {
