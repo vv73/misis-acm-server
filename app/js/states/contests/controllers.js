@@ -14,7 +14,7 @@
 angular.module('Qemy.controllers.contests', [])
 
     .controller('ContestsListCtrl', ['$scope', '$rootScope', '$state', function ($scope, $rootScope, $state) {
-        $scope.pageNumber = $state.params.pageNumber || 1;
+        $scope.pageNumber = parseInt($state.params.pageNumber || 1);
         $scope.category = 'all';
         $scope.sort = 'byId';
         $scope.sort_order = 'desc';
@@ -25,10 +25,28 @@ angular.module('Qemy.controllers.contests', [])
             itemsOffset = ($scope.pageNumber - 1) * defaultCount;
 
         function generatePaginationArray() {
-            var pages = [];
-
+            var pages = [],
+                curPage = $scope.pageNumber,
+                allItems = $scope.all_items_count,
+                backOffsetPages = 5,
+                upOffsetPages = 5,
+                allPages = Math.floor(allItems / defaultCount) +
+                    (allItems && allItems % defaultCount ? 1 : 0);
+            for (var cur = Math.max(curPage - backOffsetPages, 1);
+                 cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+                pages.push({
+                    number: cur,
+                    active: cur === curPage
+                });
+            }
+            return pages;
         }
 
         $scope.contestsList = [];
-
+        $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+            $scope.pageNumber = toParams.pageNumber ?
+                parseInt(toParams.pageNumber) : 1;
+            itemsOffset = ($scope.pageNumber - 1) * defaultCount;
+            console.log(itemsOffset);
+        });
     }]);
