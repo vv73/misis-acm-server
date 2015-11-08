@@ -55,4 +55,17 @@ angular.module('Qemy.directives', [])
             controller: 'WrapperCtrl'
         }
     })
+
+    .directive('pageLoading', function () {
+        return {
+            restrict: 'EA',
+            templateUrl: templateUrl('page', 'loading-layer'),
+            scope: {
+                active: '='
+            },
+            link: function (scope, element, attrs) {
+                element.addClass('page__loading');
+            }
+        }
+    })
 ;

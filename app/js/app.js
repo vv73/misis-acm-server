@@ -9,12 +9,17 @@ angular.module('Qemy', [
     'ngAnimate',
     'ngAria',
     'ngMessages',
-    'Qemy.controllers',
-    'Qemy.services',
+
     'Qemy.directives',
+
     'Qemy.ui.contests',
     'Qemy.ui.auth',
-    'Qemy.controllers.auth'
+
+    'Qemy.controllers',
+    'Qemy.controllers.auth',
+
+    'Qemy.services',
+    'Qemy.services.contests'
 ])
     .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider',
         function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider) {

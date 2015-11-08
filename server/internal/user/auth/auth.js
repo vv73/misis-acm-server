@@ -15,7 +15,9 @@ var AUTH_COOKIE_NAME = 'auth.sid';
 
 module.exports = {
     restore: RestoreUser,
-    auth: AuthUser
+    auth: AuthUser,
+    logout: LogoutUser,
+    isAuth: IsAuth
 };
 
 function RestoreUser(req, res, next) {
@@ -39,7 +41,6 @@ function RestoreUserByCookie(req, res, next) {
     }
     GetUserByAccessKey(cookies[AUTH_COOKIE_NAME], function (err, user) {
         if (err) {
-            console.log(err);
             return next();
         }
         req.currentUser = user;
@@ -93,7 +94,41 @@ function AuthUser(req, res, login, password, callback) {
                 callback(null, user);
             });
         } else {
-            callback(new Error('Wrong password'));
+            callback(new Error('Wrong password', 3001));
         }
+    });
+}
+
+function LogoutUser(req, res, callback) {
+    var user = req.currentUser;
+    if (!user || user.isEmpty()) {
+        return callback(null, true);
+    }
+    var accessKey = req.cookies['auth.sid'];
+    if (!accessKey || typeof accessKey !== 'string') {
+        return callback(null, true);
+    }
+    res.cookie('auth.sid', '', {
+        expires: new Date(Date.now() - 1e3 * 3600 * 24 * 365)
+    });
+    delete req.session.user_id;
+    user.deleteAccessKey(accessKey, function (err, result) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, result);
+    })
+}
+
+function IsAuth(req, res, callback) {
+    var user = req.currentUser;
+    if (!user || user.isEmpty()) {
+        return callback(null, {
+            result: false
+        });
+    }
+    callback(null, {
+        result: true,
+        user: user.getObjectFactory()
     });
 }

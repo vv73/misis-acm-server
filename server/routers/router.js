@@ -1,6 +1,7 @@
 module.exports = {
     partials: compileStaticTemplate,
-    index: require('./index')
+    index: require('./index'),
+    api: require('./api')
 };
 
 function compileStaticTemplate(req, res) {

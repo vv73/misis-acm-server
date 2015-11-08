@@ -51,6 +51,12 @@ serverInit();
 
 app.get('/partials\/*:filename', routes.partials);
 app.use('/', routes.index);
+app.use('/api', routes.api);
+
+app.all('/*', function(req, res, next) {
+    // Just send the index.jade for other files to support html 5 mode in angular routing
+    res.render('index/index');
+});
 
 //app.use(pmx.expressErrorHandler());
 

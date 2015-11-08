@@ -129,11 +129,6 @@ router.get('/index', function(req, res) {
     res.end('Index!');
 });
 
-router.all('/*', function(req, res, next) {
-    // Just send the index.jade for other files to support html 5 mode in angular routing
-    res.render('index/index');
-});
-
 module.exports = router;
 
 

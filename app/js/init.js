@@ -8,6 +8,15 @@ function initApplication () {
     }
     $(document.body).addClass(classes.join(' '));
 
+    var origConsoleLog = console.log;
+    console.log = function () {
+        var curDate = new Date(),
+            zF = function (num) { return num < 10 ? '0' + num : num },
+            timeArray = [ curDate.getHours(), curDate.getMinutes(), curDate.getSeconds(), curDate.getMilliseconds() ],
+            logTime = '[' + timeArray.map(zF).join(':') + ']';
+        origConsoleLog.bind(console, logTime).apply(this, arguments);
+    };
+
     ConfigStorage.get('i18n_locale', function (params) {
         var locale = params,
             defaultLocale = Config.I18n.locale,

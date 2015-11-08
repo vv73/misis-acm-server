@@ -20,7 +20,13 @@ angular.module('Qemy.ui.contests', [
                     url: '/contests',
                     template: 'New layer:' +
                     '<br>' +
-                    '<a ui-sref="contests.list">Next</a> <div ui-view></div>',
+                    '<a ui-sref="contests.list">Next</a> <div ui-view></div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>' +
+                    'test' +
+                    '<div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>' +
+                    'test' +
+                    'test' +
+                    '<div><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>' +
+                    'test',
                     abstract: true
                 })
                 .state('contests.list', {

@@ -12,34 +12,117 @@ angular.module('Qemy.controllers', [
         });
     }])
 
-    .controller('AppCtrl', ['$scope', function($scope) {
-        $scope.isAuth = true;
-        $scope.user = {
-            first_name: 'Александр',
-            last_name: 'Белов'
+    .controller('AppCtrl', ['$scope', '$rootScope', 'UserManager', '$state', function($scope, $rootScope, UserManager, $state) {
+        function updateUserData() {
+            console.log('User data updating...');
+            $rootScope.$broadcast('data loading');
+            var userPromise = UserManager.getCurrentUser({ cache: false });
+            userPromise.then(function (user) {
+                $rootScope.$broadcast('data loaded');
+                if (!user || !user.id) {
+                    $rootScope.$broadcast('user updated', { user: {} });
+                    return $state.go('auth.form');
+                }
+                $rootScope.$broadcast('user updated', { user: user });
+                console.log('User data updated.');
+            }).catch(function (err) {
+                $state.go('auth.form');
+            });
         }
+        updateUserData();
+
+        $scope.$on('user update needed', function (ev, args) {
+            console.log('User data update needed.');
+            updateUserData();
+        });
     }])
 
-    .controller('IndexCtrl', ['$scope', '_', '$state', function($scope, _, $state) {
-        $scope.$emit('change_title', {
-            title: _('app_name')
+    .controller('IndexCtrl', ['$scope', '_', '$state', '$rootScope', 'UserManager',
+        function($scope, _, $state, $rootScope, UserManager) {
+            $scope.$emit('change_title', {
+                title: _('app_name')
+            });
+
+            $scope.$emit('user update needed');
+            $scope.$on('user updated', function (ev, args) {
+                if (!args.user) {
+                    return;
+                }
+                $state.go('contests.list');
+            });
+        }
+    ])
+
+    .controller('HeaderCtrl', ['$scope', '$rootScope', 'UserManager', '$mdDialog',
+        function ($scope, $rootScope, UserManager, $mdDialog) {
+            $scope.user = {};
+            $scope.isAuth = false;
+            $scope.$on('user updated', function (ev, args) {
+                if (!args.user) {
+                    return;
+                }
+                $scope.user = args.user;
+                $scope.isAuth = !!args.user.id;
+            });
+
+            $scope.menuList = [{
+                type: 'item',
+                id: 'settings',
+                name: 'Настройки',
+                iconSrc: '/img/icons/ic_settings_48px.svg'
+            }, {
+                type: 'item',
+                id: 'my-sents',
+                name: 'Мои отправки',
+                iconSrc: '/img/icons/ic_send_48px.svg'
+            }, {
+                type: 'divider'
+            }, {
+                type: 'item',
+                id: 'exit-app',
+                name: 'Выход',
+                iconSrc: '/img/icons/ic_exit_to_app_48px.svg'
+            }];
+
+            $scope.profileItemClick = function (event, item, index) {
+                switch (item.id) {
+                    case 'settings':
+                        break;
+                    case 'my-sents':
+                        break;
+                    case 'exit-app':
+                        exitFromApp(event);
+                        break;
+                }
+            };
+
+            function exitFromApp(ev) {
+                var confirm = $mdDialog.confirm()
+                    .title('Предупреждение')
+                    .content('Вы действительно хотите выйти?')
+                    .clickOutsideToClose(true)
+                    .ariaLabel('Lucky day')
+                    .ok('Да')
+                    .cancel('Отмена')
+                    .targetEvent(ev);
+                $mdDialog.show(confirm).then(function() {
+                    UserManager.logout().then(function (result) {
+                        $scope.$emit('user update needed');
+                    });
+                });
+            }
+        }
+    ])
+
+    .controller('WrapperCtrl', ['$scope', '$rootScope', '$timeout', '$interval', function ($scope, $rootScope, $timeout, $interval) {
+
+        $scope.pageLoading = false;
+        $scope.$on('data loading', function (ev, args) {
+            $scope.pageLoading = true;
         });
 
-        var isAuth = false;
-        if (isAuth) {
-            $state.go('contests.list');
-        } else {
-            $state.go('auth.form');
-        }
-    }])
-
-    .controller('HeaderCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
-        //...
-        $scope.text = 'header';
-    }])
-
-    .controller('WrapperCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
-        //...
-        $scope.text = 'wrapper';
+        $scope.$on('data loaded', function (ev, args) {
+            $scope.pageLoading = false;
+        });
     }])
 ;
