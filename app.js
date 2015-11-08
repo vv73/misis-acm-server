@@ -51,7 +51,6 @@ serverInit();
 
 app.get('/partials\/*:filename', routes.partials);
 app.use('/', routes.index);
-app.use('/test', routes.test);
 
 //app.use(pmx.expressErrorHandler());
 

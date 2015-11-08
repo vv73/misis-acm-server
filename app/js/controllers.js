@@ -13,12 +13,33 @@ angular.module('Qemy.controllers', [
     }])
 
     .controller('AppCtrl', ['$scope', function($scope) {
-        console.log('Works!');
+        $scope.isAuth = true;
+        $scope.user = {
+            first_name: 'Александр',
+            last_name: 'Белов'
+        }
     }])
 
-    .controller('IndexCtrl', ['$scope', '_', function($scope, _) {
+    .controller('IndexCtrl', ['$scope', '_', '$state', function($scope, _, $state) {
         $scope.$emit('change_title', {
             title: _('app_name')
         });
+
+        var isAuth = false;
+        if (isAuth) {
+            $state.go('contests.list');
+        } else {
+            $state.go('auth.form');
+        }
+    }])
+
+    .controller('HeaderCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
+        //...
+        $scope.text = 'header';
+    }])
+
+    .controller('WrapperCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
+        //...
+        $scope.text = 'wrapper';
     }])
 ;

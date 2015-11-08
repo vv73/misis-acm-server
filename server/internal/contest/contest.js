@@ -110,7 +110,8 @@ Contest.prototype.getAuthorId = function () {
     return this._contestRow.user_id;
 };
 
-Contest.prototype.getAuthor = function (callback) {
+Contest.prototype.allocateAuthor = function (callback) {
+    console.log(1);
     if (this._author) {
         return callback(null, this._author);
     }
@@ -130,7 +131,7 @@ Contest.prototype.getAuthorObject = function (callback) {
     if (typeof callback !== 'function') {
         return;
     }
-    this.getAuthor(function (err, author) {
+    this.allocateAuthor(function (err, author) {
         if (err) {
             return callback(err);
         }
@@ -155,7 +156,9 @@ Contest.prototype.getAllowedGroupsId = function () {
     if (!allowedGroups || !allowedGroups.length) {
         return [];
     }
-    return allowedGroups.split(',');
+    return allowedGroups.split(',').map(function (group_id) {
+        return +group_id;
+    });
 };
 
 Contest.prototype.getAllowedGroups = function (callback) {
@@ -217,7 +220,7 @@ Contest.prototype.getObjectFactory = function () {
     if (this.isEmpty()) {
         return {};
     }
-    return {
+    var retObj = {
         id: this.getId(),
         name: this.getName(),
         isVirtual: this.isVirtual(),
@@ -226,12 +229,16 @@ Contest.prototype.getObjectFactory = function () {
         absoluteFreezeTime: this.getAbsoluteFreezeTimeMs(),
         relativeDurationTime: this.getRelativeDurationTimeMs(),
         absoluteDurationTime: this.getAbsoluteDurationTimeMs(),
-        author: this.getAuthorId(),
+        author_id: this.getAuthorId(),
         isEnabled: this.isEnabled(),
         creationTime: this.getCreationTimeMs(),
         isRemoved: this.isRemoved(),
         allowedGroups: this.getAllowedGroupsId()
+    };
+    if (this._author) {
+        retObj.author = this._author.getObjectFactory();
     }
+    return retObj;
 };
 
 

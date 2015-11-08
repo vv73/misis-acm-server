@@ -15,6 +15,7 @@ var mysql       = require('mysql');
 var User        = require('../user/user');
 var Contest     = require('../contest/contest');
 var crypto      = require('crypto');
+var async       = require('async');
 
 
 var DEFAULT_CONTESTS_COUNT = 20;
@@ -66,14 +67,17 @@ function CreateContest(params, callback) {
     }
 }
 
-function GetContests(count, offset, sort, sort_order, callback) {
+function GetContests(count, offset, category, sort, sort_order, callback) {
     if (typeof count === 'function') {
         callback = count;
         count = null;
     } else if (typeof offset === 'function') {
         callback = offset;
         offset = null;
-    }  else if (typeof sort === 'function') {
+    } else if (typeof category === 'function') {
+        callback = category;
+        category = null;
+    } else if (typeof sort === 'function') {
         callback = sort;
         sort = null;
     } else if (typeof sort_order === 'function') {
@@ -97,52 +101,125 @@ function GetContests(count, offset, sort, sort_order, callback) {
     function execute(connection, callback) {
         count = count || DEFAULT_CONTESTS_COUNT;
         offset = offset || DEFAULT_CONTESTS_OFFSET;
+        category = category || DEFAULT_CONTESTS_CATEGORY;
         sort = sort || DEFAULT_CONTESTS_SORT;
         sort_order = sort_order || DEFAULT_CONTESTS_SORT_ORDER;
 
         count = Math.max(Math.min(count, 200), 0);
         offset = Math.max(offset, 0);
 
-        //todo: сделать выборку по начатым контестам, замороженным, а также показать только завершенные и т.д.
+        var categoryPredicate = [
+            'all',
+            'showOnlyVirtual',
+            'showOnlyEnabled',
+            'showOnlyDisabled',
+            'showOnlyFinished',
+            'showOnlyRemoved',
+            'showOnlyFrozen',
+            'showOnlyStarted'
+        ];
+        if (categoryPredicate.indexOf(category) === -1) {
+            category = DEFAULT_CONTESTS_CATEGORY;
+        }
+
         var availableSorts = {
-            byId: 'users.id',
-            byName: 'display_name',
-            byCategory: 'users.access_level',
-            byRecent: 'users.recent_action_time'
+            byId: 'contests.id',
+            byStart: 'contests.start_time',
+            byEnd: 'contests.start_time + contests.duration_time',
+            byCreation: 'contests.creation_time'
         };
 
-        var sql = 'SELECT users.*, groups.group_name, CONCAT(users.first_name, ?, users.last_name) AS display_name ' +
-            'FROM users ' +
-            'LEFT JOIN access_groups AS groups ON users.access_level = groups.access_level ' +
-            'WHERE users.access_level IN (?) ' +
+        var readyWhereStatements = {},
+            statementExistence = true,
+            curDate = new Date();
+        switch (category) {
+            case 'all':
+                readyWhereStatements.all = '';
+                statementExistence = false;
+                break;
+            case 'showOnlyVirtual':
+                readyWhereStatements.showOnlyVirtual = 'contests.virtual = 1';
+                break;
+            case 'showOnlyEnabled':
+                readyWhereStatements.showOnlyEnabled = 'contests.enabled = 1';
+                break;
+            case 'showOnlyDisabled':
+                readyWhereStatements.showOnlyDisabled = 'contests.enabled = 0';
+                break;
+            case 'showOnlyFinished':
+                readyWhereStatements.showOnlyFinished = 'contests.start_time + ' +
+                    'contests.duration_time < ' + curDate.getTime();
+                break;
+            case 'showOnlyRemoved':
+                readyWhereStatements.showOnlyRemoved = 'contests.removed = 1';
+                break;
+            case 'showOnlyFrozen':
+                readyWhereStatements.showOnlyFrozen = 'contests.start_time + ' +
+                    'contests.relative_freeze_time <= ' +
+                    curDate.getTime() + ' AND ' + curDate.getTime() +
+                    ' <= contests.start_time + contests.duration_time';
+                break;
+            case 'showOnlyStarted':
+                readyWhereStatements.showOnlyStarted = 'contests.start_time <= ' +
+                    curDate.getTime() + ' AND ' + curDate.getTime() +
+                    ' <= contests.start_time + contests.duration_time';
+                break;
+        }
+        if (statementExistence) {
+            if (category !== 'showOnlyRemoved') {
+                for (var statementIndex in readyWhereStatements) {
+                    readyWhereStatements[statementIndex] += ' AND contests.removed = 0';
+                }
+            }
+        } else if (category !== 'showOnlyRemoved') {
+            for (statementIndex in readyWhereStatements) {
+                readyWhereStatements[statementIndex] += 'contests.removed = 0';
+            }
+        }
+        console.log(category, readyWhereStatements);
+
+        var sql = 'SELECT contests.* ' +
+            'FROM contests ' +
+            'WHERE ' + readyWhereStatements[category] + ' ' +
             'ORDER BY ?? ' + sort_order.toUpperCase() + ' ' +
             'LIMIT ?, ?; ' +
-            'SELECT COUNT(id) AS count ' +
-            'FROM users ' +
-            'WHERE access_level IN (?)';
+            'SELECT COUNT(contests.id) AS all_items_count ' +
+            'FROM contests ' +
+            'WHERE ' + readyWhereStatements[category] + ';';
 
         sql = mysql.format(sql, [
-            ' ',
-            accessCategories[category],
             availableSorts[sort],
             offset,
-            count,
-            accessCategories[category]
+            count
         ]);
+
+        console.log(sql);
 
         connection.query(sql, function (err, results, fields) {
             if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
                 return callback(err);
             }
-            var result = {
-                users: results[0].map(function (row) {
-                    var user = new User();
-                    user.setObjectRow(row);
-                    return user;
-                }),
-                all_items_count: results[1][0].count
-            };
-            callback(null, result);
+            var contests = results[0].map(function (row) {
+                var contest = new Contest();
+                contest.setObjectRow(row);
+                return contest;
+            });
+            var authorAllocates = [];
+            contests.forEach(function (contest) {
+                authorAllocates.push(contest.allocateAuthor.bind(contest));
+            });
+            async.parallel(authorAllocates, function(err, asyncResults) {
+                if (err) {
+                    return callback(err);
+                }
+                var result = {
+                    contests: contests.map(function (contest) {
+                        return contest.getObjectFactory();
+                    }),
+                    all_items_count: results[1][0].all_items_count
+                };
+                callback(null, result);
+            });
         })
     }
 }

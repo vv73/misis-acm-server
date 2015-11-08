@@ -3,20 +3,39 @@
 angular.module('Qemy', [
     'ng',
     'ngRoute',
+    'ui.router',
     'ngSanitize',
+    'ngMaterial',
+    'ngAnimate',
+    'ngAria',
+    'ngMessages',
     'Qemy.controllers',
-    'Qemy.services'
+    'Qemy.services',
+    'Qemy.directives',
+    'Qemy.ui.contests',
+    'Qemy.ui.auth',
+    'Qemy.controllers.auth'
 ])
-    .config(['$locationProvider', '$routeProvider', 'StorageProvider', function($locationProvider, $routeProvider, StorageProvider) {
-        if (Config.Modes.test) {
-            StorageProvider.setPrefix('t_');
-        }
-        $locationProvider.hashPrefix('!');
+    .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider',
+        function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider) {
+            if (Config.Modes.test) {
+                StorageProvider.setPrefix('t_');
+            }
+            $mdThemingProvider.theme('default')
+                .primaryPalette('blue')
+                .accentPalette('teal');
 
-        $routeProvider
-            .when('/', {
-                templateUrl: templateUrl('index', 'main'),
-                controller: 'IndexCtrl'
-            })
-            .otherwise({redirectTo: '/'});
-    }]);
+            $locationProvider.hashPrefix('!');
+            $locationProvider.html5Mode(true);
+
+            $urlRouterProvider
+                .otherwise('/');
+
+            $stateProvider
+                .state('index', {
+                    url: '/',
+                    templateUrl: templateUrl('index', 'index'),
+                    controller: 'IndexCtrl'
+                })
+        }
+    ]);

@@ -3,6 +3,7 @@ include mixins/mixins
 doctype html
 html(ng-controller='PageCtrl')
   head
+    base(href='/')
     include index/head
   body(ng-controller='AppCtrl')
     block content

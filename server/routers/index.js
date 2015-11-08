@@ -13,13 +13,21 @@ var router = express.Router();
 var acmManager = require('../internal/systems/manager');
 var test = require('../internal/user/manager');
 var auth = require('../internal/user/auth/auth');
+var contestManager = require('../internal/contest/manager');
 
 router.get('/', function(req, res) {
     //console.log(req.session);
     //req.currentUser.updateRecentActionTime();
     //console.log(req.currentUser);
 
-    if (!req.session.user_id) {
+
+    contestManager.getContests(10, 0, 'all', 'byId', 'asc', function (err, result) {
+        console.log(err, result);
+    });
+
+    res.render('index/index');
+
+    /*if (!req.session.user_id) {
         auth.auth(req, res, 'Test2', '115563', function (err, user) {
             if (err) {
                 res.end('<h1>Server running</h1>');
@@ -33,7 +41,7 @@ router.get('/', function(req, res) {
         req.session.views++;
         console.log(req.currentUser.getObjectFactory());
         res.end(req.currentUser.getDisplayName());
-    }
+    }*/
 
 
     /*test.create({
@@ -119,6 +127,11 @@ router.get('/', function(req, res) {
 
 router.get('/index', function(req, res) {
     res.end('Index!');
+});
+
+router.all('/*', function(req, res, next) {
+    // Just send the index.jade for other files to support html 5 mode in angular routing
+    res.render('index/index');
 });
 
 module.exports = router;

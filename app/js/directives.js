@@ -36,4 +36,23 @@ angular.module('Qemy.directives', [])
             });
         }
     })
+
+    .directive('pageHeader', function () {
+        return {
+            restrict: 'E',
+            scope: true,
+            templateUrl: templateUrl('header', 'index'),
+            controller: 'HeaderCtrl'
+        }
+    })
+
+    .directive('pageContent', function () {
+        return {
+            restrict: 'E',
+            transclude: true,
+            scope: true,
+            templateUrl: templateUrl('page', 'wrapper'),
+            controller: 'WrapperCtrl'
+        }
+    })
 ;

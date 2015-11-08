@@ -22,13 +22,110 @@ $phone_min_width: 300px;
   transition: $params;
 }
 
-body {
-  overflow-x: hidden !important;
-  background: #f6f6f6;
+body, html {
+  background: #F6F6F6 !important;
+  min-height: 100% !important;
 }
 
 .debug {
   @include box-sizing(border-box);
   border: 1px solid #000;
   background: #00A000;
+}
+.header {
+  display: block;
+  height: 100px;
+  background-color: #fff;
+  box-shadow: 0 1px 0 2px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+.header__wrapper {
+  height: 100%;
+  position: relative;
+}
+.header__inner {
+  height: 100%;
+  padding: 17px 32px 15px;
+  box-sizing: border-box;
+}
+.link {
+  color: #2d7eb4;
+}
+.logo {
+  text-decoration: none;
+  display: inline-block;
+}
+.img {
+  border: 0;
+}
+.logo__img {
+  width: 106px;
+  position: relative;
+  top: -4px;
+}
+.logo__text, .logo__image-wrapper {
+  display: inline-block;
+  vertical-align: top;
+}
+.logo__text {
+  padding: 18px;
+  margin-left: 10px;
+  font-size: 26px;
+  font-weight: bold;
+}
+.header__profile {
+  float: right;
+  height: 100%;
+}
+.profile__panel {
+  padding: 21px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #53889E;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.profile__panel:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+.profile__name {
+  font-size: 18px;
+}
+.page {
+  padding-top: 100px;
+  display: block;
+}
+.page__wrapper {
+  padding: 24px;
+}
+.page__inner {
+  width: 75%;
+  margin: 0 auto;
+  min-width: 1024px;
+}
+.auth-form {
+  width: 490px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 48px;
+  box-shadow: 0 1px 1px 0px rgba(0,0,0,0.3);
+  border-radius: 5px;
+}
+.auth-form__row .md-button {
+  margin: 0;
+}
+.auth-form__row {
+  margin-bottom: 5px;
+}
+.auth-form__title-text {
+  font-size: 27px;
+  font-weight: bold;
+}
+.auth-form__title {
+  text-align: center;
+  margin-bottom: 15px;
 }
