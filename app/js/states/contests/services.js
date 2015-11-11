@@ -12,24 +12,17 @@
 angular.module('Qemy.services.contests', [
     'Qemy.i18n'
 ])
-    .service('ContestsManager', ['$rootScope', 'Storage', function($rootScope, Storage) {
+    .service('ContestsManager', ['$rootScope', 'Storage', '$http', '$timeout', function($rootScope, Storage, $http, $timeout) {
 
         function getContests(params) {
-            params = params || { cache: true };
-            return $q.when(curUser && params.cache ? curUser : getUser()).then(function (result) {
-                return result.status ? result.data.user : result;
-            });
-            function getUser() {
-                return $http.get('/api/auth/isAuth').success(function (data) {
-                    if (!data.result) {
-                        return false;
-                    } else if (data.user) {
-                        curUser = data.user;
-                    }
-                    return curUser;
+            return $http({ method: 'get', url: '/api/contests/get', data: params })
+                .then(function (data) {
+                    return data.data;
                 });
-            }
         }
 
+        return {
+            getContests: getContests
+        }
     }])
 ;

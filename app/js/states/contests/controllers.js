@@ -13,40 +13,63 @@
 
 angular.module('Qemy.controllers.contests', [])
 
-    .controller('ContestsListCtrl', ['$scope', '$rootScope', '$state', function ($scope, $rootScope, $state) {
-        $scope.pageNumber = parseInt($state.params.pageNumber || 1);
-        $scope.category = 'all';
-        $scope.sort = 'byId';
-        $scope.sort_order = 'desc';
+    .controller('ContestsListCtrl', ['$scope', '$rootScope', '$state', 'ContestsManager',
+        function ($scope, $rootScope, $state, ContestsManager) {
+            var defaultCount = 20;
 
-        $scope.all_items_count = 0;
+            $scope.pageNumber = parseInt($state.params.pageNumber || 1);
+            $scope.params = {
+                count: defaultCount,
+                offset: ($scope.pageNumber - 1) * defaultCount,
+                category: 'all',
+                sort: 'byId',
+                sort_order: 'desc'
+            };
 
-        var defaultCount = 20,
-            itemsOffset = ($scope.pageNumber - 1) * defaultCount;
+            $scope.all_items_count = 0;
+            $scope.pagination = [];
+            $scope.contestsList = [];
 
-        function generatePaginationArray() {
-            var pages = [],
-                curPage = $scope.pageNumber,
-                allItems = $scope.all_items_count,
-                backOffsetPages = 5,
-                upOffsetPages = 5,
-                allPages = Math.floor(allItems / defaultCount) +
-                    (allItems && allItems % defaultCount ? 1 : 0);
-            for (var cur = Math.max(curPage - backOffsetPages, 1);
-                 cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
-                pages.push({
-                    number: cur,
-                    active: cur === curPage
+            function generatePaginationArray(offsetCount) {
+                var pages = [],
+                    curPage = $scope.pageNumber,
+                    allItems = $scope.all_items_count,
+                    backOffsetPages = offsetCount,
+                    upOffsetPages = offsetCount,
+                    allPages = Math.floor(allItems / defaultCount) +
+                        (allItems && allItems % defaultCount ? 1 : 0);
+                for (var cur = Math.max(curPage - backOffsetPages, 1);
+                     cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+                    pages.push({
+                        number: cur,
+                        active: cur === curPage
+                    });
+                }
+                return pages;
+            }
+
+            $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+                $scope.pageNumber = toParams.pageNumber ?
+                    parseInt(toParams.pageNumber) : 1;
+                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+            });
+
+            function updateContestsList() {
+                $rootScope.$broadcast('data loading');
+                var contestsPromise = ContestsManager.getContests($scope.params);
+                contestsPromise.then(function (result) {
+                    if (!result || !result.hasOwnProperty('all_items_count')) {
+                        return;
+                    }
+                    $scope.all_items_count = result.all_items_count;
+                    $scope.contestsList = result.contests;
+                    $scope.pagination = generatePaginationArray(5);
+                    $rootScope.$broadcast('data loaded');
+                }).catch(function (err) {
+                    console.log(err);
                 });
             }
-            return pages;
-        }
 
-        $scope.contestsList = [];
-        $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-            $scope.pageNumber = toParams.pageNumber ?
-                parseInt(toParams.pageNumber) : 1;
-            itemsOffset = ($scope.pageNumber - 1) * defaultCount;
-            console.log(itemsOffset);
-        });
-    }]);
+            updateContestsList();
+        }
+    ]);

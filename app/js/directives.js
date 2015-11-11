@@ -66,6 +66,66 @@ angular.module('Qemy.directives', [])
             link: function (scope, element, attrs) {
                 element.addClass('page__loading');
             }
-        }
+        };
     })
+
+    .directive('myTimerElement', ['$injector', function ($injector) {
+        return {
+            restrict: 'EA',
+            template: '<div class="my-timer"></div>',
+            scope: {
+                finish: '=',
+                format: '=',
+                direction: '=',
+                onFinish: '='
+            },
+            link: function (scope, element, attrs) {
+                element = element.find('.my-timer');
+                var timeoutId,
+                    $interval = $injector.get('$interval'),
+                    finishCallbackInvoked = false;
+
+                function updateTime() {
+                    var curTime = new Date().getTime(),
+                        finishTime = scope.finish || 0,
+                        format = scope.format || 'hh:mm:ss',
+                        finishCallback = scope.onFinish || angular.noop;
+                    var diffTime = finishTime - curTime;
+                    if (diffTime <= 0) {
+                        if (!finishCallbackInvoked && typeof finishCallback === 'function') {
+                            finishCallback();
+                            finishCallbackInvoked = true;
+                        }
+                        $interval.cancel(timeoutId);
+                    }
+                    element.text(
+                        timeRemainingFormat(diffTime, format)
+                    );
+                }
+
+                updateTime();
+                timeoutId = $interval(function() {
+                    updateTime();
+                }, 1000);
+
+                function timeRemainingFormat(diffTimeMs, formatString) {
+                    var diffTime = Math.max(diffTimeMs, 0),
+                        allSeconds = Math.floor(diffTime / 1000),
+                        seconds = allSeconds % 60,
+                        minutes = Math.floor(allSeconds / 60),
+                        hours = Math.floor(minutes / 60);
+                    minutes %= 60;
+                    var zF = function (num) { return num < 10 ? '0' + num : num; };
+                    return formatString ? formatString
+                        .replace(/(hh)/gi, zF(hours))
+                        .replace(/(mm)/gi, zF(minutes))
+                        .replace(/(ss)/gi, zF(seconds)) : '';
+                }
+
+                element.on('$destroy', function() {
+                    $interval.cancel(timeoutId);
+                });
+            }
+        };
+    }])
 ;

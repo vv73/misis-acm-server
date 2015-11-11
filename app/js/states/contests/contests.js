@@ -11,7 +11,8 @@
 
 angular.module('Qemy.ui.contests', [
     'ui.router',
-    'Qemy.controllers.contests'
+    'Qemy.controllers.contests',
+    'Qemy.services.contests'
 ])
     .config(['$stateProvider', '$urlRouterProvider',
         function($stateProvider, $urlRouterProvider) {
