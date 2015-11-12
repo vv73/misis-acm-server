@@ -20,10 +20,27 @@ router.get('/', function(req, res) {
     //req.currentUser.updateRecentActionTime();
     //console.log(req.currentUser);
 
+    /*for (var i = 0; i < 100; ++i) {
+        /!*
+         params.name, params.virtual, params.start_time, params.relative_freeze_time,
+         params.duration_time, params.user_id, new Date().getTime(), params.allowed_groups
+        *!/
+        var groups = ['1,2,3', '1,2', '1,3', '1', '2', '3', '2,3'];
+        var params = {
+            name: '№' + (i + 5) + '. ' + ((i + 1) % 30) + ' ноября 2015. Индивидуальный контест.',
+            virtual: 0,
+            start_time: new Date().getTime() + 1000 * 10 * i,
+            relative_freeze_time: 1000 * 60 * 60 * 4,
+            duration_time: 1000 * 60 * 60 * 5,
+            user_id: 1,
+            allowed_groups: groups[Math.floor(Math.random() * 10000) % groups.length]
+        };
+        contestManager.create(params, function (err, result) {
+            console.log(err, result);
+        });
+    }*/
 
-    contestManager.getContests(10, 0, 'all', 'byId', 'asc', function (err, result) {
-        console.log(err, result);
-    });
+
 
     res.render('index/index');
 

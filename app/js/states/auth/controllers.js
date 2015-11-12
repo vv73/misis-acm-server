@@ -16,6 +16,10 @@ angular.module('Qemy.controllers.auth', [
 ])
     .controller('AuthFormController', ['$scope', '_', '$rootScope', '$http', '$state', '$mdDialog',
         function($scope, _, $rootScope, $http, $state, $mdDialog) {
+            $scope.$emit('change_title', {
+                title: 'Авторизация | ' + _('app_name')
+            });
+
             $scope.form = {};
 
             $scope.submitForm = function () {

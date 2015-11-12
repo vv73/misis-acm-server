@@ -77,7 +77,8 @@ angular.module('Qemy.directives', [])
                 finish: '=',
                 format: '=',
                 direction: '=',
-                onFinish: '='
+                onFinish: '=',
+                onOther: '='
             },
             link: function (scope, element, attrs) {
                 element = element.find('.my-timer');
@@ -89,8 +90,18 @@ angular.module('Qemy.directives', [])
                     var curTime = new Date().getTime(),
                         finishTime = scope.finish || 0,
                         format = scope.format || 'hh:mm:ss',
-                        finishCallback = scope.onFinish || angular.noop;
+                        finishCallback = scope.onFinish || angular.noop,
+                        otherEvents = scope.onOther || [];
                     var diffTime = finishTime - curTime;
+                    for (var eventKey in otherEvents) {
+                        var timeEventMs = otherEvents[eventKey].time,
+                            eventCallback = otherEvents[eventKey].callback;
+                        if (Math.floor(timeEventMs / 1000) + 1 === Math.floor(curTime / 1000)) {
+                            if (typeof eventCallback === 'function') {
+                                eventCallback();
+                            }
+                        }
+                    }
                     if (diffTime <= 0) {
                         if (!finishCallbackInvoked && typeof finishCallback === 'function') {
                             finishCallback();

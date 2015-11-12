@@ -26,7 +26,9 @@ var DEFAULT_CONTESTS_SORT_ORDER = 'desc';
 
 module.exports = {
     create: CreateContest,
-    getContests: GetContests
+    getContests: GetContests,
+    getContest: GetContest,
+    canJoin: CanJoin
 };
 
 
@@ -45,13 +47,16 @@ function CreateContest(params, callback) {
     });
 
     function execute(connection, callback) {
-        connection.query(
-            'INSERT INTO `contests` ' +
+        var sql = mysql.format('INSERT INTO `contests` ' +
             '(name, virtual, start_time, relative_freeze_time, duration_time, user_id, creation_time, allowed_groups) ' +
-            'VALUES (?, ?, ?, ?, ?, ?)',
+            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [ params.name, params.virtual, params.start_time, params.relative_freeze_time,
-                params.duration_time, params.user_id, new Date().getTime(), params.allowed_groups ],
+                params.duration_time, params.user_id, new Date().getTime(), params.allowed_groups ]
+        );
+        connection.query(
+            sql,
             function (err, result) {
+                console.log(err);
                 if (err || !result || !result.insertId) {
                     return callback(new Error('An error whith db process', 1001));
                 }
@@ -170,7 +175,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
         }
         if (category !== 'showOnlyRemoved') {
             for (var statementIndex in readyWhereStatements) {
-                readyWhereStatements[statementIndex] += statementExistence ? ' AND ' : '' + 'contests.removed = 0';
+                readyWhereStatements[statementIndex] += (statementExistence ? ' AND ' : '') + 'contests.removed = 0';
             }
         }
 
@@ -191,6 +196,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
 
         connection.query(sql, function (err, results, fields) {
             if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
+                console.log(err);
                 return callback(err);
             }
             var contests = results[0].map(function (row) {
@@ -218,5 +224,117 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
                 callback(null, result);
             });
         })
+    }
+}
+
+function GetContest(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contestId = params.contestId;
+        if (!contestId) {
+            return callback(new Error('Contest ID is not specified as parameter'));
+        }
+        connection.query(
+            'SELECT * ' +
+            'FROM ?? ' +
+            'WHERE ?? = ? ' +
+            'LIMIT 0, 1',
+            [ 'contests', 'id', contestId ],
+            function (err, result) {
+                if (err || !result) {
+                    return callback(new Error('An error whith db process', 1001));
+                }
+                var contest = new Contest();
+                contest.setObjectRow(result[0]);
+                var authorAllocates = [];
+                authorAllocates.push(
+                    contest.allocateAuthor.bind(contest),
+                    contest.allocateAllowedGroups.bind(contest)
+                );
+                async.parallel(authorAllocates, function(err, asyncResults) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, contest);
+                });
+            }
+        );
+    }
+}
+
+function CanJoin(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = params.contest,
+            user = params.user;
+        if (!contest || !user || user.isEmpty() || contest.isEmpty()) {
+            return callback(new Error('Access denied', 400));
+        }
+        user.getContainGroupIds(function (err, groupIds) {
+            if (err || !Array.isArray(groupIds)) {
+                return callback(err);
+            }
+            if (user.getAccessGroup().access_level === 5) {
+                return callback(null, {
+                    can: true,
+                    joined: false,
+                    confirm: false
+                });
+            }
+            if (!contest.isAllowed(groupIds) || !contest.isEnabled() || contest.isRemoved()) {
+                return callback(null, {
+                    can: false,
+                    reason: 'ACCESS_DENIED'
+                });
+            }
+            contest.isUserJoined(user.getId(), function (err, isJoined) {
+                if (err) {
+                    return callback(err);
+                }
+                if (isJoined) {
+                    return callback(null, {
+                        can: true,
+                        joined: true,
+                        confirm: false
+                    });
+                }
+                var currentStatus = contest.getStatus();
+                if (currentStatus === 'FINISHED' || currentStatus === 'WAITING') {
+                    return callback(null, {
+                        can: false,
+                        reason: 'NOT_IN_TIME'
+                    });
+                }
+                callback(null, {
+                    can: true,
+                    joined: false,
+                    confirm: true
+                });
+            });
+        });
     }
 }

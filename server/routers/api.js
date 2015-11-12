@@ -108,4 +108,57 @@ router.get('/contests/get', function (req, res) {
     }
 });
 
+
+router.get('/contests/getById', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query;
+        contestManager.getContest({ contestId: q.contest_id }, function (err, contest) {
+            if (err) {
+                return callback({
+                    error: err.toString
+                });
+            }
+            callback(null, {
+                contest: contest.getObjectFactory()
+            });
+        });
+    }
+});
+
+router.get('/contests/canJoin', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        contestManager.getContest({ contestId: q.contest_id }, function (err, contest) {
+            if (err) {
+                return callback({
+                    error: err.toString
+                });
+            }
+            contestManager.canJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, { result: result });
+            });
+        });
+    }
+});
+
 module.exports = router;

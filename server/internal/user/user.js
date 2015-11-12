@@ -20,6 +20,7 @@ var noop = function() {};
 
 function User() {
     this._userRow = {};
+    this._containGroups = null;
 }
 
 User.prototype.setObjectRow = function (userRow) {
@@ -52,7 +53,7 @@ User.prototype.allocate = function (user_id, callback) {
             'LIMIT 0, 1',
             [ user_id ],
             function (error, results, fields) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process'));
                 }
@@ -87,7 +88,7 @@ User.prototype.allocateByLogin = function (login, callback) {
             'LIMIT 0, 1',
             [ login ],
             function (error, results, fields) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process'));
                 }
@@ -122,7 +123,7 @@ User.prototype.allocateByAccessKey = function (accessKey, callback) {
             'LIMIT 0, 1',
             [ '%' + accessKey + '%' ],
             function (error, results, fields) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process'));
                 }
@@ -175,9 +176,59 @@ User.prototype.getSolvedCount = function () {
 
 User.prototype.getAccessGroup = function () {
     return {
-        id: this._userRow.access_level,
+        access_level: this._userRow.access_level,
         name: this._userRow.group_name
     };
+};
+
+User.prototype.getContainGroups = function (callback) {
+    if (this._containGroups) {
+        return callback(null, this._containGroups);
+    }
+    var _this = this;
+    mysql.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        connection.query(
+            'SELECT groups.* ' +
+            'FROM groups ' +
+            'LEFT JOIN users_to_groups ON users_to_groups.group_id = groups.id ' +
+            'WHERE users_to_groups.user_id = ?',
+            [ _this.getId() ],
+            function (error, results, fields) {
+                if (error) {
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._containGroups = results;
+                callback(null, results);
+            }
+        );
+    }
+};
+
+User.prototype.getContainGroupIds = function (callback) {
+    if (typeof callback !== 'function') {
+        return;
+    }
+    this.getContainGroups(function (err, groups) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, groups.map(function (group) {
+            return group.id;
+        }));
+    });
 };
 
 User.prototype.setUsername = function (username, callback) {
@@ -192,7 +243,7 @@ User.prototype.setUsername = function (username, callback) {
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `username` = ? WHERE `id` = ?', [ username, _this.getId() ], function (error, results, fields) {
-            if (err) {
+            if (error) {
                 connection.release();
                 return callback(new Error('An error with db process', 1001));
             }
@@ -216,7 +267,7 @@ User.prototype.setPassword = function (password, callback) {
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `password` = ? WHERE `id` = ?', [ passwordHash, _this.getId() ], function (error, results, fields) {
-            if (err) {
+            if (error) {
                 connection.release();
                 return callback(new Error('An error with db process', 1001));
             }
@@ -244,7 +295,7 @@ User.prototype.addAccessKey = function (accessKey, callback) {
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
-            if (err) {
+            if (error) {
                 connection.release();
                 return callback(new Error('An error with db process', 1001));
             }
@@ -273,7 +324,7 @@ User.prototype.deleteAccessKey = function (accessKey, callback) {
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
-            if (err) {
+            if (error) {
                 connection.release();
                 return callback(new Error('An error with db process', 1001));
             }
@@ -295,7 +346,7 @@ User.prototype.incrementSolvedCount = function (callback) {
         connection.query(
             'UPDATE `users` SET `solved_count` = `solved_count` + 1 WHERE `id` = ?', [ _this.getId() ],
             function (error, results, fields) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process', 1001));
                 }
@@ -319,7 +370,7 @@ User.prototype.updateLastLoggedTime = function (callback) {
         connection.query(
             'UPDATE `users` SET `last_logged_time` = ? WHERE `id` = ?', [ curDate.getTime(), _this.getId() ],
             function (error) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process', 1001));
                 }
@@ -343,7 +394,7 @@ User.prototype.updateRecentActionTime = function (callback) {
         connection.query(
             'UPDATE `users` SET `recent_action_time` = ? WHERE `id` = ?', [ curDate.getTime(), _this.getId() ],
             function (error) {
-                if (err) {
+                if (error) {
                     connection.release();
                     return callback(new Error('An error with db process', 1001));
                 }

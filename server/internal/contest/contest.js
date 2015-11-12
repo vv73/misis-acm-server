@@ -111,6 +111,24 @@ Contest.prototype.getAuthorId = function () {
     return this._contestRow.user_id;
 };
 
+Contest.prototype.getStatus = function () {
+    var curTime = new Date().getTime();
+    if (!this.isEnabled()) {
+        return 'NOT_ENABLED';
+    } else if (this.isRemoved()) {
+        return 'REMOVED';
+    } else if (this.getAbsoluteDurationTimeMs() < curTime) {
+        return 'FINISHED';
+    } else if (this.getAbsoluteFreezeTimeMs() <= curTime) {
+        return 'FROZEN';
+    } else if (this.getStartTimeMs() > curTime) {
+        return 'WAITING';
+    } else if (this.getStartTimeMs() <= curTime) {
+        return 'RUNNING';
+    }
+    return 'NOT_ENABLED';
+};
+
 Contest.prototype.allocateAuthor = function (callback) {
     if (this._author) {
         return callback(null, this._author);
@@ -209,10 +227,41 @@ Contest.prototype.isAllowed = function (userGroups) {
     if (!allowedGroups || !allowedGroups.length) {
         return true;
     }
-    var allowedGroupsArray = allowedGroups.split(',');
+    var allowedGroupsArray = allowedGroups.split(',').map(function (num) { return +num; });
     return allowedGroupsArray.some(function (val) {
-        return userGroups.indexOf(val) != -1;
+        return userGroups.indexOf(val) !== -1;
     });
+};
+
+Contest.prototype.isUserJoined = function (user_id, callback) {
+    var _this = this;
+    mysql.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        connection.query(
+            'SELECT * ' +
+            'FROM ?? ' +
+            'WHERE ?? = ? AND ?? = ?',
+            [ 'user_enters', 'user_id', user_id, 'contest_id', _this.getId() ],
+            function (err, results, fields) {
+                if (err) {
+                    return callback(new Error('An error with db', 1001));
+                }
+                callback(null, !!results.length);
+            }
+        );
+    }
 };
 
 
@@ -224,7 +273,7 @@ Contest.prototype.getObjectFactory = function () {
     var retObj = {
         id: this.getId(),
         name: this.getName(),
-        isVirtual: this.isVirtual(),
+        //isVirtual: this.isVirtual(),
         startTime: this.getStartTimeMs(),
         relativeFreezeTime: this.getRelativeFreezeTimeMs(),
         absoluteFreezeTime: this.getAbsoluteFreezeTimeMs(),
@@ -234,7 +283,8 @@ Contest.prototype.getObjectFactory = function () {
         isEnabled: this.isEnabled(),
         creationTime: this.getCreationTimeMs(),
         isRemoved: this.isRemoved(),
-        allowedGroupIds: this.getAllowedGroupsId()
+        allowedGroupIds: this.getAllowedGroupsId(),
+        status: this.getStatus()
     };
     if (this._author) {
         retObj.author = this._author.getObjectFactory();

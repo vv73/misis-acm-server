@@ -197,3 +197,126 @@ body, html {
 .page-loading__content {
   padding: 100px;
 }
+.pagination {
+  text-align: center;
+}
+.pagination__item {
+  display: inline-block;
+  padding: 0;
+  min-width: 40px;
+  margin: 4px;
+}
+.contests-sort__item {
+  display: inline-block;
+  padding: 0 10px;
+  text-align: left;
+  min-width: 100px;
+}
+.contests-sort {
+  text-align: right;
+}
+.standart-layer {
+  background-color: #fff;
+  padding: 24px;
+  min-width: 900px;
+  width: 66%;
+  margin: 0 auto;
+  border-radius: 3px;
+}
+.contests-list__title {
+  text-align: center;
+  font-size: 28px;
+  padding: 10px 0 20px;
+}
+.contests-list__items {
+  padding: 0 0 20px 0;
+}
+.contests-list__item {
+  padding: 24px;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: #7A7A7A;
+  border-bottom: 1px solid #EBEBEB;
+  border-radius: 3px;
+}
+.contests-list__item:hover {
+  background-color: rgba(0,0,0,0.07);
+}
+contest-list-item {
+  display: block;
+}
+.contest-item {
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.contest-item__title {
+  font-size: 19px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #2196F3;
+}
+my-timer-element {
+  display: inline-block;
+}
+.contest-item__status-time {
+  margin-left: 4px;
+}
+.contests-list__item-layer {
+  position: relative;
+}
+.contests-list__item-disabled {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255,255,255,0.5);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+.contests-list__no-items {
+  padding: 17px 0;
+  text-align: center;
+  color: #777;
+}
+.content-spin__layer {
+  text-align: center;
+  border-radius: 100%;
+  padding: 8px;
+}
+.contests-list__item-loading {
+  padding: 35px 0;
+  box-sizing: border-box;
+}
+.contests-list__item-loading .search-spin-layer_ {
+  width: 50px;
+  height: 50px;
+}
+.contests-list__item_status_removed {
+  color: rgba(253, 59, 50, 0.76);
+  font-weight: bold;
+}
+.contests-list__item_status_success {
+  color: rgba(78, 152, 113, 0.76);
+  font-weight: bold;
+}
+.contests-list__item_status_neutral {
+  color: rgba(255, 142, 53, 0.76);
+  font-weight: bold;
+}
+.contest-item__groups-for, .contests-list__groups-item {
+  display: inline-block;
+  margin: 3px 10px 9px 0;
+}
+.contests-list__groups-item {
+  border-radius: 3px;
+  background-color: rgba(77, 170, 102, 0.75);
+  color: #fff;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+.contests-list__item-layer {
+  outline: none;
+}
