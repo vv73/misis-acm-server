@@ -100,7 +100,7 @@ router.get('/contests/get', function (req, res) {
         contestManager.getContests(q.count, q.offset, q.category, q.sort, q.sort_order, function (err, result) {
             if (err) {
                 return callback({
-                    error: err.toString
+                    error: err.toString()
                 });
             }
             callback(null, result);
@@ -123,7 +123,7 @@ router.get('/contests/getById', function (req, res) {
         contestManager.getContest({ contestId: q.contest_id }, function (err, contest) {
             if (err) {
                 return callback({
-                    error: err.toString
+                    error: err.toString()
                 });
             }
             callback(null, {
@@ -148,7 +148,7 @@ router.get('/contests/canJoin', function (req, res) {
         contestManager.getContest({ contestId: q.contest_id }, function (err, contest) {
             if (err) {
                 return callback({
-                    error: err.toString
+                    error: err.toString()
                 });
             }
             contestManager.canJoin({ contest: contest, user: user }, function (err, result) {
@@ -157,6 +157,29 @@ router.get('/contests/canJoin', function (req, res) {
                 }
                 callback(null, { result: result });
             });
+        });
+    }
+});
+
+router.post('/contests/join', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.body,
+            user = req.currentUser;
+        contestManager.join({ contestId: q.contest_id, user: user }, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
         });
     }
 });

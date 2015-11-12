@@ -28,7 +28,8 @@ module.exports = {
     create: CreateContest,
     getContests: GetContests,
     getContest: GetContest,
-    canJoin: CanJoin
+    canJoin: CanJoin,
+    join: Join
 };
 
 
@@ -334,6 +335,55 @@ function CanJoin(params, callback) {
                     joined: false,
                     confirm: true
                 });
+            });
+        });
+    }
+}
+
+
+function Join(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contestId = params.contestId,
+            contest = new Contest(),
+            user = params.user;
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can) {
+                    return callback(new Error('Access denied'));
+                }
+                if (result.joined) {
+                    return callback(null, { result: true });
+                }
+                connection.query(
+                    'INSERT INTO ?? (`user_id`, `contest_id`, `join_time`) ' +
+                    'VALUES (?, ?, ?)',
+                    [ 'user_enters', user.getId(), contest.getId(), new Date().getTime() ],
+                    function (err, result) {
+                        if (err) {
+                            return callback(new Error('An error whith db process', 1001));
+                        }
+                        callback(null, { result: true });
+                    }
+                );
             });
         });
     }
