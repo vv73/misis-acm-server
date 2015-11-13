@@ -18,7 +18,6 @@ angular.module('Qemy.controllers.contests', [])
             $scope.$emit('change_title', {
                 title: 'Контесты | ' + _('app_name')
             });
-
             var defaultCount = 10;
 
             $scope.pageNumber = parseInt($state.params.pageNumber || 1);
@@ -234,7 +233,7 @@ angular.module('Qemy.controllers.contests', [])
                             join();
                         } else {
                             $scope.loadingData = false;
-                            $state.go('contests.item', {
+                            $state.go('contest.item', {
                                 contestId: contest.id
                             });
                         }
@@ -242,14 +241,10 @@ angular.module('Qemy.controllers.contests', [])
                 }
 
                 function join() {
-                    $scope.loadingData = true;
-                    setTimeout(function () {
-                        $scope.loadingData = false;
-                        success();
-                    }, 2000);
+                    success();
 
                     function success() {
-                        $state.go('contests.item', {
+                        $state.go('contest.item', {
                             contestId: contest.id
                         });
                     }

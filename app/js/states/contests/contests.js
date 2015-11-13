@@ -34,9 +34,5 @@ angular.module('Qemy.ui.contests', [
                     templateUrl: templateUrl('contests', 'index'),
                     controller: 'ContestsListCtrl'
                 })
-                .state('contests.item', {
-                    url: '/{contestId:[0-9]+}',
-                    template: '<h3>Contest item</h3>'
-                })
         }
     ]);

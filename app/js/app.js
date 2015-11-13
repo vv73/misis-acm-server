@@ -11,14 +11,12 @@ angular.module('Qemy', [
     'ngMessages',
 
     'Qemy.directives',
+    'Qemy.controllers',
+    'Qemy.services',
 
     'Qemy.ui.contests',
     'Qemy.ui.auth',
-
-    'Qemy.controllers',
-    'Qemy.controllers.auth',
-
-    'Qemy.services'
+    'Qemy.ui.contest-item'
 ])
     .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider',
         function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider) {
@@ -27,7 +25,7 @@ angular.module('Qemy', [
             }
             $mdThemingProvider.theme('default')
                 .primaryPalette('blue')
-                .accentPalette('teal');
+                .accentPalette('red');
 
             $locationProvider.hashPrefix('!');
             $locationProvider.html5Mode(true);

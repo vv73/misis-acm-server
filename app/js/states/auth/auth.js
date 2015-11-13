@@ -10,7 +10,8 @@
 'use strict';
 
 angular.module('Qemy.ui.auth', [
-    'ui.router'
+    'ui.router',
+    'Qemy.controllers.auth'
 ])
     .config(['$stateProvider', '$urlRouterProvider',
         function($stateProvider, $urlRouterProvider) {
