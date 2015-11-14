@@ -6,4 +6,12 @@ div.header__wrapper
           img.img.logo__img(src='/img/acm-logo-small.png')
         span.logo__text MISIS Acm Server
     include ./profile
+div.header__contest-menu.contest-menu(ng-if='headerMenu.contest')
+  div.contest-menu__layer
+    div.contest-menu__items
+      a.contest-menu__item(ui-sref='^.item', ui-sref-active='contest-menu__item_state_active') Информация
+      a.contest-menu__item(ui-sref='^.monitor', ui-sref-active='contest-menu__item_state_active') Таблица результатов
+      a.contest-menu__item(ui-sref='^.conditions', ui-sref-active='contest-menu__item_state_active') Условия задач
+      a.contest-menu__item(ui-sref='^.send', ui-sref-active='contest-menu__item_state_active') Отправить
+      a.contest-menu__item(ui-sref='^.status', ui-sref-active='contest-menu__item_state_active') Посылки
 

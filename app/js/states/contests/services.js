@@ -44,10 +44,23 @@ angular.module('Qemy.services.contests', [
                 });
         }
 
+        function joinContest(contest_id) {
+            return $http({
+                method: 'post',
+                url: '/api/contests/join',
+                data: {
+                    contest_id: contest_id
+                }
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             getContests: getContests,
             getContest: getContest,
-            canJoin: canJoin
+            canJoin: canJoin,
+            joinContest: joinContest
         }
     }])
 ;

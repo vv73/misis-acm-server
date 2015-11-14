@@ -21,6 +21,8 @@ div.standart-layer
 
     div.contests-list
       div.contests-list__title Контесты
+      div.contests-list__pagination(ng-if='pageNumber !== 1')
+        include ./pagination
       div.contests-list__items
         div.contests-list__item-layer(ng-repeat='contest in contestsList')
           contest-list-item(contest='contest')

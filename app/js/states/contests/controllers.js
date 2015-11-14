@@ -241,7 +241,12 @@ angular.module('Qemy.controllers.contests', [])
                 }
 
                 function join() {
-                    success();
+                    ContestsManager.joinContest(contest.id)
+                        .then(function (result) {
+                            if (result.result) {
+                                success();
+                            }
+                        });
 
                     function success() {
                         $state.go('contest.item', {

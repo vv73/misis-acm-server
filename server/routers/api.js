@@ -119,6 +119,10 @@ router.get('/contests/getById', function (req, res) {
     });
 
     function execute(callback) {
+        var user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not authorized'));
+        }
         var q = req.query;
         contestManager.getContest({ contestId: q.contest_id }, function (err, contest) {
             if (err) {

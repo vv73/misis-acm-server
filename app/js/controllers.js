@@ -111,6 +111,19 @@ angular.module('Qemy.controllers', [
                     });
                 });
             }
+
+            $scope.headerMenu = {};
+            $scope.$on('header expand open', function (ev, args) {
+                var contest = args.contest;
+                $scope.headerMenu = {
+                    contest: contest
+                };
+            });
+
+            $scope.$on('header expand close', function (ev, args) {
+                $scope.headerMenu.contest = null;
+                $scope.headerMenu = {};
+            });
         }
     ])
 

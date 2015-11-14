@@ -300,10 +300,22 @@ function CanJoin(params, callback) {
                 return callback(err);
             }
             if (user.getAccessGroup().access_level === 5) {
-                return callback(null, {
-                    can: true,
-                    joined: false,
-                    confirm: false
+                return contest.isUserJoined(user.getId(), function (err, isJoined) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    if (isJoined) {
+                        return callback(null, {
+                            can: true,
+                            joined: true,
+                            confirm: false
+                        });
+                    }
+                    callback(null, {
+                        can: true,
+                        joined: false,
+                        confirm: false
+                    });
                 });
             }
             if (!contest.isAllowed(groupIds) || !contest.isEnabled() || contest.isRemoved()) {

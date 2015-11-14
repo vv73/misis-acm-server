@@ -222,6 +222,7 @@ body, html {
   width: 66%;
   margin: 0 auto;
   border-radius: 3px;
+  box-shadow: 0 1px 1px 0px rgba(0, 0, 0, 0.3);
 }
 .contests-list__title {
   text-align: center;
@@ -319,4 +320,52 @@ my-timer-element {
 }
 .contests-list__item-layer {
   outline: none;
+}
+.contest-menu__items {
+  white-space: nowrap;
+}
+.contest-menu__item {
+  text-decoration: none;
+  color: #219CF5;
+  padding: 13px 20px 14px;
+  display: inline-block;
+  -webkit-transition: all .1s ease-out;
+  -moz-transition: all .1s ease-out;
+  -ms-transition: all .1s ease-out;
+  -o-transition: all .1s ease-out;
+  transition: all .1s ease-out;
+}
+.contest-menu__item_state_active {
+  box-shadow: inset 0 -3px 0 #219CF5;
+}
+.contest-menu__item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.header__contest-menu {
+  margin-top: 1px;
+}
+.contest-menu {
+  background-color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.contest-menu__layer {
+  width: 75%;
+  margin: 0 auto;
+  min-width: 1024px;
+  padding: 0 19px;
+  box-sizing: border-box;
+}
+.contest {
+  margin-top: 48px;
+}
+.contest__content {
+  padding: 24px;
+  background-color: #fff;
+  min-width: 900px;
+  margin: 0 auto;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px 0px rgba(0, 0, 0, 0.3);
+}
+.contest__min-width {
+  width: 66%;
 }
