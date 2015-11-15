@@ -435,9 +435,14 @@ my-timer-element {
 .task__title-index {
   display: inline-block;
 }
+
 .task__problem {
   overflow: hidden;
-
+  text-align: justify;
+  line-height: 1.6 !important;
+  margin-top: 10px;
+}
+.task__problem-timus {
   .sample {
     border-collapse: collapse;
     border-color: #777;
@@ -494,64 +499,95 @@ my-timer-element {
   }
 }
 
-.task__my-problem-statement {
-  text-align: justify;
-  line-height: 1.6;
+.task__problem-cf {
+  .task__my-problem-statement {
 
-  .task__my-title {
+    .task__my-title {
+      color: #219CF5;
+      margin: 0;
+      padding: 20px 0;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .task__my-property-title {
+      color: #474747;
+      line-height: 1;
+      margin-top: 4px;
+      font-size: 1.1em;
+    }
+    .task__my-header {
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+    }
+    .task__my-sample-tests {
+      .task__my-title {
+        font-size: 16px;
+        text-align: left;
+      }
+    }
+    .task__my-input-specification, .task__my-sample-tests,
+    .task__my-output-specification, .task__my-note {
+      .task__my-section-title {
+        font-size: 20px;
+        text-align: left;
+        color: #219CF5;
+        margin: 0;
+        padding: 20px 0;
+        font-weight: bold;
+      }
+    }
+    .task__my-input, .task__my-output {
+      border: 1px solid #777;
+      .task__my-title {
+        border-bottom: 1px solid #777;
+        padding: 11px 10px;
+        background-color: rgba(205, 205, 205, 0.1);
+      }
+      pre {
+        margin: 2px 1px;
+      }
+    }
+    .task__my-output {
+      margin: 10px 0;
+    }
+    .task__my-note {
+      margin: 10px 0;
+    }
+  }
+}
+.task__problem-sgu {
+  h3, h4 {
+    width: 100%;
     color: #219CF5;
     margin: 0;
-    padding: 20px 0;
+    padding: 10px 0 5px;
     text-align: center;
     font-size: 24px;
     font-weight: bold;
   }
-  .task__my-property-title {
-    color: #474747;
-    line-height: 1;
-    margin-top: 4px;
-    font-size: 1.1em;
-  }
-  .task__my-header {
-    text-align: center;
-    font-size: 12px;
-    color: #999;
-  }
-  .task__my-sample-tests {
-    .task__my-title {
-      font-size: 16px;
-      text-align: left;
-    }
-  }
-  .task__my-input-specification, .task__my-sample-tests,
-  .task__my-output-specification, .task__my-note {
-    .task__my-section-title {
-      font-size: 20px;
-      text-align: left;
-      color: #219CF5;
-      margin: 0;
-      padding: 20px 0;
-      text-align: left;
-      font-size: 20px;
-      font-weight: bold;
-    }
-  }
-  .task__my-input, .task__my-output {
+  pre {
     border: 1px solid #777;
-    .task__my-title {
-      border-bottom: 1px solid #777;
-      padding: 11px 10px;
-      background-color: rgba(205, 205, 205, 0.1);
-    }
-    pre {
-      margin: 2px 1px;
+    padding: 2px 1px;
+    white-space: pre-line;
+    font-size: 14px;
+  }
+  div {
+    line-height: 1.6 !important;
+    font-size: 16px;
+  }
+  table, td, th {
+    > pre {
+      border: none;
+      margin: 0;
     }
   }
-  .task__my-output {
-    margin: 10px 0;
+  table {
+    width: 100%;
   }
-  .task__my-note {
-    margin: 10px 0;
+  hr {
+    border: 1px solid #ccc;
   }
 }
 .contest__conditions-link {
@@ -585,4 +621,7 @@ my-timer-element {
 .contest__sytem {
   padding-left: 28px;
   margin-top: 10px;
+}
+.contest__conditions-link:visited .contest__condition-name {
+  color: #8754C4 !important;
 }

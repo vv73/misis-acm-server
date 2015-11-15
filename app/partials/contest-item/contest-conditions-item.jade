@@ -7,8 +7,8 @@ div.contest
           div.task__title-delimiter
             span >
           div.task__title-index
-            span(ng-bind='condition.internal_index')
+            span(ng-bind='condition.internal_index + ". " + condition.title + ""')
 
-        div.task__problem
+        div.task__problem(ng-class='{"task__problem-timus": condition.system_type === "timus", "task__problem-sgu": condition.system_type === "sgu", "task__problem-cf": condition.system_type === "cf", "task__problem-acmp": condition.system_type === "acmp"}')
           div(md-template='condition.formatted_text')
 

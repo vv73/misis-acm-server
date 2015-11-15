@@ -129,7 +129,7 @@ angular.module('Qemy.controllers.contest-item', [])
                 .then(function (result) {
                     $rootScope.$broadcast('data loaded');
                     if (result.error) {
-                        return;
+                        return $state.go('^.conditions');
                     }
                     $scope.condition = result;
                 });

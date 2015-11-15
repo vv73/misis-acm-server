@@ -63,7 +63,7 @@ function GetForContest(params, callback) {
                             return callback(new Error('An error with db', 1001));
                         }
                         if (!results.length) {
-                            callback(null, []);
+                            return callback(null, []);
                         }
                         var indexGenerator = createIndexGenerator();
                         callback(null, results.map(function (row) {
