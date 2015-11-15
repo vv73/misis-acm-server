@@ -14,7 +14,24 @@ angular.module('Qemy.services.contest-item', [
 ])
     .service('ContestItemManager', ['$rootScope', 'Storage', '$http', '$timeout', function($rootScope, Storage, $http, $timeout) {
 
+        function dataEncode(data) {
+            var paramPairs = [];
+            for (var el in data) {
+                if (!data.hasOwnProperty(el)) continue;
+                paramPairs.push(el + '=' + data[el]);
+            }
+            return paramPairs.join('&');
+        }
+
+        function getConditions(params) {
+            return $http({ method: 'get', url: '/api/problemset/getForContest?' + dataEncode(params) })
+                .then(function (data) {
+                    return data.data;
+                });
+        }
+
         return {
+            getConditions: getConditions
         }
     }])
 ;

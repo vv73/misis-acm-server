@@ -1,3 +1,8 @@
 div.contest
   div.contest__content.contest__min-width
-    div Условия
+    div.contest__inner
+      div.contest__title-section
+        h2 Условия задач
+
+      div(ng-repeat='condition in conditions')
+        span {{condition.title}}

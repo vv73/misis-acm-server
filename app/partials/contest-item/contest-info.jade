@@ -1,3 +1,43 @@
 div.contest
   div.contest__content.contest__min-width
-    div Информация о контесте
+    div.contest__inner
+      div.contest__title-section
+        h2 Информация о контесте
+
+      div.contest__info-layer
+        h3(ng-bind='contest.name')
+
+        div.contest__info
+          div.contest__info-row
+            div.contest__info-cell
+              span Время начала
+            div.contest__info-cell
+              span(ng-bind='contest.startDate')
+
+          div.contest__info-row
+            div.contest__info-cell
+              span Время окончания
+            div.contest__info-cell
+              span(ng-bind='contest.finishDate')
+
+          div.contest__info-row
+            div.contest__info-cell
+              span Статус
+            div.contest__info-cell
+              span
+                div.contest-item__status(ng-switch='contest.status')
+                  div(ng-switch-when='NOT_ENABLED')
+                    span.contests-list__item_status_removed Не доступен
+                  div(ng-switch-when='REMOVED')
+                    span.contests-list__item_status_removed Удален
+                  div(ng-switch-when='FINISHED')
+                    span.contests-list__item_status_success Завершён
+                  div(ng-switch-when='FROZEN')
+                    span.contests-list__item_status_neutral Заморозка. Осталось
+                      my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')
+                  div(ng-switch-when='WAITING')
+                    span Начало через
+                      my-timer-element.contest-item__status-time(finish='contest.startTime')
+                  div(ng-switch-when='RUNNING')
+                    span Контест идет. Осталось
+                      my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')

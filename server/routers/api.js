@@ -15,6 +15,7 @@ var app = express();
 
 var authManager = require('../internal/user/auth/auth');
 var contestManager = require('../internal/contest/manager');
+var problemsetManager = require('../internal/problemset/manager');
 
 router.all('/', function (req, res) {
     res.json({
@@ -178,6 +179,32 @@ router.post('/contests/join', function (req, res) {
         var q = req.body,
             user = req.currentUser;
         contestManager.join({ contestId: q.contest_id, user: user }, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.get('/problemset/getForContest', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback('User is not specified');
+        }
+        problemsetManager.getForContest({ contestId: q.contest_id, user: user }, function (err, result) {
             if (err) {
                 return callback({
                     error: err.toString()

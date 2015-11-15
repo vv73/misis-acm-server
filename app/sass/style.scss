@@ -369,3 +369,54 @@ my-timer-element {
 .contest__min-width {
   width: 66%;
 }
+.contest__info-layer h3 {
+  color: #219CF5;
+  text-align: center;
+}
+.contest__info-cell {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 100;
+  -webkit-flex: 0 1 auto;
+  -ms-flex: 0 1 auto;
+  flex: 0 1 auto;
+  -webkit-align-self: auto;
+  -ms-flex-item-align: auto;
+  align-self: auto;
+}
+.contest__info-row {
+  border-bottom: 1px solid #ccc;
+  padding: 13px 40px;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  -webkit-justify-content: space-between;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-align-content: flex-start;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.contest__info {
+  width: 66%;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+.contest__info-cell:first-child(1) {
+  color: #777;
+}
+.contest__info-row:first-child {
+  border-top: 1px solid #ccc;
+}
+.contest__title-section {
+  text-align: center;
+}
