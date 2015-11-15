@@ -4,5 +4,18 @@ div.contest
       div.contest__title-section
         h2 Условия задач
 
-      div(ng-repeat='condition in conditions')
-        a(ui-sref='^.conditions-item({problemIndex: condition.internal_index})') {{condition.internal_index + '. ' + condition.title}}
+      div.contest__conditions
+        a.contest__conditions-link(
+        ng-repeat='condition in conditions',
+        ui-sref='^.conditions-item({problemIndex: condition.internal_index})'
+        )
+          div
+            span.contest__condition-index {{condition.internal_index}}.
+            span=' '
+            span.contest__condition-name {{condition.title}}
+          div.contest__sytem
+            span.contest__system-type(ng-switch='condition.system_type')
+              span(ng-switch-when='timus') Timus
+              span(ng-switch-when='cf') Codeforces
+              span(ng-switch-when='acmp') ACMP.ru
+              span(ng-switch-when='sgu') SGU Online Judge
