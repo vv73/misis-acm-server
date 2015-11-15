@@ -40,6 +40,11 @@ angular.module('Qemy.ui.contest-item', [
                     templateUrl: templateUrl('contest-item', 'contest-conditions'),
                     controller: 'ContestItemConditionsController'
                 })
+                .state('contest.conditions-item', {
+                    url: '/conditions/{problemIndex:[a-zA-Z]+}',
+                    templateUrl: templateUrl('contest-item', 'contest-conditions-item'),
+                    controller: 'ConditionsItemController'
+                })
                 .state('contest.send', {
                     url: '/send',
                     templateUrl: templateUrl('contest-item', 'contest-send'),

@@ -5,4 +5,4 @@ div.contest
         h2 Условия задач
 
       div(ng-repeat='condition in conditions')
-        span {{condition.title}}
+        a(ui-sref='^.conditions-item({problemIndex: condition.internal_index})') {{condition.internal_index + '. ' + condition.title}}

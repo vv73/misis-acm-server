@@ -1,0 +1,14 @@
+div.contest
+  div.contest__content.contest__min-width
+    div.contest__inner
+      div.task
+        div.task__title
+          a.task__title-link(ui-sref='^.conditions') Условия задач
+          div.task__title-delimiter
+            span >
+          div.task__title-index
+            span(ng-bind='condition.internal_index')
+
+        div.task__problem
+          div(ng-bind-html='condition.formatted_text')
+

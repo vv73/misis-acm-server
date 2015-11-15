@@ -108,7 +108,30 @@ angular.module('Qemy.controllers.contest-item', [])
             ContestItemManager.getConditions({ contest_id: contestId })
                 .then(function (result) {
                     $rootScope.$broadcast('data loaded');
+                    if (result.error) {
+                        return;
+                    }
                     $scope.conditions = result;
+                });
+        }
+    ])
+
+    .controller('ConditionsItemController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
+        function ($scope, $rootScope, $state, ContestItemManager, _) {
+            $scope.$emit('change_title', {
+                title: 'Условия | ' + _('app_name')
+            });
+            var contestId = $state.params.contestId;
+            var problemId = $state.params.problemIndex;
+            $scope.condition = {};
+            $rootScope.$broadcast('data loading');
+            ContestItemManager.getCondition({ contest_id: contestId, problem_index: problemId })
+                .then(function (result) {
+                    $rootScope.$broadcast('data loaded');
+                    if (result.error) {
+                        return;
+                    }
+                    $scope.condition = result;
                 });
         }
     ])

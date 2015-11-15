@@ -30,8 +30,16 @@ angular.module('Qemy.services.contest-item', [
                 });
         }
 
+        function getCondition(params) {
+            return $http({ method: 'get', url: '/api/problemset/getByInternalIndex?' + dataEncode(params) })
+                .then(function (data) {
+                    return data.data;
+                });
+        }
+
         return {
-            getConditions: getConditions
+            getConditions: getConditions,
+            getCondition: getCondition
         }
     }])
 ;

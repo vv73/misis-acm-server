@@ -202,9 +202,35 @@ router.get('/problemset/getForContest', function (req, res) {
         var q = req.query,
             user = req.currentUser;
         if (!user || user.isEmpty()) {
-            return callback('User is not specified');
+            return callback(new Error('User is not specified'));
         }
         problemsetManager.getForContest({ contestId: q.contest_id, user: user }, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.get('/problemset/getByInternalIndex', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        problemsetManager.getByInternalIndex({ contestId: q.contest_id, user: user, problemIndex: q.problem_index }, function (err, result) {
             if (err) {
                 return callback({
                     error: err.toString()
