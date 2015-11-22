@@ -141,7 +141,62 @@ angular.module('Qemy.controllers.contest-item', [])
             $scope.$emit('change_title', {
                 title: 'Отправить решение | ' + _('app_name')
             });
-            console.log('Отправка задачи');
+            var contestId = $state.params.contestId;
+            $scope.conditions = [];
+            $scope.selectedCondition = '';
+            $scope.currentLangs = [];
+            $scope.selectedLangId = null;
+
+            $scope.$watch('selectedCondition', function (newValue, oldValue) {
+                if (!newValue) {
+                    return;
+                }
+                $rootScope.$broadcast('data loading');
+                ContestItemManager.getLangs({
+                    contest_id: contestId,
+                    problem_index: $scope.selectedCondition
+                }).then(function (result) {
+                    $rootScope.$broadcast('data loaded');
+                    if (result.error) {
+                        return;
+                    }
+                    $scope.currentLangs = result;
+                    $scope.selectedLangId = result && result.length ?
+                        result[0].id : null;
+                }).catch(function () {
+                    $rootScope.$broadcast('data loaded');
+                });
+            });
+
+            $rootScope.$broadcast('data loading');
+            ContestItemManager.getConditions({ contest_id: contestId })
+                .then(function (result) {
+                    $rootScope.$broadcast('data loaded');
+                    if (result.error) {
+                        return;
+                    }
+                    $scope.conditions = result;
+                    $scope.selectedCondition = $scope.conditions && $scope.conditions.length ?
+                        $scope.conditions[0].internal_index : '';
+                });
+
+            $scope.solution = '';
+
+            $scope.submitSolution = function () {
+                var solution = $scope.solution,
+                    condition = $scope.selectedCondition;
+                if (!solution || !condition || !contestId) {
+                    return;
+                }
+                ContestItemManager.sendSolution({
+                    contest_id: contestId,
+                    internal_index: condition,
+                    solution: solution,
+                    lang_id: $scope.selectedLangId
+                }).then(function (result) {
+                    console.log(result);
+                });
+            };
         }
     ])
 

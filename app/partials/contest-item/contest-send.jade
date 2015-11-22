@@ -1,3 +1,28 @@
 div.contest
   div.contest__content.contest__min-width
-    div Отправить решение
+    div.contest__inner
+      div.contest__title-section
+        h2 Отправить на проверку
+
+      div.send-content
+        form(ng-submit='submitSolution()')
+          div.send-content__condition-selector
+            md-input-container(flex)
+              label Выбор задачи
+              md-select(ng-model='selectedCondition')
+                md-option(ng-repeat='condition in conditions', value='{{condition.internal_index}}')
+                  span {{condition.internal_index + ". " + condition.title}}
+
+            md-input-container(flex)
+              label Язык
+              md-select(ng-model='selectedLangId')
+                md-option(ng-repeat='lang in currentLangs', value='{{lang.id}}')
+                  span {{lang.name}}
+
+          div.send-content__textarea
+            md-input-container(flex)
+              label Решение
+              textarea.textarea.send-content__textarea-element(ng-model='solution')
+
+          div.send-content__submit
+            md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition') Отправить

@@ -241,4 +241,67 @@ router.get('/problemset/getByInternalIndex', function (req, res) {
     }
 });
 
+router.post('/contest/send', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        user._ip = req.ip || req.ips;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        contestManager.sendSolution({
+            contestId: body.contest_id,
+            user: user,
+            problemIndex: body.internal_index,
+            solution: body.solution,
+            langId: body.lang_id
+        }, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.get('/contest/getLangs', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        problemsetManager.getLangs({
+            contestId: q.contest_id,
+            problemIndex: q.problem_index,
+            user: user
+        }, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 module.exports = router;

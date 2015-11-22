@@ -37,9 +37,30 @@ angular.module('Qemy.services.contest-item', [
                 });
         }
 
+        function getLangs(params) {
+            return $http({
+                method: 'get',
+                url: '/api/contest/getLangs?' + dataEncode(params)
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function sendSolution(params) {
+            return $http({
+                method: 'post',
+                url: '/api/contest/send',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             getConditions: getConditions,
-            getCondition: getCondition
+            getCondition: getCondition,
+            getLangs: getLangs,
+            sendSolution: sendSolution
         }
     }])
 ;

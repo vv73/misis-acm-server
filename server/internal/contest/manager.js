@@ -16,6 +16,9 @@ var User        = require('../user/user');
 var Contest     = require('../contest/contest');
 var crypto      = require('crypto');
 var async       = require('async');
+var problemsetManager = require('../problemset/manager');
+var Problem = require('../problemset/problem');
+var acmManager = require('../systems/manager');
 
 
 var DEFAULT_CONTESTS_COUNT = 20;
@@ -29,7 +32,8 @@ module.exports = {
     getContests: GetContests,
     getContest: GetContest,
     canJoin: CanJoin,
-    join: Join
+    join: Join,
+    sendSolution: SendSolution
 };
 
 
@@ -352,7 +356,6 @@ function CanJoin(params, callback) {
     }
 }
 
-
 function Join(params, callback) {
     mysqlPool.connection(function (err, connection) {
         if (err) {
@@ -398,5 +401,250 @@ function Join(params, callback) {
                 );
             });
         });
+    }
+}
+
+function SendSolution(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        var onceInvoke = true;
+        execute(connection, function (err, result) {
+            if (!onceInvoke) {
+                return;
+            }
+            onceInvoke = false;
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contestId = params.contestId,
+            contest = new Contest(),
+            problemIndex = params.problemIndex,
+            solution = params.solution,
+            user = params.user,
+            offset = getNumberByInternalIndex(problemIndex),
+            langId = params.langId;
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                if ([ 'NOT_ENABLED', 'REMOVED', 'FINISHED', 'WAITING' ].indexOf(contest.getStatus()) !== -1) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT problemset.* ' +
+                    'FROM problemset ' +
+                    'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
+                    'LEFT JOIN contests ON problems_to_contest.contest_id = contests.id ' +
+                    'WHERE contests.id = ? ' +
+                    'LIMIT ?, 1',
+                    [ contestId, offset ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        if (!results.length) {
+                            return callback(new Error('Problem not found'));
+                        }
+                        var mapped = results.map(function (row) {
+                            var problem = new Problem();
+                            problem.setObjectRow(row);
+                            var readyObject = problem.getObjectFactory();
+                            readyObject.internal_index = problemIndex.toUpperCase();
+                            return readyObject;
+                        });
+                        var problem = mapped[0];
+
+                        connection.query(
+                            'SELECT * ' +
+                            'FROM system_langs ' +
+                            'WHERE id = ?',
+                            [ parseInt(langId) ],
+                            function (err, results, fields) {
+                                if (err) {
+                                    return callback(new Error('An error with db', 1001));
+                                }
+                                if (!results.length) {
+                                    return callback(new Error('Langs not found', 1001));
+                                }
+                                var lang = results[0],
+                                    curTime = new Date().getTime();
+                                connection.query(
+                                    'INSERT INTO sent_solutions ' +
+                                    '(user_id, problem_id, sent_time, contest_id, source_code, lang_id, ip) ' +
+                                    'VALUES (?, ?, ?, ?, ?, ?, ?)', [
+                                        user.getId(),
+                                        problem.id,
+                                        curTime,
+                                        contest.getId(),
+                                        solution,
+                                        lang.id,
+                                        user._ip ? user._ip : ''
+                                    ], function (err, result) {
+                                        if (err) {
+                                            return callback(new Error('An error with db', 1001));
+                                        }
+                                        callback(null, {
+                                            result: true
+                                        });
+
+                                        var insertedId = result.insertId;
+                                        function saveResult(verdict) {
+                                            console.log(verdict);
+                                            var verdictId = getVerdictId(verdict.verdict);
+                                            connection.query(
+                                                'UPDATE sent_solutions ' +
+                                                'SET verdict_id = ?, ' +
+                                                'verdict_time = ?, ' +
+                                                'execution_time = ?, ' +
+                                                'memory = ?, ' +
+                                                'test_num = ? ' +
+                                                'WHERE id = ?',
+                                                [ verdictId, new Date().getTime(), verdict.timeConsumed, verdict.memoryConsumed, verdict.testNum, insertedId ],
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log(err);
+                                                    }
+                                                }
+                                            );
+                                        }
+
+                                        switch (problem.system_type) {
+                                            case 'timus':
+                                                acmManager.send(problem.system_type, {
+                                                    language: lang.foreign_id,
+                                                    task_num: problem.system_problem_number,
+                                                    source: solution
+                                                }, function (err, verdict) {
+                                                    if (err) {
+                                                        return callback(err);
+                                                    }
+                                                    saveResult(verdict);
+                                                }, function (progressCurrentTest) {
+                                                    console.log(progressCurrentTest);
+                                                });
+                                                break;
+                                            case 'cf':
+                                                var pairCode = problem.system_problem_number.split(':');
+                                                if (pairCode.length !== 2) {
+                                                    return callback(new Error('Something went wrong.'));
+                                                }
+                                                var taskType = pairCode[0],
+                                                    problemCode = pairCode[1];
+                                                if (!/^\d+[a-zA-Z]{1,}/i.test(problemCode)) {
+                                                    return callback(new Error('Something went wrong. Please contact your administrator.'));
+                                                }
+                                                var iContestId = problemCode.match(/^(\d+)/i)[1],
+                                                    iProblemIndex = problemCode.match(/([a-zA-Z]+)$/i)[1];
+                                                acmManager.send(problem.system_type, {
+                                                    language: lang.foreign_id,
+                                                    task_type: taskType,
+                                                    contest_id: iContestId,
+                                                    problem_index: iProblemIndex,
+                                                    source: solution
+                                                }, function (err, verdict) {
+                                                    if (err) {
+                                                        return callback(err);
+                                                    }
+                                                    saveResult(verdict);
+                                                }, function (progressCurrentTest) {
+                                                    console.log(progressCurrentTest);
+                                                });
+                                                break;
+                                            case 'acmp':
+                                                acmManager.send(problem.system_type, {
+                                                    language: lang.foreign_id,
+                                                    task_num: problem.system_problem_number,
+                                                    source: solution
+                                                }, function (err, verdict) {
+                                                    if (err) {
+                                                        return callback(err);
+                                                    }
+                                                    saveResult(verdict);
+                                                }, function (progressCurrentTest) {
+                                                    console.log(progressCurrentTest);
+                                                });
+                                                break;
+                                            case 'sgu':
+                                                acmManager.send(problem.system_type, {
+                                                    language: lang.name,
+                                                    task_num: problem.system_problem_number,
+                                                    source: solution
+                                                }, function (err, verdict) {
+                                                    if (err) {
+                                                        return callback(err);
+                                                    }
+                                                    saveResult(verdict);
+                                                }, function (progressCurrentTest) {
+                                                    console.log(progressCurrentTest);
+                                                });
+                                                break;
+                                            default:
+                                                return callback(new Error('System is not defined.'));
+                                                break;
+                                        }
+
+                                        function getVerdictId(verdictName) {
+                                            verdictName = verdictName.toLowerCase();
+                                            if (verdictName === 'ok' || verdictName === 'accepted') {
+                                                return 1;
+                                            } else if ([ 'wrong answer', 'wrong_answer' ].indexOf(verdictName) !== -1) {
+                                                return 2;
+                                            } else if ([ 'compilation error', 'compilation_error' ].indexOf(verdictName) !== -1) {
+                                                return 3;
+                                            } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded' ].indexOf(verdictName) !== -1) {
+                                                return 4;
+                                            } else if ([ 'presentation error', 'presentation_error' ].indexOf(verdictName) !== -1) {
+                                                return 5;
+                                            } else if ([ 'time limit exceeded', 'time_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                                return 6;
+                                            } else if ([ 'memory limit exceeded', 'memory_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                                return 7;
+                                            } else if ([ 'idleness limit exceeded', 'idleness_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                                return 8;
+                                            } else if ([ 'security violated', 'restricted function', 'security_violated' ].indexOf(verdictName) !== -1) {
+                                                return 9;
+                                            } else {
+                                                return 10;
+                                            }
+                                        }
+                                    }
+                                );
+                            }
+                        );
+                    }
+                );
+            });
+        });
+    }
+}
+
+function getNumberByInternalIndex(index) {
+    if (!index || typeof index !== 'string' || !index.length) {
+        return 0;
+    }
+    index = index.toLowerCase().replace(/[^a-z]/gi, '');
+    if (!index) {
+        return 0;
+    }
+    var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    if (index.length === 1) {
+        return alphabet.indexOf(index);
+    } else if (index.length === 2) {
+        return alphabet.length * (alphabet.indexOf(index[0]) + 1) + alphabet.indexOf(index[1]);
     }
 }
