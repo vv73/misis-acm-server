@@ -25,4 +25,4 @@ div.contest
               textarea.textarea.send-content__textarea-element(ng-model='solution')
 
           div.send-content__submit
-            md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition') Отправить
+            md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent') Отправить

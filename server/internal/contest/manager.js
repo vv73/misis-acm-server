@@ -33,7 +33,8 @@ module.exports = {
     getContest: GetContest,
     canJoin: CanJoin,
     join: Join,
-    sendSolution: SendSolution
+    sendSolution: SendSolution,
+    getSents: GetSents
 };
 
 
@@ -513,8 +514,14 @@ function SendSolution(params, callback) {
                                                 'execution_time = ?, ' +
                                                 'memory = ?, ' +
                                                 'test_num = ? ' +
-                                                'WHERE id = ?',
-                                                [ verdictId, new Date().getTime(), verdict.timeConsumed, verdict.memoryConsumed, verdict.testNum, insertedId ],
+                                                'WHERE id = ?', [
+                                                    verdictId,
+                                                    new Date().getTime(),
+                                                    verdict.timeConsumed,
+                                                    verdict.memoryConsumed,
+                                                    verdict.testNum,
+                                                    insertedId
+                                                ],
                                                 function (err) {
                                                     if (err) {
                                                         console.log(err);
@@ -646,5 +653,129 @@ function getNumberByInternalIndex(index) {
         return alphabet.indexOf(index);
     } else if (index.length === 2) {
         return alphabet.length * (alphabet.indexOf(index[0]) + 1) + alphabet.indexOf(index[1]);
+    }
+}
+
+function createIndexGenerator() {
+    var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split(''),
+        curIndex = -1;
+    return function () {
+        curIndex++;
+        var symbolsNumber = Math.floor(curIndex / alphabet.length) + 1;
+        if (symbolsNumber === 1) {
+            return alphabet[ curIndex ];
+        } else {
+            return alphabet[ symbolsNumber - 2 ] + alphabet[ curIndex % alphabet.length ];
+        }
+    }
+}
+
+function GetSents(contestId, user, select, count, offset, callback) {
+    if (typeof select === 'function') {
+        callback = select;
+        select = null;
+    } else if (typeof count === 'function') {
+        callback = count;
+        count = null;
+    } else if (typeof offset === 'function') {
+        callback = offset;
+        offset = null;
+    }
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        select = select || 'my';
+        count = count || 50;
+        offset = offset || 0;
+
+        count = Math.max(Math.min(count, 200), 0);
+        offset = Math.max(offset, 0);
+
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({contest: contest, user: user}, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT problemset.id ' +
+                    'FROM problemset ' +
+                    'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
+                    'WHERE problems_to_contest.contest_id = ?',
+                    [ contestId ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        var indexMapping = {},
+                            nextIndex = createIndexGenerator();
+                        for (var el in results) {
+                            var id = results[el].id;
+                            if (typeof id !== 'undefined') {
+                                indexMapping[id] = nextIndex().toUpperCase();
+                            }
+                        }
+                        connection.query(
+                            'SELECT users.id AS user_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                            'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
+                            'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
+                            'system_langs.id AS lang_id, system_langs.name AS system_lang_name, problemset.id AS problem_id, ' +
+                            'problemset.title, problemset.system_type, problemset.foreign_problem_id ' +
+                            'FROM sent_solutions ' +
+                            'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                            'LEFT JOIN problemset ON problemset.id = sent_solutions.problem_id ' +
+                            'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
+                            'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                            'WHERE sent_solutions.contest_id = ? ' +
+                            (select === 'my' ? 'AND user_id = ' + user.getId() : '') + ' ' +
+                            'ORDER BY sent_id DESC ' +
+                            'LIMIT ?, ?; ' +
+                            'SELECT COUNT(*) AS all_items_count ' +
+                            'FROM sent_solutions ' +
+                            'WHERE sent_solutions.contest_id = ? ' +
+                            (select === 'my' ? 'AND user_id = ' + user.getId() : '') + ';', [
+                                contestId,  offset, count,
+                                contestId
+                            ],
+                            function (err, results, fields) {
+                                if (err) {
+                                    return callback(new Error('An error with db', 1001));
+                                }
+                                var list = results[0],
+                                    all_items_count = results[1][0].all_items_count;
+                                if (typeof list === 'undefined' || typeof all_items_count === 'undefined') {
+                                    return callback(new Error('Something went wrong'));
+                                }
+                                for (var index in list) {
+                                    list[index].internal_index = indexMapping[ list[index].problem_id ];
+                                }
+                                callback(null, {
+                                    sents: list,
+                                    all_items_count: all_items_count
+                                });
+                            }
+                        );
+                    }
+                );
+            });
+        });
     }
 }

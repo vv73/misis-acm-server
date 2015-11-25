@@ -56,11 +56,21 @@ angular.module('Qemy.services.contest-item', [
             });
         }
 
+        function getSents(params) {
+            return $http({
+                method: 'get',
+                url: '/api/contest/getSents?' + dataEncode(params)
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             getConditions: getConditions,
             getCondition: getCondition,
             getLangs: getLangs,
-            sendSolution: sendSolution
+            sendSolution: sendSolution,
+            getSents: getSents
         }
     }])
 ;

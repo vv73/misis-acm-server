@@ -119,13 +119,13 @@ angular.module('Qemy.controllers.contests', [])
                 $rootScope.$broadcast('data loading');
                 var contestsPromise = ContestsManager.getContests($scope.params);
                 contestsPromise.then(function (result) {
+                    $rootScope.$broadcast('data loaded');
                     if (!result || !result.hasOwnProperty('all_items_count')) {
                         return;
                     }
                     $scope.all_items_count = result.all_items_count;
                     $scope.contestsList = result.contests;
                     $scope.pagination = generatePaginationArray(5);
-                    $rootScope.$broadcast('data loaded');
                 }).catch(function (err) {
                     console.log(err);
                 });

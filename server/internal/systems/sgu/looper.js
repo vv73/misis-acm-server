@@ -96,7 +96,7 @@ function Watch(params, callback, progressCallback) {
                         if (!finish) {
                             callback(null, {
                                 solutionId: lSolutionId,
-                                verdict: verdict,
+                                verdict: verdict.replace(/(\s?on\stest\s?\d+)/i, ''),
                                 testNum: testNum,
                                 timeConsumed: timeConsumed,
                                 memoryConsumed: memoryConsumed
@@ -108,7 +108,7 @@ function Watch(params, callback, progressCallback) {
                         async.nextTick(function () {
                             progressCallback({
                                 solutionId: lSolutionId,
-                                verdict: verdict,
+                                verdict: verdict.replace(/(\s?on\stest\s?\d+)/i, ''),
                                 testNum: testNum,
                                 timeConsumed: timeConsumed,
                                 memoryConsumed: memoryConsumed

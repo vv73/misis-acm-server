@@ -181,6 +181,7 @@ angular.module('Qemy.controllers.contest-item', [])
                 });
 
             $scope.solution = '';
+            $scope.sent = false;
 
             $scope.submitSolution = function () {
                 var solution = $scope.solution,
@@ -188,13 +189,22 @@ angular.module('Qemy.controllers.contest-item', [])
                 if (!solution || !condition || !contestId) {
                     return;
                 }
+                $rootScope.$broadcast('data loading');
+                $scope.sent = true;
+
                 ContestItemManager.sendSolution({
                     contest_id: contestId,
                     internal_index: condition,
                     solution: solution,
                     lang_id: $scope.selectedLangId
                 }).then(function (result) {
-                    console.log(result);
+                    $rootScope.$broadcast('data loaded');
+                    $scope.sent = false;
+
+                    if (result.error) {
+                        return alert('Произошла ошибка: ' + result.error);
+                    }
+                    $state.go('^.status');
                 });
             };
         }
@@ -205,7 +215,76 @@ angular.module('Qemy.controllers.contest-item', [])
             $scope.$emit('change_title', {
                 title: 'Все посылки | ' + _('app_name')
             });
-            console.log('Отправки задач');
+
+            var contestId = $state.params.contestId;
+            var defaultCount = 5;
+
+            $scope.pageNumber = parseInt($state.params.pageNumber || 1);
+            $scope.params = {
+                contest_id: contestId,
+                count: defaultCount,
+                offset: ($scope.pageNumber - 1) * defaultCount,
+                mode: 'my'
+            };
+
+            $scope.all_items_count = 0;
+            $scope.pagination = [];
+            $scope.sents = [];
+            $scope.allPages = 0;
+
+            function generatePaginationArray(offsetCount) {
+                var pages = [],
+                    curPage = $scope.pageNumber,
+                    allItems = $scope.all_items_count,
+                    backOffsetPages = offsetCount,
+                    upOffsetPages = offsetCount,
+                    allPages = Math.floor(allItems / defaultCount) +
+                        (allItems && allItems % defaultCount ? 1 : 0);
+                if (!defaultCount) {
+                    allPages = 1e6;
+                }
+                $scope.allPages = allPages;
+                for (var cur = Math.max(curPage - backOffsetPages, 1);
+                     cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+                    pages.push({
+                        number: cur,
+                        active: cur === curPage
+                    });
+                }
+                return pages;
+            }
+
+            var firstInvokeStateChanged = true;
+            $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+                if (firstInvokeStateChanged) {
+                    return firstInvokeStateChanged = false;
+                }
+                $scope.pageNumber = toParams.pageNumber ?
+                    parseInt(toParams.pageNumber) : 1;
+                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+                updateSentsList();
+            });
+
+            updateSentsList();
+
+            function updateSentsList() {
+                $rootScope.$broadcast('data loading');
+                ContestItemManager.getSents($scope.params)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (result.error) {
+                            return alert('Произошла ошибка: ' + result.error);
+                        }
+                        if (!result || !result.hasOwnProperty('all_items_count')) {
+                            return;
+                        }
+                        $scope.all_items_count = result.all_items_count;
+                        $scope.sents = result.sents;
+                        $scope.pagination = generatePaginationArray(5);
+                    }).catch(function (err) {
+                        console.log(err);
+                    });
+            }
         }
     ])
 ;

@@ -55,5 +55,10 @@ angular.module('Qemy.ui.contest-item', [
                     templateUrl: templateUrl('contest-item', 'contest-status'),
                     controller: 'ContestItemStatusController'
                 })
+                .state('contest.status-pagination', {
+                    url: '/status/page/:pageNumber',
+                    templateUrl: templateUrl('contest-item', 'contest-status'),
+                    controller: 'ContestItemStatusController'
+                })
         }
     ]);

@@ -590,6 +590,40 @@ my-timer-element {
     border: 1px solid #ccc;
   }
 }
+.task__problem-acmp {
+  h1, h3, h4 {
+    width: 100%;
+    color: #219CF5;
+    margin: 0;
+    padding: 10px 0 5px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  h2 {
+    width: 100%;
+    color: #219CF5;
+    margin: 0;
+    padding: 10px 0 5px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    box-sizing: border-box;
+    td, th {
+      padding: 0;
+      border: 1px solid #777;
+    }
+    th {
+      text-align: center;
+      padding: 5px 0;
+      letter-spacing: 1.1px;
+    }
+  }
+}
 .contest__conditions-link {
     cursor: pointer;
     -webkit-user-select: none;

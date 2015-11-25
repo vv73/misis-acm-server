@@ -304,4 +304,33 @@ router.get('/contest/getLangs', function (req, res) {
     }
 });
 
+router.get('/contest/getSents', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err);
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        if (typeof q.contest_id === 'undefined') {
+            return callback(new Error('Params is not specified'));
+        }
+        contestManager.getSents(q.contest_id, user, q.select, q.count, q.offset, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 module.exports = router;
