@@ -87,6 +87,9 @@ function SendToCodeforces(system_type, solution, callback, progressCallback) {
     var internalCallback = function (err, verdict) {
         if (err) {
             console.log(err);
+            if (err.message === 'Resending the same solution.') {
+                return callback(err);
+            }
             if (numOfAttempts > 2) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));

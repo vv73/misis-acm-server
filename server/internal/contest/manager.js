@@ -34,7 +34,10 @@ module.exports = {
     canJoin: CanJoin,
     join: Join,
     sendSolution: SendSolution,
-    getSents: GetSents
+    getSents: GetSents,
+    getSourceCode: GetSourceCode,
+    getSourceCodeRaw: GetSourceCodeRaw,
+    getTable: GetTable
 };
 
 
@@ -530,6 +533,35 @@ function SendSolution(params, callback) {
                                             );
                                         }
 
+                                        function saveWithErrors(error) {
+                                            console.log('Saving verdict:', error);
+                                            var verdictId = 10;
+                                            if (error.message === 'Resending the same solution.') {
+                                                verdictId = 11;
+                                            }
+                                            connection.query(
+                                                'UPDATE sent_solutions ' +
+                                                'SET verdict_id = ?, ' +
+                                                'verdict_time = ?, ' +
+                                                'execution_time = ?, ' +
+                                                'memory = ?, ' +
+                                                'test_num = ? ' +
+                                                'WHERE id = ?', [
+                                                    verdictId,
+                                                    new Date().getTime(),
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    insertedId
+                                                ],
+                                                function (err) {
+                                                    if (err) {
+                                                        console.log(err);
+                                                    }
+                                                }
+                                            );
+                                        }
+
                                         switch (problem.system_type) {
                                             case 'timus':
                                                 acmManager.send(problem.system_type, {
@@ -538,6 +570,7 @@ function SendSolution(params, callback) {
                                                     source: solution
                                                 }, function (err, verdict) {
                                                     if (err) {
+                                                        saveWithErrors(err);
                                                         return callback(err);
                                                     }
                                                     saveResult(verdict);
@@ -565,6 +598,7 @@ function SendSolution(params, callback) {
                                                     source: solution
                                                 }, function (err, verdict) {
                                                     if (err) {
+                                                        saveWithErrors(err);
                                                         return callback(err);
                                                     }
                                                     saveResult(verdict);
@@ -579,6 +613,7 @@ function SendSolution(params, callback) {
                                                     source: solution
                                                 }, function (err, verdict) {
                                                     if (err) {
+                                                        saveWithErrors(err);
                                                         return callback(err);
                                                     }
                                                     saveResult(verdict);
@@ -593,6 +628,7 @@ function SendSolution(params, callback) {
                                                     source: solution
                                                 }, function (err, verdict) {
                                                     if (err) {
+                                                        saveWithErrors(err);
                                                         return callback(err);
                                                     }
                                                     saveResult(verdict);
@@ -734,29 +770,32 @@ function GetSents(contestId, user, select, count, offset, callback) {
                             }
                         }
                         connection.query(
-                            'SELECT users.id AS user_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                            'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
                             'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
                             'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
                             'system_langs.id AS lang_id, system_langs.name AS system_lang_name, problemset.id AS problem_id, ' +
-                            'problemset.title, problemset.system_type, problemset.foreign_problem_id ' +
+                            'problemset.title, problemset.system_type, problemset.foreign_problem_id, ' +
+                            'contests.start_time AS contest_start_time, contests.relative_freeze_time AS contest_freeze_time, contests.duration_time AS contest_duration_time ' +
                             'FROM sent_solutions ' +
                             'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
                             'LEFT JOIN problemset ON problemset.id = sent_solutions.problem_id ' +
                             'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
                             'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                            'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
                             'WHERE sent_solutions.contest_id = ? ' +
-                            (select === 'my' ? 'AND user_id = ' + user.getId() : '') + ' ' +
+                            (select === 'my' ? 'AND users.id = ' + user.getId() : '') + ' ' +
                             'ORDER BY sent_id DESC ' +
                             'LIMIT ?, ?; ' +
                             'SELECT COUNT(*) AS all_items_count ' +
                             'FROM sent_solutions ' +
                             'WHERE sent_solutions.contest_id = ? ' +
-                            (select === 'my' ? 'AND user_id = ' + user.getId() : '') + ';', [
+                            (select === 'my' ? 'AND sent_solutions.user_id = ' + user.getId() : '') + ';', [
                                 contestId,  offset, count,
                                 contestId
                             ],
                             function (err, results, fields) {
                                 if (err) {
+                                    console.log(err);
                                     return callback(new Error('An error with db', 1001));
                                 }
                                 var list = results[0],
@@ -771,6 +810,178 @@ function GetSents(contestId, user, select, count, offset, callback) {
                                     sents: list,
                                     all_items_count: all_items_count
                                 });
+                            }
+                        );
+                    }
+                );
+            });
+        });
+    }
+}
+
+function GetSourceCode(contestId, user, sourceId, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({contest: contest, user: user}, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT system_langs.*, sent_solutions.*, sent_solutions.id AS sent_id ' +
+                    'FROM sent_solutions ' +
+                    'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                    'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                    'WHERE sent_solutions.id = ? AND sent_solutions.contest_id = ? AND (users.id = ? OR ? = 5)',
+                    [ sourceId, contestId, user.getId(), user.getAccessGroup().access_level ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        if (!Array.isArray(results) || !results.length) {
+                            return callback(new Error('Access denied'));
+                        }
+                        callback(null, results[0]);
+                    }
+                )
+            });
+        });
+    }
+}
+
+function GetSourceCodeRaw(contestId, user, sourceId, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({contest: contest, user: user}, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT system_langs.*, sent_solutions.*, sent_solutions.id AS sent_id ' +
+                    'FROM sent_solutions ' +
+                    'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                    'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                    'WHERE sent_solutions.id = ? AND sent_solutions.contest_id = ? AND (users.id = ? OR ? = 5)',
+                    [ sourceId, contestId, user.getId(), user.getAccessGroup().access_level ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        if (!Array.isArray(results) || !results.length) {
+                            return callback(new Error('Access denied'));
+                        }
+                        callback(null, results[0].source_code);
+                    }
+                )
+            });
+        });
+    }
+}
+
+function GetTable(contestId, user, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT problemset.id ' +
+                    'FROM problemset ' +
+                    'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
+                    'WHERE problems_to_contest.contest_id = ?',
+                    [ contestId ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        var indexMapping = {},
+                            fallIndexMapping = {},
+                            nextIndex = createIndexGenerator();
+                        for (var el in results) {
+                            var id = results[el].id;
+                            if (typeof id !== 'undefined') {
+                                var iIndex = nextIndex().toUpperCase();
+                                indexMapping[ id ] = iIndex;
+                                fallIndexMapping[ iIndex ] = id;
+                            }
+                        }
+                        connection.query(
+                            'SELECT sent_solutions.*, verdicts.*, users.username, ' +
+                            'CONCAT(users.first_name, " ", users.last_name) AS user_full_name, users.access_level ' +
+                            'FROM sent_solutions ' +
+                            'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
+                            'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                            'WHERE sent_solutions.contest_id = ? AND sent_solutions.verdict_id <> 0 ' +
+                            'ORDER BY sent_solutions.user_id',
+                            [ contestId ],
+                            function (err, results, fields) {
+                                if (err) {
+                                    return callback(new Error('An error with db', 1001));
+                                }
+                                var sentRows = Array.isArray(results) ? results : [];
+                                connection.query(
+                                    ''
+                                );
                             }
                         );
                     }

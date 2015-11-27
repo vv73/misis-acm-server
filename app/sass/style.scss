@@ -690,3 +690,91 @@ my-timer-element {
     margin-left: 10px;
   }
 }
+
+.status-content {
+  md-content {
+    background-color: transparent !important;
+  }
+  md-content md-tabs {
+    background: #f6f6f6;
+    border: 1px solid #e1e1e1;
+  }
+  md-content md-tabs md-tabs-wrapper {
+    background: white;
+  }
+  md-toolbar.md-warn > md-tabs.md-default-theme, md-tabs > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {
+    color: #A3A3A3;
+  }
+  md-toolbar.md-warn > md-tabs.md-default-theme, md-tabs > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-warn > md-tabs.md-default-theme, md-tabs > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {
+    color: #4486C6;
+  }
+}
+.sent-list__item {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  border-bottom: 1px solid #ccc;
+  background-color: #fdfdfd;
+  cursor: default;
+  .sent-list__cell {
+    width: 100%;
+    text-align: center;
+    padding: 6px 0;
+  }
+  &:hover:not(.sent-list__header) {
+    background-color: rgba(0, 121, 255, 0.09);
+  }
+  .sent-list__bold {
+    font-weight: bold;
+  }
+}
+.sent-list__header {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+.sent-list__item:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+.sent-list__success {
+  background-color: rgba(31, 242, 10, 0.06) !important;
+  .sent-list__verdict {
+    color: rgba(78, 152, 113, 0.76);
+    font-weight: bold;
+  }
+}
+.sent-list__success:hover {
+  background-color: rgba(32, 236, 10, 0.13) !important;
+}
+.sent-list__failed {
+  .sent-list__verdict {
+    color: rgba(253, 59, 50, 0.76);
+    font-weight: bold;
+  }
+}
+.sent-list__unknown {
+  .sent-list__verdict {
+    color: rgba(255, 142, 53, 0.76);
+    font-weight: bold;
+  }
+}
+.sent-list {
+  .no-sents {
+    text-align: center;
+    padding: 30px 0;
+    font-size: 20px;
+    color: #777;
+  }
+  .sent-list__loading .search-spin-layer_ {
+    width: 20px;
+    height: 20px;
+  }
+}
+.sent-list__source-link {
+  text-decoration: none;
+}
+.source-content__code pre {
+  overflow: hidden;
+  overflow-x: auto;
+  border-radius: 6px;
+  width: auto;
+}

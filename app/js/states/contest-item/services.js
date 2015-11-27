@@ -65,12 +65,22 @@ angular.module('Qemy.services.contest-item', [
             });
         }
 
+        function getSourceCode(params) {
+            return $http({
+                method: 'get',
+                url: '/api/contest/getSourceCode?' + dataEncode(params)
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             getConditions: getConditions,
             getCondition: getCondition,
             getLangs: getLangs,
             sendSolution: sendSolution,
-            getSents: getSents
+            getSents: getSents,
+            getSourceCode: getSourceCode
         }
     }])
 ;

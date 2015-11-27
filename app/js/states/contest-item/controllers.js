@@ -204,33 +204,36 @@ angular.module('Qemy.controllers.contest-item', [])
                     if (result.error) {
                         return alert('Произошла ошибка: ' + result.error);
                     }
-                    $state.go('^.status');
+                    $state.go('^.status', { select: 'my' });
                 });
             };
         }
     ])
 
-    .controller('ContestItemStatusController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
-        function ($scope, $rootScope, $state, ContestItemManager, _) {
+    .controller('ContestItemStatusController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', '$timeout', 'UserManager',
+        function ($scope, $rootScope, $state, ContestItemManager, _, $timeout, UserManager) {
             $scope.$emit('change_title', {
-                title: 'Все посылки | ' + _('app_name')
+                title: 'Мои посылки | ' + _('app_name')
             });
 
             var contestId = $state.params.contestId;
-            var defaultCount = 5;
+            var select = $state.params.select;
+            var defaultCount = 50;
 
             $scope.pageNumber = parseInt($state.params.pageNumber || 1);
             $scope.params = {
                 contest_id: contestId,
                 count: defaultCount,
                 offset: ($scope.pageNumber - 1) * defaultCount,
-                mode: 'my'
+                select: select
             };
 
             $scope.all_items_count = 0;
             $scope.pagination = [];
             $scope.sents = [];
             $scope.allPages = 0;
+
+            $scope.loadingData = false;
 
             function generatePaginationArray(offsetCount) {
                 var pages = [],
@@ -262,6 +265,7 @@ angular.module('Qemy.controllers.contest-item', [])
                 $scope.pageNumber = toParams.pageNumber ?
                     parseInt(toParams.pageNumber) : 1;
                 $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+                $scope.params.select = toParams.select || 'my';
                 updateSentsList();
             });
 
@@ -269,9 +273,13 @@ angular.module('Qemy.controllers.contest-item', [])
 
             function updateSentsList() {
                 $rootScope.$broadcast('data loading');
-                ContestItemManager.getSents($scope.params)
+                $scope.loadingData = true;
+                    ContestItemManager.getSents($scope.params)
                     .then(function (result) {
-                        $rootScope.$broadcast('data loaded');
+                        $timeout(function () {
+                            $rootScope.$broadcast('data loaded');
+                            $scope.loadingData = false;
+                        }, 500);
                         if (result.error) {
                             return alert('Произошла ошибка: ' + result.error);
                         }
@@ -285,6 +293,69 @@ angular.module('Qemy.controllers.contest-item', [])
                         console.log(err);
                     });
             }
+
+            $scope.selectedTabIndex = select === 'my' ? 0 : 1;
+            $scope.$watch('selectedTabIndex', function(current, old) {
+                var nextPage;
+                switch (current) {
+                    case 0: {
+                        $scope.$emit('change_title', {
+                            title: 'Мои посылки | ' + _('app_name')
+                        });
+                        if ($scope.pageNumber === 1) {
+                            $state.go('^.status', {select: 'my'});
+                        } else {
+                            nextPage = old === current ? $scope.pageNumber : 1;
+                            $state.go('^.status-pagination', { select: 'my', pageNumber: nextPage });
+                        }
+                        break;
+                    }
+                    case 1: {
+                        $scope.$emit('change_title', {
+                            title: 'Все посылки | ' + _('app_name')
+                        });
+                        if ($scope.pageNumber === 1) {
+                            $state.go('^.status', {select: 'all'});
+                        } else {
+                            nextPage = old === current ? $scope.pageNumber : 1;
+                            $state.go('^.status-pagination', { select: 'all', pageNumber: nextPage });
+                        }
+                        break;
+                    }
+                }
+            });
+
+            $scope.currentUser = {};
+            UserManager.getCurrentUser().then(function (user) {
+                $scope.currentUser = user;
+            });
+        }
+    ])
+
+    .controller('ContestItemSourceController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', '$timeout',
+        function ($scope, $rootScope, $state, ContestItemManager, _, $timeout) {
+            $scope.$emit('change_title', {
+                title: 'Исходный код | ' + _('app_name')
+            });
+
+            var contestId = $state.params.contestId;
+            var sourceId = $state.params.sourceId;
+            $scope.sourceId = sourceId;
+
+            $scope.source = null;
+
+            $rootScope.$broadcast('data loading');
+            ContestItemManager.getSourceCode({ contest_id: contestId, source_id: sourceId })
+                .then(function (result) {
+                    $scope.source = result;
+                    console.log($scope.source);
+                    $timeout(function () {
+                        $rootScope.$broadcast('data loaded');
+                        Rainbow.color();
+                    }, 200);
+                }).catch(function () {
+                    $rootScope.$broadcast('data loaded');
+                });
         }
     ])
 ;

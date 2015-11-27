@@ -333,4 +333,97 @@ router.get('/contest/getSents', function (req, res) {
     }
 });
 
+router.get('/contest/getSourceCode', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        if (typeof q.contest_id === 'undefined' || typeof q.source_id === 'undefined') {
+            return callback(new Error('Params are not specified'));
+        }
+        contestManager.getSourceCode(q.contest_id, user, q.source_id, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.get('/contest/getSourceCodeRaw', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.end(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        if (typeof q.contest_id === 'undefined' || typeof q.source_id === 'undefined') {
+            return callback(new Error('Params are not specified'));
+        }
+        contestManager.getSourceCodeRaw(q.contest_id, user, q.source_id, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.get('/contest/getTable', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.end(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        if (typeof q.contest_id === 'undefined') {
+            return callback(new Error('Params are not specified'));
+        }
+        contestManager.getTable(q.contest_id, user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 module.exports = router;

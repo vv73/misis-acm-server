@@ -62,6 +62,7 @@ function SendSolution(solution, callback, progressCallback) {
         console.log('Taken idle account:', acmAccount.login);
         TrySend(solution, acmAccount, function (err, statusCode) {
             if (err) {
+                onAccountFinished();
                 return callback(err);
             } else if (statusCode !== 302) {
                 accounts_manager.refreshAccount(acmAccount, function (err, refreshedAccount) {

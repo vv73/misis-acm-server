@@ -61,6 +61,7 @@ function SendSolution(solution, callback, progressCallback) {
         console.log('Taken idle account:', acmAccount.login);
         TrySend(solution, acmAccount, function (err, statusCode) {
             if (err) {
+                onAccountFinished();
                 return callback(err);
             } else if (statusCode !== 200) {
                 accounts_manager.refreshAccount(acmAccount, function (err, refreshedAccount) {
@@ -172,7 +173,7 @@ function TrySend(solution, acmAccount, callback) {
             submitForm = $('.submit-form'),
             submitErrorRepeat = $('.error.for__source');
         if (submitForm.length || submitErrorRepeat.length) {
-            return callback(new Error('Resending the same solution.'));
+            return callback(new Error('Resending the same solution.', 40001));
         } else if (!response) {
             return callback(new Error('Resource not reached'));
         }

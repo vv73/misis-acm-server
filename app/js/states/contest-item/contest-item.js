@@ -13,7 +13,8 @@ angular.module('Qemy.ui.contest-item', [
     'ui.router',
     'Qemy.controllers.contest-item',
     'Qemy.services.contest-item',
-    'Qemy.directives.contest-item'
+    'Qemy.directives.contest-item',
+    'Qemy.filters.contest-item'
 ])
     .config(['$stateProvider', '$urlRouterProvider',
         function($stateProvider, $urlRouterProvider) {
@@ -51,14 +52,19 @@ angular.module('Qemy.ui.contest-item', [
                     controller: 'ContestItemSendController'
                 })
                 .state('contest.status', {
-                    url: '/status',
+                    url: '/status/:select',
                     templateUrl: templateUrl('contest-item', 'contest-status'),
                     controller: 'ContestItemStatusController'
                 })
                 .state('contest.status-pagination', {
-                    url: '/status/page/:pageNumber',
+                    url: '/status/:select/page/:pageNumber',
                     templateUrl: templateUrl('contest-item', 'contest-status'),
                     controller: 'ContestItemStatusController'
+                })
+                .state('contest.source-code', {
+                    url: '/source/:sourceId',
+                    templateUrl: templateUrl('contest-item', 'contest-source'),
+                    controller: 'ContestItemSourceController'
                 })
         }
     ]);

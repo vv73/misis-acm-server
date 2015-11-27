@@ -271,13 +271,10 @@ function templateUrl (prefix, tplName) {
 }
 
 function encodeEntities(value) {
-    return value.
-        replace(/&/g, '&amp;').
-        replace(/([^\#-~| |!])/g, function (value) { // non-alphanumeric
-            return '&#' + value.charCodeAt(0) + ';';
-        }).
-        replace(/</g, '&lt;').
-        replace(/>/g, '&gt;');
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 function calcImageInBox(imageW, imageH, boxW, boxH, noZooom) {

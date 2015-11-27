@@ -51,6 +51,7 @@ function SendSolution(solution, callback, progressCallback) {
         }
         TrySend(solution, acmAccount, function (err) {
             if (err) {
+                onAccountFinished();
                 return callback(err);
             }
             looper.watch({

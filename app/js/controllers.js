@@ -130,12 +130,17 @@ angular.module('Qemy.controllers', [
     .controller('WrapperCtrl', ['$scope', '$rootScope', '$timeout', '$interval', function ($scope, $rootScope, $timeout, $interval) {
 
         $scope.pageLoading = false;
+        var counter = 1;
         $scope.$on('data loading', function (ev, args) {
+            counter++;
             $scope.pageLoading = true;
         });
 
         $scope.$on('data loaded', function (ev, args) {
-            $scope.pageLoading = false;
+            counter--;
+            if (counter <= 0) {
+                $scope.pageLoading = false;
+            }
         });
     }])
 ;

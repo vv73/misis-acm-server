@@ -76,6 +76,7 @@ function Watch(params, callback, progressCallback) {
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;
                     });
+                    verdict = verdict.replace(/(\s\(.*\))$/i, '');
 
                     if (terminalExistence) {
                         callback(null, {
