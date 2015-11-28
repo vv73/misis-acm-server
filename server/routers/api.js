@@ -403,7 +403,7 @@ router.get('/contest/getTable', function (req, res) {
                 error: err.toString()
             });
         }
-        res.end(result);
+        res.json(result);
     });
 
     function execute(callback) {

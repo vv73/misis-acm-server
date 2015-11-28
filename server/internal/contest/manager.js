@@ -965,6 +965,19 @@ function GetTable(contestId, user, callback) {
                                 fallIndexMapping[ iIndex ] = id;
                             }
                         }
+                        var nColumns = Object.keys(indexMapping).length;
+                        var table = {
+                            header: {
+                                row: []
+                            },
+                            users: {},
+                            rows: []
+                        };
+                        for (var el in indexMapping) {
+                            table.header.row.push({
+                                task: indexMapping[ el ].toUpperCase()
+                            });
+                        }
                         connection.query(
                             'SELECT sent_solutions.*, verdicts.*, users.username, ' +
                             'CONCAT(users.first_name, " ", users.last_name) AS user_full_name, users.access_level ' +
@@ -972,7 +985,7 @@ function GetTable(contestId, user, callback) {
                             'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
                             'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
                             'WHERE sent_solutions.contest_id = ? AND sent_solutions.verdict_id <> 0 ' +
-                            'ORDER BY sent_solutions.user_id',
+                            'ORDER BY sent_solutions.user_id ASC',
                             [ contestId ],
                             function (err, results, fields) {
                                 if (err) {
@@ -980,7 +993,137 @@ function GetTable(contestId, user, callback) {
                                 }
                                 var sentRows = Array.isArray(results) ? results : [];
                                 connection.query(
-                                    ''
+                                    'SELECT user_enters.*, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                                    'users.access_level, users.username FROM user_enters ' +
+                                    'LEFT JOIN users ON users.id = user_enters.user_id ' +
+                                    'WHERE user_enters.contest_id = ? ' +
+                                    'ORDER BY user_enters.id ASC',
+                                    [ contestId ],
+                                    function (err, results, fields) {
+                                        if (err) {
+                                            return callback(new Error('An error with db', 1001));
+                                        }
+                                        var usersEnters = results;
+                                        for (var i = 0; i < usersEnters.length; ++i) {
+                                            var usersEntersRow = usersEnters[ i ];
+                                            if (!Array.isArray(table.users[ usersEntersRow.user_id ])) {
+                                                table.users[ usersEntersRow.user_id ] = {
+                                                    info: usersEntersRow,
+                                                    problems: {},
+                                                    row: [],
+                                                    score: 0,
+                                                    solutions: 0
+                                                };
+                                            }
+                                        }
+
+                                        for (var el in table.users) {
+                                            var curUser = table.users[ el ];
+                                            for (var taskArrayIndex in table.header.row) {
+                                                curUser.problems[ table.header.row[taskArrayIndex].task ] = [];
+                                            }
+                                        }
+
+                                        for (i = 0; i < sentRows.length; ++i) {
+                                            var curSentRow = sentRows[ i ];
+                                            if (typeof table.users[ curSentRow.user_id ] === 'undefined') {
+                                                continue;
+                                            }
+                                            var internalProblemIndex = indexMapping[ curSentRow.problem_id ];
+                                            table.users[ curSentRow.user_id ].problems[ internalProblemIndex ].push(curSentRow);
+                                        }
+
+                                        var startTime = contest.getStartTimeMs();
+                                        for (var userIndex in table.users) {
+                                            var curUserObject = table.users[userIndex];
+                                            for (var problemIndex in curUserObject.problems) {
+                                                var curProblemSentsArray = curUserObject.problems[problemIndex];
+
+                                                var nWrongs = 0,
+                                                    resultAdded = false;
+                                                for (var iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
+                                                    var curSent = curProblemSentsArray[iSent];
+                                                    var scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
+                                                    if (curSent.verdict_id !== 1) {
+                                                        if (curSent.scored) {
+                                                            curUserObject.score += scoreMinutes;
+                                                            nWrongs--;
+                                                        }
+                                                    } else {
+                                                        // когда вердикт - Accepted
+                                                        curUserObject.score += scoreMinutes;
+                                                        curUserObject.solutions++;
+                                                        curUserObject.row.push({
+                                                            task: problemIndex,
+                                                            result: nWrongs < 0 ?
+                                                                nWrongs.toString() : (nWrongs > 0 ?
+                                                                    '+' + nWrongs : '+')
+                                                        });
+                                                        resultAdded = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!resultAdded) {
+                                                    curUserObject.row.push({
+                                                        task: problemIndex,
+                                                        result: nWrongs < 0 ?
+                                                            nWrongs.toString() : '-'
+                                                    });
+                                                }
+                                            }
+                                            curUserObject.score = Math.floor(curUserObject.score);
+                                        }
+
+                                        var readyTable = {
+                                            header: table.header,
+                                            rows: []
+                                        };
+                                        for (userIndex in table.users) {
+                                            curUserObject = table.users[userIndex];
+                                            readyTable.rows.push({
+                                                user: curUserObject.info,
+                                                row: curUserObject.row,
+                                                score: curUserObject.score,
+                                                solutions: curUserObject.solutions
+                                            });
+                                        }
+
+                                        readyTable.rows.sort(function (y, x) {
+                                            if (x.solutions == y.solutions) {
+                                                return (x.score == y.score) ? 0 : (
+                                                    (x.score > y.score) ? -1 : 1
+                                                );
+                                            }
+                                            return (x.solutions < y.solutions) ? -1 : 1;
+                                        });
+
+                                        var curPlace = 1, buffer = 0, curGroup = 1;
+                                        for (i = 0; i < readyTable.rows.length; ++i) {
+                                            if (!i) {
+                                                readyTable.rows[i].rank = curPlace;
+                                                readyTable.rows[i].group = curGroup;
+                                                continue;
+                                            }
+                                            if (readyTable.rows[i].score === readyTable.rows[i - 1].score
+                                                && readyTable.rows[i].solutions === readyTable.rows[i - 1].solutions) {
+                                                buffer++;
+                                                readyTable.rows[i].rank = curPlace;
+                                            } else {
+                                                curPlace += buffer;
+                                                buffer = 0;
+                                                curPlace++;
+                                                readyTable.rows[i].rank = curPlace;
+                                            }
+
+                                            if (readyTable.rows[i].solutions === readyTable.rows[i - 1].solutions) {
+                                                readyTable.rows[i].group = curGroup;
+                                            } else {
+                                                readyTable.rows[i].group = ++curGroup;
+                                            }
+                                        }
+
+                                        callback(null, readyTable);
+                                    }
                                 );
                             }
                         );

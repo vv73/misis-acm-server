@@ -74,7 +74,7 @@ function Init(accounts, callback) {
             };
 
             request.post(ACM_BASE_URI + '/enter', options, function (err, response, body) {
-                if (response.statusCode !== 200 || err || !body) {
+                if (err || !response || response.statusCode !== 200 || !body) {
                     return callback(new Error('Auth failed'));
                 }
                 var $ = cheerio.load(body);
