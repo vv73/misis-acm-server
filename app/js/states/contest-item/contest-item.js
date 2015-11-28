@@ -51,6 +51,11 @@ angular.module('Qemy.ui.contest-item', [
                     templateUrl: templateUrl('contest-item', 'contest-send'),
                     controller: 'ContestItemSendController'
                 })
+                .state('contest.send-item', {
+                    url: '/send/:problemIndex',
+                    templateUrl: templateUrl('contest-item', 'contest-send'),
+                    controller: 'ContestItemSendController'
+                })
                 .state('contest.status', {
                     url: '/status/:select',
                     templateUrl: templateUrl('contest-item', 'contest-status'),

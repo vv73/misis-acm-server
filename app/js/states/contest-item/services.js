@@ -74,13 +74,23 @@ angular.module('Qemy.services.contest-item', [
             });
         }
 
+        function getTable(params) {
+            return $http({
+                method: 'get',
+                url: '/api/contest/getTable?' + dataEncode(params)
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             getConditions: getConditions,
             getCondition: getCondition,
             getLangs: getLangs,
             sendSolution: sendSolution,
             getSents: getSents,
-            getSourceCode: getSourceCode
+            getSourceCode: getSourceCode,
+            getTable: getTable
         }
     }])
 ;

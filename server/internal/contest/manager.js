@@ -945,7 +945,7 @@ function GetTable(contestId, user, callback) {
                     return callback(new Error('Access denied'));
                 }
                 connection.query(
-                    'SELECT problemset.id ' +
+                    'SELECT problemset.id,problemset.title ' +
                     'FROM problemset ' +
                     'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
                     'WHERE problems_to_contest.contest_id = ?',
@@ -961,8 +961,11 @@ function GetTable(contestId, user, callback) {
                             var id = results[el].id;
                             if (typeof id !== 'undefined') {
                                 var iIndex = nextIndex().toUpperCase();
-                                indexMapping[ id ] = iIndex;
-                                fallIndexMapping[ iIndex ] = id;
+                                indexMapping[ 'id' + id ] = {
+                                    index: iIndex,
+                                    name: results[el].title
+                                };
+                                fallIndexMapping[ 'ind' + iIndex ] = id;
                             }
                         }
                         var nColumns = Object.keys(indexMapping).length;
@@ -975,7 +978,10 @@ function GetTable(contestId, user, callback) {
                         };
                         for (var el in indexMapping) {
                             table.header.row.push({
-                                task: indexMapping[ el ].toUpperCase()
+                                task: {
+                                    index: indexMapping[ el ].index.toUpperCase().replace('ID', ''),
+                                    name: indexMapping[ el ].name
+                                }
                             });
                         }
                         connection.query(
@@ -1020,7 +1026,7 @@ function GetTable(contestId, user, callback) {
                                         for (var el in table.users) {
                                             var curUser = table.users[ el ];
                                             for (var taskArrayIndex in table.header.row) {
-                                                curUser.problems[ table.header.row[taskArrayIndex].task ] = [];
+                                                curUser.problems[ table.header.row[taskArrayIndex].task.index ] = [];
                                             }
                                         }
 
@@ -1029,8 +1035,21 @@ function GetTable(contestId, user, callback) {
                                             if (typeof table.users[ curSentRow.user_id ] === 'undefined') {
                                                 continue;
                                             }
-                                            var internalProblemIndex = indexMapping[ curSentRow.problem_id ];
+                                            var internalProblemIndex = indexMapping[ 'id' + curSentRow.problem_id].index;
                                             table.users[ curSentRow.user_id ].problems[ internalProblemIndex ].push(curSentRow);
+                                        }
+
+                                        function getAcceptTime(diffTime) {
+                                            var allSeconds = Math.floor(diffTime / 1000),
+                                                seconds = allSeconds % 60,
+                                                minutes = Math.floor(allSeconds / 60),
+                                                hours = Math.floor(minutes / 60);
+                                            minutes %= 60;
+                                            var zF = function (num) { return num < 10 ? '0' + num : num;},
+                                                formatString = 'hh:mm';
+                                            return formatString
+                                                .replace(/(hh)/gi, zF(hours))
+                                                .replace(/(mm)/gi, zF(minutes));
                                         }
 
                                         var startTime = contest.getStartTimeMs();
@@ -1056,8 +1075,9 @@ function GetTable(contestId, user, callback) {
                                                         curUserObject.row.push({
                                                             task: problemIndex,
                                                             result: nWrongs < 0 ?
-                                                                nWrongs.toString() : (nWrongs > 0 ?
-                                                                    '+' + nWrongs : '+')
+                                                                '+' + (-1 * nWrongs).toString() : (nWrongs > 0 ?
+                                                                    '+' + nWrongs : '+'),
+                                                            time: getAcceptTime(curSent.sent_time - startTime)
                                                         });
                                                         resultAdded = true;
                                                         break;
@@ -1067,7 +1087,7 @@ function GetTable(contestId, user, callback) {
                                                     curUserObject.row.push({
                                                         task: problemIndex,
                                                         result: nWrongs < 0 ?
-                                                            nWrongs.toString() : '-'
+                                                            nWrongs.toString() : '—'
                                                     });
                                                 }
                                             }

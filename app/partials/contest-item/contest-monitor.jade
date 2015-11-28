@@ -1,3 +1,35 @@
 div.contest
   div.contest__content
-    div Таблица результатов
+    div.contest__inner
+      div.contest__title-section
+        h2 Таблица результатов
+
+      div.monitor-content
+        md-content
+          div.monitor-content__table
+            div.monitor-content__row.monitor-content__row_type_header
+              div.monitor-content__cell
+                span Место
+              div.monitor-content__cell.monitor-content__cell-participant
+                span Участник
+              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='headerCell in contestTable.header.row', title='{{headerCell.task.name}}')
+                a.link(ui-sref='^.conditions-item({problemIndex: headerCell.task.index})', ng-bind='headerCell.task.index', title='{{headerCell.task.name}}')
+              div.monitor-content__cell.monitor-content__cell-solutions
+                span Решения
+              div.monitor-content__cell.monitor-content__cell-score
+                span Время
+
+            div.monitor-content__row(ng-repeat='row in contestTable.rows',
+            ng-class='{"monitor-content__row-my": user.id === row.user.user_id, "monitor-content__row_group_even": row.group % 2 === 0 && row.solutions !== 0}')
+              div.monitor-content__cell
+                span(ng-bind='row.rank')
+              div.monitor-content__cell.monitor-content__cell-participant
+                span(ng-bind='row.user.user_full_name')
+              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='cell in row.row',ng-class='{"monitor-content__cell_type_accepted": cell.result.indexOf("+") !== -1}')
+                span(ng-bind='cell.result')
+                span.monitor-content__cell_accept-time(ng-if='cell.time')
+                  span(ng-bind='cell.time')
+              div.monitor-content__cell.monitor-content__cell-solutions
+                span(ng-bind='row.solutions')
+              div.monitor-content__cell.monitor-content__cell-score
+                span(ng-bind='row.score')

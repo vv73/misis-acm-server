@@ -88,12 +88,30 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ContestItemMonitorController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
-        function ($scope, $rootScope, $state, ContestItemManager, _) {
+    .controller('ContestItemMonitorController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', 'UserManager',
+        function ($scope, $rootScope, $state, ContestItemManager, _, UserManager) {
             $scope.$emit('change_title', {
                 title: 'Таблица результатов | ' + _('app_name')
             });
-            console.log('Таблица контеста.');
+            var contestId = $state.params.contestId;
+            $scope.contestTable = {};
+            $scope.user = {};
+
+            $rootScope.$broadcast('data loading');
+            ContestItemManager.getTable({ contest_id: contestId })
+                .then(function (result) {
+                    if (result.error) {
+                        return $rootScope.$broadcast('data loaded');
+                    }
+                    $scope.contestTable = result;
+                    UserManager.getCurrentUser()
+                        .then(function (user) {
+                            $rootScope.$broadcast('data loaded');
+                            $scope.user = user;
+                        }).catch(function () {
+                            $rootScope.$broadcast('data loaded');
+                        });
+                });
         }
     ])
 
@@ -136,14 +154,14 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ContestItemSendController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
-        function ($scope, $rootScope, $state, ContestItemManager, _) {
+    .controller('ContestItemSendController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', 'Storage',
+        function ($scope, $rootScope, $state, ContestItemManager, _, Storage) {
             $scope.$emit('change_title', {
                 title: 'Отправить решение | ' + _('app_name')
             });
             var contestId = $state.params.contestId;
             $scope.conditions = [];
-            $scope.selectedCondition = '';
+            $scope.selectedCondition = $state.params.problemIndex || 'A';
             $scope.currentLangs = [];
             $scope.selectedLangId = null;
 
@@ -161,10 +179,41 @@ angular.module('Qemy.controllers.contest-item', [])
                         return;
                     }
                     $scope.currentLangs = result;
-                    $scope.selectedLangId = result && result.length ?
-                        result[0].id : null;
+                    if (result.length) {
+                        curLang.type = result[0].system_type;
+                    }
+                    Storage.get('system_langs').then(function (system_langs) {
+                        if (!system_langs || typeof system_langs !== 'object') {
+                            return $scope.selectedLangId = result && result.length ?
+                                result[0].id : null;
+                        }
+                        var langId = system_langs[ curLang.type ];
+                        if (!langId) {
+                            return $scope.selectedLangId = result && result.length ?
+                                result[0].id : null;
+                        }
+                        $scope.selectedLangId = langId;
+                    });
                 }).catch(function () {
                     $rootScope.$broadcast('data loaded');
+                });
+            });
+
+            var curLang = {};
+            $scope.$watch('selectedLangId', function (newVal, oldVal) {
+                curLang.id = newVal;
+                if (newVal == oldVal) {
+                    return;
+                }
+                Storage.get('system_langs').then(function (system_langs) {
+                    if (!system_langs || typeof system_langs !== 'object') {
+                        system_langs = {};
+                    }
+                    if (!curLang.id || !curLang.type) {
+                        return;
+                    }
+                    system_langs[ curLang.type ] = curLang.id;
+                    Storage.set({ system_langs: system_langs });
                 });
             });
 
@@ -176,8 +225,8 @@ angular.module('Qemy.controllers.contest-item', [])
                         return;
                     }
                     $scope.conditions = result;
-                    $scope.selectedCondition = $scope.conditions && $scope.conditions.length ?
-                        $scope.conditions[0].internal_index : '';
+                    $scope.selectedCondition = $scope.conditions && $scope.conditions.length && $scope.selectedCondition === 'A' ?
+                        $scope.conditions[0].internal_index : $scope.selectedCondition;
                 });
 
             $scope.solution = '';
@@ -348,10 +397,21 @@ angular.module('Qemy.controllers.contest-item', [])
             ContestItemManager.getSourceCode({ contest_id: contestId, source_id: sourceId })
                 .then(function (result) {
                     $scope.source = result;
-                    console.log($scope.source);
                     $timeout(function () {
                         $rootScope.$broadcast('data loaded');
-                        Rainbow.color();
+                        if (!Rainbow) {
+                            var tryRunRainbow = setInterval(function () {
+                                if (!Rainbow) {
+                                    return;
+                                }
+                                Rainbow.color();
+                                $rootScope.$broadcast('data loaded');
+                                clearInterval(tryRunRainbow);
+                            }, 500);
+                        } else {
+                            $rootScope.$broadcast('data loaded');
+                            Rainbow.color();
+                        }
                     }, 200);
                 }).catch(function () {
                     $rootScope.$broadcast('data loaded');

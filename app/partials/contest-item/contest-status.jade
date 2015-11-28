@@ -16,7 +16,7 @@ div.contest
                     span Время
                   div.sent-list__cell
                     span Участник
-                  div.sent-list__cell
+                  div.sent-list__cell.sent-list__cell-task
                     span Задача
                   div.sent-list__cell
                     span Язык
@@ -39,7 +39,7 @@ div.contest
                     span {{(sent.sent_time - sent.contest_start_time) | formatStartTime}}
                   div.sent-list__cell
                     span {{sent.user_full_name}}
-                  div.sent-list__cell
+                  div.sent-list__cell.sent-list__cell-task
                     a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
@@ -70,7 +70,7 @@ div.contest
                     span Время
                   div.sent-list__cell
                     span Участник
-                  div.sent-list__cell
+                  div.sent-list__cell.sent-list__cell-task
                     span Задача
                   div.sent-list__cell
                     span Язык
@@ -93,7 +93,7 @@ div.contest
                     span {{(sent.sent_time - sent.contest_start_time) | formatStartTime}}
                   div.sent-list__cell
                     span {{sent.user_full_name}}
-                  div.sent-list__cell
+                  div.sent-list__cell.sent-list__cell-task
                     a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
