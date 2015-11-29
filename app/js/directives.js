@@ -84,6 +84,7 @@ angular.module('Qemy.directives', [])
                 element = element.find('.my-timer');
                 var timeoutId,
                     $interval = $injector.get('$interval'),
+                    $timeout = $injector.get('$timeout'),
                     finishCallbackInvoked = false;
 
                 function updateTime() {
@@ -96,9 +97,11 @@ angular.module('Qemy.directives', [])
                     for (var eventKey in otherEvents) {
                         var timeEventMs = otherEvents[eventKey].time,
                             eventCallback = otherEvents[eventKey].callback;
-                        if (Math.floor(timeEventMs / 1000) + 1 === Math.floor(curTime / 1000)) {
+                        if (Math.floor(timeEventMs / 1000) - 1 === Math.floor(curTime / 1000)) {
                             if (typeof eventCallback === 'function') {
-                                eventCallback();
+                                $timeout(function (callback) {
+                                    callback();
+                                }.bind(this, eventCallback), 2000);
                             }
                         }
                     }
