@@ -20,30 +20,36 @@ angular.module('Qemy.controllers.contest-item', [])
             });
             var contestId = $state.params.contestId;
             $scope.contest = {};
-            $rootScope.$broadcast('data loading');
-            ContestsManager.canJoin({ contest_id: contestId })
-                .then(function (response) {
-                    if (!response || !response.result
-                        || !response.result.can || !response.result.joined) {
-                        $rootScope.$broadcast('data loaded');
-                        $state.go('index');
-                    }
-                    console.log('Доступ к контесту разрешен. Идет загрузка данных...');
-                    ContestsManager.getContest({ contest_id: contestId })
-                        .then(function (response) {
+
+            function updateContest() {
+                $rootScope.$broadcast('data loading');
+                ContestsManager.canJoin({contest_id: contestId})
+                    .then(function (response) {
+                        if (!response || !response.result
+                            || !response.result.can || !response.result.joined) {
                             $rootScope.$broadcast('data loaded');
-                            if (!response) {
-                                $state.go('contests.list');
-                            }
-                            $scope.contest = contestFill(response.contest);
-                            $scope.$broadcast('contest loaded', {
-                                contest: response.contest
+                            $state.go('index');
+                        }
+                        console.log('Доступ к контесту разрешен. Идет загрузка данных...');
+                        ContestsManager.getContest({contest_id: contestId})
+                            .then(function (response) {
+                                $rootScope.$broadcast('data loaded');
+                                if (!response) {
+                                    $state.go('contests.list');
+                                }
+                                $scope.contest = contestFill(response.contest);
+                                $scope.$broadcast('contest loaded', {
+                                    contest: response.contest
+                                });
+                                $rootScope.$broadcast('header expand open', {
+                                    contest: response.contest
+                                });
                             });
-                            $rootScope.$broadcast('header expand open', {
-                                contest: response.contest
-                            });
-                        });
-                });
+                    });
+            }
+            updateContest();
+
+            $scope.updateContest = updateContest;
 
             $scope.$on('$destroy', function () {
                 $rootScope.$broadcast('header expand close');
@@ -73,6 +79,7 @@ angular.module('Qemy.controllers.contest-item', [])
 
                 contest.startDate = formatDate(contest.startTime);
                 contest.finishDate = formatDate(contest.absoluteDurationTime);
+                contest.finishPracticeDate = formatDate(contest.absolutePracticeDurationTime);
 
                 return contest;
             }
@@ -97,21 +104,25 @@ angular.module('Qemy.controllers.contest-item', [])
             $scope.contestTable = {};
             $scope.user = {};
 
-            $rootScope.$broadcast('data loading');
-            ContestItemManager.getTable({ contest_id: contestId })
-                .then(function (result) {
-                    if (result.error) {
-                        return $rootScope.$broadcast('data loaded');
-                    }
-                    $scope.contestTable = result;
-                    UserManager.getCurrentUser()
-                        .then(function (user) {
-                            $rootScope.$broadcast('data loaded');
-                            $scope.user = user;
-                        }).catch(function () {
-                            $rootScope.$broadcast('data loaded');
-                        });
-                });
+            function updateTable() {
+                $rootScope.$broadcast('data loading');
+                ContestItemManager.getTable({contest_id: contestId})
+                    .then(function (result) {
+                        if (result.error) {
+                            return $rootScope.$broadcast('data loaded');
+                        }
+                        $scope.contestTable = result;
+                        UserManager.getCurrentUser()
+                            .then(function (user) {
+                                $rootScope.$broadcast('data loaded');
+                                $scope.user = user;
+                            }).catch(function () {
+                                $rootScope.$broadcast('data loaded');
+                            });
+                    });
+            }
+            updateTable();
+            $scope.updateTable = updateTable;
         }
     ])
 

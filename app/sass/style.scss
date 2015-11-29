@@ -706,7 +706,7 @@ my-timer-element {
     color: #A3A3A3;
   }
   md-toolbar.md-warn > md-tabs.md-default-theme, md-tabs > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-warn > md-tabs.md-default-theme, md-tabs > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {
-    color: #4486C6;
+    color: #219CF5;
   }
 }
 .sent-list__item {
@@ -942,4 +942,7 @@ my-timer-element {
 .contest__status {
   padding: 10px 0 20px;
   text-align: center;
+}
+.monitor-content__cell_type_in-practice {
+  background-color: #C4F0FF;
 }

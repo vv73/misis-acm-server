@@ -15,16 +15,28 @@ div.contest
               span.contests-list__item_status_success Завершён
             div(ng-switch-when='FROZEN')
               span.contests-list__item_status_neutral Заморозка. Осталось
-                my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')
+                my-timer-element.contest-item__status-time(
+                finish='contest.absoluteDurationTime',
+                on-finish='updateContest'
+                on-other='[{time: contest.absoluteDurationTime, callback: updateTable}]'
+                )
             div(ng-switch-when='WAITING')
               span Начало через
-                my-timer-element.contest-item__status-time(finish='contest.startTime')
+                my-timer-element.contest-item__status-time(finish='contest.startTime', on-finish='updateContest')
             div(ng-switch-when='RUNNING')
               span Контест идет. Осталось
-                my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')
+                my-timer-element.contest-item__status-time(
+                finish='contest.absoluteDurationTime',
+                on-finish='updateContest',
+                on-other='[{time: contest.absoluteFreezeTime, callback: updateContest}, {time: contest.absoluteFreezeTime, callback: updateTable}]'
+                )
             div(ng-switch-when='PRACTICE')
               span.contests-list__item_status_success Дорешивание. Осталось
-                my-timer-element.contest-item__status-time(finish='contest.absolutePracticeDurationTime')
+                my-timer-element.contest-item__status-time(
+                finish='contest.absolutePracticeDurationTime',
+                on-finish='updateContest'
+                on-other='[{time: contest.absolutePracticeDurationTime, callback: updateTable}]'
+                )
 
       div.monitor-content
         md-content
@@ -48,8 +60,8 @@ div.contest
               div.monitor-content__cell.monitor-content__cell-participant
                 span(ng-bind='row.user.user_full_name')
               div.monitor-content__cell.monitor-content__cell-result(ng-repeat='cell in row.row',
-              ng-class='{"monitor-content__cell_type_accepted": cell.result.indexOf("+") !== -1, "monitor-content__cell_type_frozen": cell.frozen}',
-              title='{{cell.frozen ? "Отправлено после заморозки" : ""}}')
+              ng-class='{"monitor-content__cell_type_accepted": cell.result.indexOf("+") !== -1, "monitor-content__cell_type_frozen": cell.frozen, "monitor-content__cell_type_in-practice": cell.inPractice}',
+              title='{{cell.frozen ? "Отправлено после заморозки" : (cell.inPractice ? "Дорешено" : "")}}')
                 span(ng-bind='cell.result')
                 span.monitor-content__cell_accept-time(ng-if='cell.time', ng-class='{"monitor-content__cell_accept-time-too-much": row.row.length > 30}')
                   span(ng-bind='cell.time')

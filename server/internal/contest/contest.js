@@ -291,6 +291,7 @@ Contest.prototype.getObjectFactory = function () {
         absoluteDurationTime: this.getAbsoluteDurationTimeMs(),
         relativePracticeTime: this.getRelativePracticeDurationTimeMs(),
         absolutePracticeDurationTime: this.getAbsolutePracticeDurationTimeMs(),
+        hasPracticeTime: !!this.getRelativePracticeDurationTimeMs(),
         author_id: this.getAuthorId(),
         isEnabled: this.isEnabled(),
         creationTime: this.getCreationTimeMs(),

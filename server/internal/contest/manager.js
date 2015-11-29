@@ -1100,7 +1100,8 @@ function GetTable(contestId, user, callback) {
                                                                 result: nWrongs < 0 ?
                                                                 '+' + (-1 * nWrongs).toString() : (nWrongs > 0 ?
                                                                 '+' + nWrongs : '+'),
-                                                                time: getAcceptTime(curSent.sent_time - startTime)
+                                                                time: getAcceptTime(curSent.sent_time - startTime),
+                                                                inPractice: curSent.sent_time > finishTime
                                                             });
                                                             resultAdded = true;
                                                             break;
