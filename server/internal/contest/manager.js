@@ -1052,7 +1052,8 @@ function GetTable(contestId, user, callback) {
                                                 .replace(/(mm)/gi, zF(minutes));
                                         }
 
-                                        var startTime = contest.getStartTimeMs();
+                                        var startTime = contest.getStartTimeMs(),
+                                            penaltyTime = 20;
                                         for (var userIndex in table.users) {
                                             var curUserObject = table.users[userIndex];
                                             for (var problemIndex in curUserObject.problems) {
@@ -1065,12 +1066,11 @@ function GetTable(contestId, user, callback) {
                                                     var scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
                                                     if (curSent.verdict_id !== 1) {
                                                         if (curSent.scored) {
-                                                            curUserObject.score += scoreMinutes;
                                                             nWrongs--;
                                                         }
                                                     } else {
                                                         // когда вердикт - Accepted
-                                                        curUserObject.score += scoreMinutes;
+                                                        curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
                                                         curUserObject.solutions++;
                                                         curUserObject.row.push({
                                                             task: problemIndex,

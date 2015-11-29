@@ -914,3 +914,13 @@ my-timer-element {
     font-size: 10px;
   }
 }
+.task__send {
+  text-align: center;
+  border-top: 1px solid #219CF5;;
+  padding: 20px 0 0;
+  margin-top: 20px;
+  .md-button {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
