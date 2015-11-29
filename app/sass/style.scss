@@ -869,16 +869,16 @@ my-timer-element {
   background-color: #f0f0f0;
 }
 .monitor-content__row-my {
-  background-color: rgba(239, 94, 94, 0.46) !important;
+  background-color: rgba(255, 215, 152, 0.77) !important;
   .monitor-content__cell {
     border-color: rgba(225, 140, 140, 0.76) !important;
   }
   &:hover {
-    background-color: rgba(246, 97, 97, 0.5) !important;
+    background-color: rgba(232, 193, 133, 0.77) !important;
   }
 }
 .monitor-content__row_group_even {
-  background-color: rgba(136, 238, 170, 0.61);
+  background-color: rgba(154, 255, 134, 0.61);
   .monitor-content__cell {
     border-color: #83C699;
   }
@@ -892,14 +892,14 @@ my-timer-element {
     background-color: rgba(0,0,0,0.1);
   }
   &.monitor-content__row_group_even {
-    background-color: rgba(16, 219, 71, 0.41)
+    background-color: rgba(192, 255, 158, 0.55);
   }
   &.monitor-content__row_group_even:hover {
-    background-color: rgba(15, 206, 67, 0.41)
+    background-color: rgba(176, 238, 142, 0.55);
   }
 }
 .monitor-content__row_group_even:hover {
-  background-color: rgba(130, 227, 162, 0.61);
+  background-color: rgba(136, 230, 116, 0.61);
 }
 .monitor-content__cell_accept-time {
   font-size: 14px;
@@ -916,11 +916,30 @@ my-timer-element {
 }
 .task__send {
   text-align: center;
-  border-top: 1px solid #219CF5;;
+  border-top: 1px solid #219CF5;
   padding: 20px 0 0;
   margin-top: 20px;
   .md-button {
     padding-left: 10px;
     padding-right: 10px;
   }
+}
+.sent-list__link {
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+}
+.monitor-content__cell_accept-time-too-much {
+  font-size: 9px;
+}
+.monitor-content__no-solutions:not(.monitor-content__row-my) {
+  opacity: 0.8;
+}
+.monitor-content__cell_type_frozen {
+  background-color: #FCFF92;
+}
+.contest__status {
+  padding: 10px 0 20px;
+  text-align: center;
 }

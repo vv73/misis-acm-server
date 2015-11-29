@@ -69,8 +69,8 @@ angular.module('Qemy.controllers.contests', [])
                 name: 'Только завершенные',
                 category: 'showOnlyFinished'
             }, {
-                name: 'Только виртуальные',
-                category: 'showOnlyVirtual'
+                name: 'Только дорешивание',
+                category: 'showOnlyPractice'
             }, {
                 name: 'Только доступные',
                 category: 'showOnlyEnabled'

@@ -34,3 +34,6 @@ div.contests-list__item-layer(ng-click='joinContest(contest)')
               on-finish='updateContest',
               on-other='[{time: contest.absoluteFreezeTime, callback: updateContest}]'
               )
+          div(ng-switch-when='PRACTICE')
+            span.contests-list__item_status_success Дорешивание. Осталось
+              my-timer-element.contest-item__status-time(finish='contest.absolutePracticeDurationTime', on-finish='updateContest')

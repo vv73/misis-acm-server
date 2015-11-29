@@ -124,7 +124,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
 
         var categoryPredicate = [
             'all',
-            'showOnlyVirtual',
+            'showOnlyPractice',
             'showOnlyEnabled',
             'showOnlyDisabled',
             'showOnlyFinished',
@@ -154,8 +154,11 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
                 readyWhereStatements.all = '';
                 statementExistence = false;
                 break;
-            case 'showOnlyVirtual':
-                readyWhereStatements.showOnlyVirtual = 'contests.virtual = 1';
+            case 'showOnlyPractice':
+                readyWhereStatements.showOnlyPractice = 'contests.start_time + ' +
+                    'contests.duration_time < ' +
+                    curDate.getTime() + ' AND ' + curDate.getTime() +
+                    ' <= contests.duration_time + contests.practice_duration_time';
                 break;
             case 'showOnlyEnabled':
                 readyWhereStatements.showOnlyEnabled = 'contests.enabled = 1';
@@ -769,6 +772,9 @@ function GetSents(contestId, user, select, count, offset, callback) {
                                 indexMapping[id] = nextIndex().toUpperCase();
                             }
                         }
+                        var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();},
+                            curTime = new Date().getTime();
+
                         connection.query(
                             'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
                             'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
@@ -784,6 +790,10 @@ function GetSents(contestId, user, select, count, offset, callback) {
                             'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
                             'WHERE sent_solutions.contest_id = ? ' +
                             (select === 'my' ? 'AND users.id = ' + user.getId() : '') + ' ' +
+                            (user.getAccessGroup().access_level !== 5 && inFreeze(curTime)
+                                ? 'AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
+                                    'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ' ' +
+                                    'OR users.id = ' + user.getId() + ')' : '') + ' ' +
                             'ORDER BY sent_id DESC ' +
                             'LIMIT ?, ?; ' +
                             'SELECT COUNT(*) AS all_items_count ' +
@@ -1035,8 +1045,12 @@ function GetTable(contestId, user, callback) {
                                             if (typeof table.users[ curSentRow.user_id ] === 'undefined') {
                                                 continue;
                                             }
-                                            var internalProblemIndex = indexMapping[ 'id' + curSentRow.problem_id].index;
-                                            table.users[ curSentRow.user_id ].problems[ internalProblemIndex ].push(curSentRow);
+                                            try {
+                                                var internalProblemIndex = indexMapping['id' + curSentRow.problem_id].index;
+                                                table.users[curSentRow.user_id].problems[internalProblemIndex].push(curSentRow);
+                                            } catch (err) {
+                                                console.log(err);
+                                            }
                                         }
 
                                         function getAcceptTime(diffTime) {
@@ -1053,42 +1067,100 @@ function GetTable(contestId, user, callback) {
                                         }
 
                                         var startTime = contest.getStartTimeMs(),
-                                            penaltyTime = 20;
-                                        for (var userIndex in table.users) {
-                                            var curUserObject = table.users[userIndex];
-                                            for (var problemIndex in curUserObject.problems) {
-                                                var curProblemSentsArray = curUserObject.problems[problemIndex];
+                                            freezeTime = contest.getAbsoluteFreezeTimeMs(),
+                                            finishTime = contest.getAbsoluteDurationTimeMs(),
+                                            penaltyTime = 20,
+                                            inFreeze = function (time) { return time >= freezeTime && time <= finishTime;},
+                                            curTime = new Date().getTime();
 
-                                                var nWrongs = 0,
-                                                    resultAdded = false;
-                                                for (var iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
-                                                    var curSent = curProblemSentsArray[iSent];
-                                                    var scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
-                                                    if (curSent.verdict_id !== 1) {
-                                                        if (curSent.scored) {
-                                                            nWrongs--;
+                                        for (var userIndex in table.users) {
+                                            var curUserObject = table.users[userIndex],
+                                                curUserId = curUserObject.info.user_id;
+
+                                            if (curUserId === user.getId() || !inFreeze(curTime)
+                                                || user.getAccessGroup().access_level === 5) {
+                                                for (var problemIndex in curUserObject.problems) {
+                                                    var curProblemSentsArray = curUserObject.problems[problemIndex];
+
+                                                    var nWrongs = 0,
+                                                        resultAdded = false;
+                                                    for (var iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
+                                                        var curSent = curProblemSentsArray[iSent];
+                                                        var scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
+                                                        if (curSent.verdict_id !== 1) {
+                                                            if (curSent.scored) {
+                                                                nWrongs--;
+                                                            }
+                                                        } else {
+                                                            // когда вердикт - Accepted
+                                                            curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
+                                                            curUserObject.solutions++;
+                                                            curUserObject.row.push({
+                                                                task: problemIndex,
+                                                                result: nWrongs < 0 ?
+                                                                '+' + (-1 * nWrongs).toString() : (nWrongs > 0 ?
+                                                                '+' + nWrongs : '+'),
+                                                                time: getAcceptTime(curSent.sent_time - startTime)
+                                                            });
+                                                            resultAdded = true;
+                                                            break;
                                                         }
-                                                    } else {
-                                                        // когда вердикт - Accepted
-                                                        curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
-                                                        curUserObject.solutions++;
+                                                    }
+                                                    if (!resultAdded) {
                                                         curUserObject.row.push({
                                                             task: problemIndex,
                                                             result: nWrongs < 0 ?
-                                                                '+' + (-1 * nWrongs).toString() : (nWrongs > 0 ?
-                                                                    '+' + nWrongs : '+'),
-                                                            time: getAcceptTime(curSent.sent_time - startTime)
+                                                                nWrongs.toString() : '—'
                                                         });
-                                                        resultAdded = true;
-                                                        break;
                                                     }
                                                 }
-                                                if (!resultAdded) {
-                                                    curUserObject.row.push({
-                                                        task: problemIndex,
-                                                        result: nWrongs < 0 ?
-                                                            nWrongs.toString() : '—'
-                                                    });
+                                            } else {
+                                                /* Для других пользователей во время заморозки */
+                                                for (problemIndex in curUserObject.problems) {
+                                                    curProblemSentsArray = curUserObject.problems[problemIndex];
+
+                                                    nWrongs = 0;
+                                                    resultAdded = false;
+                                                    var inFreezeChanged = false;
+
+                                                    for (iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
+                                                        curSent = curProblemSentsArray[iSent];
+                                                        var sentTime = curSent.sent_time;
+                                                        scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
+
+                                                        if (curSent.verdict_id !== 1) {
+                                                            if (curSent.scored && !inFreeze(sentTime)) {
+                                                                nWrongs--;
+                                                            } else if (inFreeze(sentTime)) {
+                                                                inFreezeChanged = true;
+                                                            }
+                                                        } else {
+                                                            // когда вердикт - Accepted
+                                                            if (inFreeze(sentTime)) {
+                                                                inFreezeChanged = true;
+                                                                continue;
+                                                            }
+                                                            curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
+                                                            curUserObject.solutions++;
+                                                            curUserObject.row.push({
+                                                                task: problemIndex,
+                                                                result: nWrongs < 0 ?
+                                                                '+' + (-1 * nWrongs).toString() : (nWrongs > 0 ?
+                                                                '+' + nWrongs : '+'),
+                                                                time: getAcceptTime(curSent.sent_time - startTime)
+                                                            });
+                                                            resultAdded = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (!resultAdded) {
+                                                        curUserObject.row.push({
+                                                            task: problemIndex,
+                                                            result: nWrongs < 0 ?
+                                                                nWrongs.toString() : '—',
+                                                            frozen: inFreezeChanged
+                                                        });
+                                                    }
                                                 }
                                             }
                                             curUserObject.score = Math.floor(curUserObject.score);
@@ -1134,14 +1206,12 @@ function GetTable(contestId, user, callback) {
                                                 curPlace++;
                                                 readyTable.rows[i].rank = curPlace;
                                             }
-
                                             if (readyTable.rows[i].solutions === readyTable.rows[i - 1].solutions) {
                                                 readyTable.rows[i].group = curGroup;
                                             } else {
                                                 readyTable.rows[i].group = ++curGroup;
                                             }
                                         }
-
                                         callback(null, readyTable);
                                     }
                                 );

@@ -4,6 +4,28 @@ div.contest
       div.contest__title-section
         h2 Таблица результатов
 
+      div.contest__status
+        span
+          div.contest-item__status(ng-switch='contest.status')
+            div(ng-switch-when='NOT_ENABLED')
+              span.contests-list__item_status_removed Не доступен
+            div(ng-switch-when='REMOVED')
+              span.contests-list__item_status_removed Удален
+            div(ng-switch-when='FINISHED')
+              span.contests-list__item_status_success Завершён
+            div(ng-switch-when='FROZEN')
+              span.contests-list__item_status_neutral Заморозка. Осталось
+                my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')
+            div(ng-switch-when='WAITING')
+              span Начало через
+                my-timer-element.contest-item__status-time(finish='contest.startTime')
+            div(ng-switch-when='RUNNING')
+              span Контест идет. Осталось
+                my-timer-element.contest-item__status-time(finish='contest.absoluteDurationTime')
+            div(ng-switch-when='PRACTICE')
+              span.contests-list__item_status_success Дорешивание. Осталось
+                my-timer-element.contest-item__status-time(finish='contest.absolutePracticeDurationTime')
+
       div.monitor-content
         md-content
           div.monitor-content__table
@@ -20,14 +42,16 @@ div.contest
                 span Время
 
             div.monitor-content__row(ng-repeat='row in contestTable.rows',
-            ng-class='{"monitor-content__row-my": user.id === row.user.user_id, "monitor-content__row_group_even": row.group % 2 === 0 && row.solutions !== 0}')
+            ng-class='{"monitor-content__row-my": user.id === row.user.user_id, "monitor-content__row_group_even": row.group % 2 === 0 && row.solutions !== 0, "monitor-content__no-solutions": row.solutions === 0}')
               div.monitor-content__cell
                 span(ng-bind='row.rank')
               div.monitor-content__cell.monitor-content__cell-participant
                 span(ng-bind='row.user.user_full_name')
-              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='cell in row.row',ng-class='{"monitor-content__cell_type_accepted": cell.result.indexOf("+") !== -1}')
+              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='cell in row.row',
+              ng-class='{"monitor-content__cell_type_accepted": cell.result.indexOf("+") !== -1, "monitor-content__cell_type_frozen": cell.frozen}',
+              title='{{cell.frozen ? "Отправлено после заморозки" : ""}}')
                 span(ng-bind='cell.result')
-                span.monitor-content__cell_accept-time(ng-if='cell.time')
+                span.monitor-content__cell_accept-time(ng-if='cell.time', ng-class='{"monitor-content__cell_accept-time-too-much": row.row.length > 30}')
                   span(ng-bind='cell.time')
               div.monitor-content__cell.monitor-content__cell-solutions
                 span(ng-bind='row.solutions')

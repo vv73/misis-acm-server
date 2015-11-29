@@ -16,6 +16,7 @@ var app = express();
 var authManager = require('../internal/user/auth/auth');
 var contestManager = require('../internal/contest/manager');
 var problemsetManager = require('../internal/problemset/manager');
+var scanner = require('../internal/problemset/scanner');
 
 router.all('/', function (req, res) {
     res.json({
@@ -416,6 +417,35 @@ router.get('/contest/getTable', function (req, res) {
             return callback(new Error('Params are not specified'));
         }
         contestManager.getTable(q.contest_id, user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+
+router.get('/admin/scanTimus', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('User is not specified'));
+        }
+        scanner.scanTimusTasks(user, function (err, result) {
             if (err) {
                 return callback({
                     error: err.toString()

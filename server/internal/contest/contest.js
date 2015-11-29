@@ -107,6 +107,14 @@ Contest.prototype.getAbsoluteDurationTimeMs = function () {
     return this.getStartTimeMs() + this.getRelativeDurationTimeMs();
 };
 
+Contest.prototype.getRelativePracticeDurationTimeMs = function () {
+    return this._contestRow.practice_duration_time;
+};
+
+Contest.prototype.getAbsolutePracticeDurationTimeMs = function () {
+    return this.getAbsoluteDurationTimeMs() + this.getRelativePracticeDurationTimeMs();
+};
+
 Contest.prototype.getAuthorId = function () {
     return this._contestRow.user_id;
 };
@@ -117,8 +125,10 @@ Contest.prototype.getStatus = function () {
         return 'NOT_ENABLED';
     } else if (this.isRemoved()) {
         return 'REMOVED';
-    } else if (this.getAbsoluteDurationTimeMs() < curTime) {
+    } else if (this.getAbsolutePracticeDurationTimeMs() < curTime) {
         return 'FINISHED';
+    } else if (this.getAbsoluteDurationTimeMs() <= curTime) {
+        return 'PRACTICE';
     } else if (this.getAbsoluteFreezeTimeMs() <= curTime) {
         return 'FROZEN';
     } else if (this.getStartTimeMs() > curTime) {
@@ -279,6 +289,8 @@ Contest.prototype.getObjectFactory = function () {
         absoluteFreezeTime: this.getAbsoluteFreezeTimeMs(),
         relativeDurationTime: this.getRelativeDurationTimeMs(),
         absoluteDurationTime: this.getAbsoluteDurationTimeMs(),
+        relativePracticeTime: this.getRelativePracticeDurationTimeMs(),
+        absolutePracticeDurationTime: this.getAbsolutePracticeDurationTimeMs(),
         author_id: this.getAuthorId(),
         isEnabled: this.isEnabled(),
         creationTime: this.getCreationTimeMs(),
