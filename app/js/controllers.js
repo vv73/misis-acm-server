@@ -53,8 +53,8 @@ angular.module('Qemy.controllers', [
         }
     ])
 
-    .controller('HeaderCtrl', ['$scope', '$rootScope', 'UserManager', '$mdDialog',
-        function ($scope, $rootScope, UserManager, $mdDialog) {
+    .controller('HeaderCtrl', ['$scope', '$rootScope', '$state', 'UserManager', '$mdDialog',
+        function ($scope, $rootScope, $state, UserManager, $mdDialog) {
             $scope.user = {};
             $scope.isAuth = false;
             $scope.$on('user updated', function (ev, args) {
@@ -72,9 +72,10 @@ angular.module('Qemy.controllers', [
                 iconSrc: '/img/icons/ic_settings_48px.svg'
             }, {
                 type: 'item',
-                id: 'my-sents',
-                name: 'Мои отправки',
-                iconSrc: '/img/icons/ic_send_48px.svg'
+                onlyFor: 5,
+                id: 'admin-panel',
+                name: 'Панель администратора',
+                iconSrc: '/img/icons/ic_security_48px.svg'
             }, {
                 type: 'divider'
             }, {
@@ -88,7 +89,8 @@ angular.module('Qemy.controllers', [
                 switch (item.id) {
                     case 'settings':
                         break;
-                    case 'my-sents':
+                    case 'admin-panel':
+                        $state.go('admin.index');
                         break;
                     case 'exit-app':
                         exitFromApp(event);

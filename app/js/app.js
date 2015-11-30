@@ -16,7 +16,8 @@ angular.module('Qemy', [
 
     'Qemy.ui.contests',
     'Qemy.ui.auth',
-    'Qemy.ui.contest-item'
+    'Qemy.ui.contest-item',
+    'Qemy.ui.admin'
 ])
     .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider',
         function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider) {

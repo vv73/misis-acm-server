@@ -51,6 +51,8 @@ body, html {
   height: 100%;
   padding: 17px 32px 15px;
   box-sizing: border-box;
+  white-space: nowrap;
+  min-width: 800px;
 }
 .link {
   color: #219CF5;
@@ -945,4 +947,86 @@ my-timer-element {
 }
 .monitor-content__cell_type_in-practice {
   background-color: #C4F0FF;
+}
+.logo__content {
+  white-space: nowrap;
+}
+.admin-menu__item {
+  text-transform: none;
+  font-size: 18px;
+  letter-spacing: normal;
+  margin: 0;
+  color: #959595;
+  width: 100%;
+  padding: 9px 20px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #E1E1E1;
+  display: block;
+  * {
+    border-radius: 0 !important;
+  }
+  &.md-primary {
+    background-color: #f3f3f3;
+  }
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+.admin-content__menu {
+  width: 350px;
+  overflow: hidden;
+  float: left;
+  box-sizing: border-box;
+}
+.admin-menu {
+  border: 1px solid #E1E1E1;
+  border-radius: 3px;
+  float: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+.admin-content {
+  overflow: hidden;
+}
+.admin-content__inner {
+  margin-left: 357px;
+}
+.admin-content-layer {
+  border: 1px solid #E5E5E5;
+  padding: 24px;
+}
+.admin-content-layer__inner {
+  box-sizing: border-box;
+  position: relative;
+}
+.admin-title {
+  font-weight: 100;
+}
+.admin-contests__button {
+  margin-left: 0;
+}
+.admin-contests__buttons {
+  margin-top: 5px;
+}
+.admin-contests__contest-item {
+  .contests-list__item:hover {
+    background: none;
+  }
+  .contest-item {
+    cursor: default;
+    -webkit-user-select: inherit;
+    -moz-user-select: inherit;
+    -ms-user-select: inherit;
+    user-select: inherit;
+  }
+}
+.admin-contests__button-wrap {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 10px;
 }
