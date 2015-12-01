@@ -63,7 +63,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     }
                     var month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
                         'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-                    return month[ num - 1 ];
+                    return month[ num ];
                 }
                 function zeroFill(num) {
                     return num < 10 ? '0' + num : num;

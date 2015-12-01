@@ -29,6 +29,7 @@ var DEFAULT_CONTESTS_SORT_ORDER = 'desc';
 
 module.exports = {
     create: CreateContest,
+    update: UpdateContest,
     getContests: GetContests,
     getContest: GetContest,
     canJoin: CanJoin,
@@ -57,20 +58,59 @@ function CreateContest(params, callback) {
 
     function execute(connection, callback) {
         var sql = mysql.format('INSERT INTO `contests` ' +
-            '(name, virtual, start_time, relative_freeze_time, duration_time, user_id, creation_time, allowed_groups) ' +
+            '(name, start_time, relative_freeze_time, duration_time, practice_duration_time, user_id, creation_time, allowed_groups) ' +
             'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [ params.name, params.virtual, params.start_time, params.relative_freeze_time,
-                params.duration_time, params.user_id, new Date().getTime(), params.allowed_groups ]
+            [ params.name, params.start_time, params.relative_freeze_time,
+                params.duration_time, params.practice_duration_time, params.user_id, new Date().getTime(), params.allowed_groups.join(',') ]
         );
         connection.query(
             sql,
             function (err, result) {
-                console.log(err);
                 if (err || !result || !result.insertId) {
                     return callback(new Error('An error whith db process', 1001));
                 }
                 var contest = new Contest();
                 contest.allocate(result.insertId, function (err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, contest);
+                });
+            }
+        );
+    }
+}
+
+function UpdateContest(contestId, params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var sql = mysql.format(
+            'UPDATE `contests` ' +
+            'SET ? ' +
+            'WHERE id = ?',
+            [ params, parseInt(contestId) ]
+        );
+        console.log(sql);
+        connection.query(
+            sql,
+            function (err, result) {
+                if (err || !result) {
+                    return callback(new Error('An error whith db process', 1001));
+                }
+                var contest = new Contest();
+                contest.allocate(contestId, function (err) {
                     if (err) {
                         return callback(err);
                     }

@@ -39,3 +39,7 @@ div.contests-list__item-layer.admin-contests__contest-item
         md-button.admin-contests__button(ng-click='joinContest(contest)') Войти
       div.admin-contests__button-wrap
         md-button.admin-contests__button(ui-sref='admin.edit-contest({contestId: contest.id})') Редактировать
+      div.admin-contests__button-wrap(ng-if='contest.status !== "REMOVED"')
+        md-button.admin-contests__button(ng-click='deleteContest(contest)') Удалить
+      div.admin-contests__button-wrap(ng-if='contest.status === "REMOVED"')
+        md-button.admin-contests__button(ng-click='repairContest(contest)') Восстановить

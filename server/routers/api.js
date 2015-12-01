@@ -17,6 +17,7 @@ var authManager = require('../internal/user/auth/auth');
 var contestManager = require('../internal/contest/manager');
 var problemsetManager = require('../internal/problemset/manager');
 var scanner = require('../internal/problemset/scanner');
+var adminManager = require('../internal/admin/manager');
 
 router.all('/', function (req, res) {
     res.json({
@@ -453,6 +454,207 @@ router.get('/admin/scanTimus', function (req, res) {
             }
             callback(null, result);
         });
+    }
+});
+
+router.get('/admin/searchGroups', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.searchGroups(q.q, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.get('/admin/searchProblems', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.searchProblems(q.q, q.type, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+
+router.post('/admin/createContest', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        body.user = user;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.createContest(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.post('/admin/updateContest', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        body.user = user;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.updateContest(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.post('/admin/deleteContest', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        body.user = user;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.deleteContest(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.post('/admin/repairContest', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        body.user = user;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.repairContest(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.get('/admin/getContestInfo', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.getContestInfo(q, user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
     }
 });
 

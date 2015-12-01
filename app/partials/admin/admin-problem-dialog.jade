@@ -1,0 +1,16 @@
+md-dialog(aria-label="Problem")
+  form
+    md-toolbar
+      div.md-toolbar-tools
+        h2 Задача «{{problem.title}}»
+        span(flex)
+        md-button.md-icon-button(ng-click="close()")
+          md-icon(md-svg-src="/img/icons/ic_close_48px.svg", aria-label="Close dialog")
+
+    md-dialog-content(style="max-width: 800px; max-height: 810px;")
+      md-content.md-padding
+        div.task__problem(ng-class='{"task__problem-timus": problem.system_type === "timus", "task__problem-sgu": problem.system_type === "sgu", "task__problem-cf": problem.system_type === "cf", "task__problem-acmp": problem.system_type === "acmp"}')
+          div(md-template='problem.formatted_text')
+
+    div.md-actions(layout="row")
+      md-button(ng-click="close()", style="margin-right: 20px;") Закрыть

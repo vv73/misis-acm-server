@@ -28,8 +28,8 @@ angular.module('Qemy.directives.admin', [])
             scope: {
                 contest: '='
             },
-            controller: ['$scope', '$mdDialog', 'ContestsManager', '$state',
-                function($scope, $mdDialog, ContestsManager, $state) {
+            controller: ['$scope', '$rootScope', '$mdDialog', 'ContestsManager', '$state', 'AdminManager',
+                function($scope, $rootScope, $mdDialog, ContestsManager, $state, AdminManager) {
                     $scope.loadingData = false;
 
                     $scope.joinContest = function (contest) {
@@ -100,6 +100,48 @@ angular.module('Qemy.directives.admin', [])
                                 });
                             }
                         }
+                    };
+
+                    $scope.deleteContest = function (contest) {
+                        var confirm = $mdDialog.confirm()
+                            .title('Подтверждение')
+                            .content('Вы действительно хотите удалить контест?')
+                            .ariaLabel('Lucky day')
+                            .ok('Да')
+                            .cancel('Отмена');
+
+                        $mdDialog.show(confirm).then(function () {
+                            $rootScope.$broadcast('data loading');
+                            AdminManager.deleteContest({ contest_id: contest.id })
+                                .then(function (result) {
+                                    $rootScope.$broadcast('data loaded');
+                                    if (result.error) {
+                                        return;
+                                    }
+                                    $scope.$emit('admin update contest list');
+                                });
+                        });
+                    };
+
+                    $scope.repairContest = function (contest) {
+                        var confirm = $mdDialog.confirm()
+                            .title('Подтверждение')
+                            .content('Вы действительно хотите восстановить контест?')
+                            .ariaLabel('Lucky day')
+                            .ok('Да')
+                            .cancel('Отмена');
+
+                        $mdDialog.show(confirm).then(function () {
+                            $rootScope.$broadcast('data loading');
+                            AdminManager.repairContest({ contest_id: contest.id })
+                                .then(function (result) {
+                                    $rootScope.$broadcast('data loaded');
+                                    if (result.error) {
+                                        return;
+                                    }
+                                    $scope.$emit('admin update contest list');
+                                });
+                        });
                     };
                 }
             ]
