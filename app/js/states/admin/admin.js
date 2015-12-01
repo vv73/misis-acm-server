@@ -46,5 +46,20 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-create-contest'),
                     controller: 'AdminCreateContestController'
                 })
+                .state('admin.users-list', {
+                    url: '/users',
+                    templateUrl: templateUrl('admin', 'admin-users-list'),
+                    controller: 'AdminUsersListController'
+                })
+                .state('admin.create-user', {
+                    url: '/users/create',
+                    templateUrl: templateUrl('admin', 'admin-users-create'),
+                    controller: 'AdminCreateUserController'
+                })
+                .state('admin.edit-user', {
+                    url: '/users/edit/:userId',
+                    templateUrl: templateUrl('admin', 'admin-users-edit'),
+                    controller: 'AdminEditUserController'
+                })
         }
     ]);

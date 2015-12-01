@@ -43,7 +43,7 @@ angular.module('Qemy.controllers.admin', [])
                 uiSref: 'admin.index',
                 name: 'Контесты'
             }, {
-                uiSref: 'admin.index',
+                uiSref: 'admin.users-list',
                 name: 'Пользователи'
             }, {
                 uiSref: 'admin.index',
@@ -51,6 +51,9 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.index',
                 name: 'Задачи'
+            }, {
+                uiSref: 'admin.index',
+                name: 'Аккаунты в тестирующих системах'
             }];
         }
     ])
@@ -396,8 +399,10 @@ angular.module('Qemy.controllers.admin', [])
             $scope.objectRow = {};
 
             function getContestInfo() {
+                $rootScope.$broadcast('data loading');
                 AdminManager.getContestInfo({ contest_id: contestId })
                     .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
                         if (result.error) {
                             return alert('Произошла ошибка');
                         }
@@ -634,6 +639,103 @@ angular.module('Qemy.controllers.admin', [])
             $scope.close = function () {
                 $mdDialog.hide();
             };
+        }
+    ])
+
+    .controller('AdminUsersListController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog',
+        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog) {
+            $scope.$emit('change_title', {
+                title: 'Список пользователей | ' + _('app_name')
+            });
+
+            var defaultCount = 10;
+
+            $scope.pageNumber = parseInt($state.params.pageNumber || 1);
+            $scope.params = {
+                count: defaultCount,
+                offset: ($scope.pageNumber - 1) * defaultCount
+            };
+
+            $scope.all_items_count = 0;
+            $scope.pagination = [];
+            $scope.usersList = [];
+            $scope.allPages = 0;
+
+            function generatePaginationArray(offsetCount) {
+                var pages = [],
+                    curPage = $scope.pageNumber,
+                    allItems = $scope.all_items_count,
+                    backOffsetPages = offsetCount,
+                    upOffsetPages = offsetCount,
+                    allPages = Math.floor(allItems / defaultCount) +
+                        (allItems && allItems % defaultCount ? 1 : 0);
+                if (!defaultCount) {
+                    allPages = 1e6;
+                }
+                $scope.allPages = allPages;
+                for (var cur = Math.max(curPage - backOffsetPages, 1);
+                     cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+                    pages.push({
+                        number: cur,
+                        active: cur === curPage
+                    });
+                }
+                return pages;
+            }
+
+            var firstInvokeStateChanged = true;
+            $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+                if (firstInvokeStateChanged) {
+                    return firstInvokeStateChanged = false;
+                }
+                $scope.pageNumber = toParams.pageNumber ?
+                    parseInt(toParams.pageNumber) : 1;
+                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+                loadUsers();
+            });
+
+            $scope.$on('admin update users list', function () {
+                loadUsers();
+            });
+
+            function loadUsers() {
+                $rootScope.$broadcast('data loading');
+                AdminManager.getUsers($scope.params)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (!result || !result.hasOwnProperty('all_items_count')) {
+                            return;
+                        }
+                        $scope.all_items_count = result.all_items_count;
+                        $scope.usersList = result.users;
+                        $scope.pagination = generatePaginationArray(5);
+                    }).catch(function (err) {
+                        console.log(err);
+                    });
+            }
+            loadUsers();
+        }
+    ])
+
+    .controller('AdminCreateUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog',
+        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog) {
+            $scope.$emit('change_title', {
+                title: 'Создание пользователя | ' + _('app_name')
+            });
+        }
+    ])
+
+    .controller('AdminEditUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog',
+        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog) {
+            $scope.$emit('change_title', {
+                title: 'Редактирование пользователя | ' + _('app_name')
+            });
+        }
+    ])
+
+    .controller('AdminUserListItemCtrl', ['$scope', '$rootScope', '$mdDialog', 'ContestsManager', '$state', 'AdminManager',
+        function($scope, $rootScope, $mdDialog, ContestsManager, $state, AdminManager) {
+
         }
     ])
 ;

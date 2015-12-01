@@ -91,6 +91,15 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function getUsers(params) {
+            return $http({
+                method: 'get',
+                url: '/api/admin/getUsers?' + dataEncode(params)
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -98,7 +107,8 @@ angular.module('Qemy.services.admin', [
             deleteContest: deleteContest,
             repairContest: repairContest,
             getContestInfo: getContestInfo,
-            updateContest: updateContest
+            updateContest: updateContest,
+            getUsers: getUsers
         }
     }])
 ;

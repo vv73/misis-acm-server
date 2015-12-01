@@ -1,0 +1,20 @@
+div.admin-content-layer
+  div.admin-content-layer__inner
+
+    div.contests-sort
+      div.contests-sort__item.admin-content__add-contest
+        md-input-container
+          md-button.md-raised.md-primary(ui-sref='admin.create-user') + Создать пользователя
+
+    div.contests-list
+      div.contests-list__title Пользователи
+      div.contests-list__pagination(ng-if='pageNumber !== 1')
+        include ./admin-users-pagination
+      div.contests-list__items
+        div.contests-list__item-layer(ng-repeat='userItem in usersList')
+          user-list-item-admin(user='userItem')
+        div(ng-if='usersList.length === 0')
+          div.contests-list__no-items Список пользователей пуст
+
+
+    include ./admin-users-pagination

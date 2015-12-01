@@ -147,4 +147,15 @@ angular.module('Qemy.directives.admin', [])
             ]
         }
     })
+
+    .directive('userListItemAdmin', function() {
+        return {
+            restrict: 'E',
+            templateUrl: templateUrl('admin', 'admin-users-list-item'),
+            scope: {
+                user: '='
+            },
+            controller: 'AdminUserListItemCtrl'
+        }
+    })
 ;
