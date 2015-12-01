@@ -227,4 +227,62 @@ angular.module('Qemy.controllers.admin', [])
             });
         }
     ])
+
+    .controller('AdminCreateContestController', ['$scope', '$rootScope', '$state', '_', 'ContestsManager', '$q',
+        function ($scope, $rootScope, $state, _, ContestsManager, $q) {
+            $scope.$emit('change_title', {
+                title: 'Создание контеста | ' + _('app_name')
+            });
+            $scope.form = {
+                contestRelativeFinishTime: 5,
+                contestFreezeTime: 1,
+                contestPracticeTime: 0,
+                contestStartTime: 9,
+                groups: []
+            };
+            $scope.startTimes = [];
+
+            var zF = function (num) { return num < 10 ? '0' + num : num };
+            for (var i = 0; i < 24; ++i) {
+                $scope.startTimes.push({
+                    time: i,
+                    name: zF(i) + ':00'
+                });
+            }
+
+            $scope.submitForm = function () {
+                alert("Форма отправлена");
+            };
+
+            $scope.chips = {
+                selectedItem: '',
+                searchText: ''
+            };
+
+            $scope.groupSearch = function (query) {
+                var deferred = $q.defer();
+                var items = [{
+                    name: 'Тренеры',
+                    color: 'rgba(77, 170, 102, 0.75)',
+                    id: 1
+                }, {
+                    name: 'Старший дивизион',
+                    color: 'rgba(96, 92, 243, 0.75)',
+                    id: 2
+                }];
+                var results = query ? items.filter(function (element) {
+                    if (!element || !element.name) {
+                        return false;
+                    }
+                    return element.name.indexOf(query) !== -1;
+                }) : [];
+
+                setTimeout(function () {
+                    deferred.resolve(results);
+                }, 1000);
+
+                return deferred.promise;
+            };
+        }
+    ])
 ;

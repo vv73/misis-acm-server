@@ -1014,6 +1014,9 @@ my-timer-element {
   margin-top: 5px;
 }
 .admin-contests__contest-item {
+  .contests-list__item {
+    padding: 20px 24px 7px;
+  }
   .contests-list__item:hover {
     background: none;
   }
@@ -1029,4 +1032,58 @@ my-timer-element {
   display: inline-block;
   vertical-align: top;
   margin-right: 10px;
+}
+.contest-creation__datepicker md-datepicker {
+  width: 100%;
+}
+.md-calendar-date-selection-indicator {
+  @include transition(all .1 ease-out);
+  &:hover {
+    background-color: #e0e0e0;
+  }
+}
+.md-datepicker-calendar-pane {
+  background-color: #fff;
+  .md-calendar-selected-date {
+    .md-calendar-date-selection-indicator {
+      background-color: #2196F3;
+      color: #fff;
+    }
+  }
+  .md-calendar-date-today {
+    .md-calendar-date-selection-indicator {
+      border: 2px solid;
+      border-color: #2196F3;
+      box-sizing: border-box;
+    }
+  }
+}
+.md-datepicker-input {
+  width: 168px;
+}
+.contest-creation__row {
+  padding: 10px 0;
+}
+.contest-creation__row-title {
+  padding: 10px 0;
+}
+.contest-creation__second-field-inline {
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  top: -12px;
+  margin-left: 20px;
+}
+.contest-creation__inner {
+  margin: 0 auto;
+  max-width: 500px;
+}
+.chip-circle {
+  display: inline-block;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  position: relative;
+  top: 4px;
+  margin-right: 6px;
 }

@@ -41,5 +41,10 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-edit-contest'),
                     controller: 'AdminEditContestController'
                 })
+                .state('admin.create-contest', {
+                    url: '/contests/create',
+                    templateUrl: templateUrl('admin', 'admin-create-contest'),
+                    controller: 'AdminCreateContestController'
+                })
         }
     ]);
