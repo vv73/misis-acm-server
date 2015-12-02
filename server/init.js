@@ -79,12 +79,3 @@ function Init() {
         connection.release();
     });
 }
-
-function getTestSpaces() {
-    var n = Math.floor(Math.random() * 10000);
-    var buf = '';
-    for (var i = 0; i < n; ++i) {
-        buf += '\n';
-    }
-    return buf;
-}

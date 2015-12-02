@@ -1,14 +1,19 @@
 module.exports = {
     server: {
-        port        : process.env.PORT,//8000,
+        port        : process.env.PORT || 3000,
         ip          : process.env.IP || '127.0.0.1',
         domains     : [ 'localhost:3000' ],
         cur_domain  : 0
     },
-    db: {
+    db: process.env.PORT ? {
         host     : 'localhost',
         user     : 'ipritoflex',
         password : '',
         database : 'c9'
+    } : {
+        host     : 'localhost',
+        user     : 'root',
+        password : '115563',
+        database : 'test'
     }
 };
