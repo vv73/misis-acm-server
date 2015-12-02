@@ -551,7 +551,7 @@ function SendSolution(params, callback) {
 
                                         var insertedId = result.insertId;
                                         function saveResult(verdict) {
-                                            console.log(verdict);
+                                            console.log('Saving verdict:', verdict);
                                             var verdictId = getVerdictId(verdict.verdict);
                                             connection.query(
                                                 'UPDATE sent_solutions ' +
@@ -572,12 +572,13 @@ function SendSolution(params, callback) {
                                                     if (err) {
                                                         console.log(err);
                                                     }
+                                                    user.incrementSolvedCount();
                                                 }
                                             );
                                         }
 
                                         function saveWithErrors(error) {
-                                            console.log('Saving verdict:', error);
+                                            console.log('Saving error verdict:', error);
                                             var verdictId = 10;
                                             if (error.message === 'Resending the same solution.') {
                                                 verdictId = 11;
@@ -1099,7 +1100,7 @@ function GetTable(contestId, user, callback) {
                                                 minutes = Math.floor(allSeconds / 60),
                                                 hours = Math.floor(minutes / 60);
                                             minutes %= 60;
-                                            var zF = function (num) { return num < 10 ? '0' + num : num;},
+                                            var zF = function (num) { return num >= 0 && num < 10 ? '0' + num : num;},
                                                 formatString = 'hh:mm';
                                             return formatString
                                                 .replace(/(hh)/gi, zF(hours))

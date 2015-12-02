@@ -735,7 +735,26 @@ angular.module('Qemy.controllers.admin', [])
 
     .controller('AdminUserListItemCtrl', ['$scope', '$rootScope', '$mdDialog', 'ContestsManager', '$state', 'AdminManager',
         function($scope, $rootScope, $mdDialog, ContestsManager, $state, AdminManager) {
+            $scope.deleteUser = function () {
+                var confirm = $mdDialog.confirm()
+                    .title('Подтверждение')
+                    .content('Вы действительно хотите удалить пользователя?')
+                    .ariaLabel('Lucky day')
+                    .ok('Да')
+                    .cancel('Отмена');
 
+                $mdDialog.show(confirm).then(function () {
+                    $rootScope.$broadcast('data loading');
+                    AdminManager.deleteUser({ user_id: $scope.user.id })
+                        .then(function (result) {
+                            $rootScope.$broadcast('data loaded');
+                            if (result.error) {
+                                return alert('Произошла ошибка');
+                            }
+                            $scope.$emit('admin update users list');
+                        });
+                });
+            };
         }
     ])
 ;

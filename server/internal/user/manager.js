@@ -17,7 +17,7 @@ var crypto      = require('crypto');
 var DEFAULT_USERS_COUNT = 20;
 var DEFAULT_USERS_OFFSET = 0;
 var DEFAULT_USERS_CATEGORY = 'all';
-var DEFAULT_USERS_SORT = 'byId';
+var DEFAULT_USERS_SORT = 'byRate';
 var DEFAULT_USERS_SORT_ORDER = 'desc';
 
 module.exports = {
@@ -184,7 +184,7 @@ function DeleteUser(user_id, callback) {
             if (err) {
                 return callback(err);
             }
-            callback(null, true);
+            callback(null, { result: true });
         });
     }
 }

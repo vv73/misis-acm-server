@@ -66,7 +66,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     return month[ num ];
                 }
                 function zeroFill(num) {
-                    return num < 10 ? '0' + num : num;
+                    return num >= 0 && num < 10 ? '0' + num : num;
                 }
                 function formatDate(timeMs) {
                     var curDate = new Date(timeMs);

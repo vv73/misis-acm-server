@@ -51,6 +51,11 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-users-list'),
                     controller: 'AdminUsersListController'
                 })
+                .state('admin.users-pagination', {
+                    url: '/users/page/:pageNumber',
+                    templateUrl: templateUrl('admin', 'admin-users-list'),
+                    controller: 'AdminUsersListController'
+                })
                 .state('admin.create-user', {
                     url: '/users/create',
                     templateUrl: templateUrl('admin', 'admin-users-create'),

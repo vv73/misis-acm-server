@@ -188,6 +188,9 @@ User.prototype.getContainGroups = function (callback) {
     var _this = this;
     mysql.connection(function (err, connection) {
         if (err) {
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db', 1001));
         }
         execute(connection, function (err, result) {
@@ -239,7 +242,9 @@ User.prototype.setUsername = function (username, callback) {
     var _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `username` = ? WHERE `id` = ?', [ username, _this.getId() ], function (error, results, fields) {
@@ -263,7 +268,9 @@ User.prototype.setPassword = function (password, callback) {
         _this = this;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `password` = ? WHERE `id` = ?', [ passwordHash, _this.getId() ], function (error, results, fields) {
@@ -291,7 +298,9 @@ User.prototype.addAccessKey = function (accessKey, callback) {
     }
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
@@ -320,7 +329,9 @@ User.prototype.deleteAccessKey = function (accessKey, callback) {
     accessKeys.splice(deleteIndex, 1);
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query('UPDATE `users` SET `access_keys` = ? WHERE `id` = ?', [ accessKeys.join(','), _this.getId() ], function (error, results, fields) {
@@ -340,7 +351,9 @@ User.prototype.incrementSolvedCount = function (callback) {
     callback = callback || noop;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         connection.query(
@@ -363,7 +376,9 @@ User.prototype.updateLastLoggedTime = function (callback) {
     callback = callback || noop;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         var curDate = new Date();
@@ -387,7 +402,9 @@ User.prototype.updateRecentActionTime = function (callback) {
     callback = callback || noop;
     mysql.connection(function getConnection(err, connection) {
         if (err) {
-            connection.release();
+            if (connection) {
+                connection.release();
+            }
             return callback(new Error('An error with db connection', 1001));
         }
         var curDate = new Date();

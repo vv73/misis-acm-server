@@ -100,6 +100,16 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function deleteUser(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/deleteUser',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -108,7 +118,8 @@ angular.module('Qemy.services.admin', [
             repairContest: repairContest,
             getContestInfo: getContestInfo,
             updateContest: updateContest,
-            getUsers: getUsers
+            getUsers: getUsers,
+            deleteUser: deleteUser
         }
     }])
 ;

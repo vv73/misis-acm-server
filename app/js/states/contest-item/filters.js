@@ -19,7 +19,7 @@ angular.module('Qemy.filters.contest-item', [
                 minutes = Math.floor(allSeconds / 60),
                 hours = Math.floor(minutes / 60);
             minutes %= 60;
-            var zF = function (num) { return num < 10 ? '0' + num : num;},
+            var zF = function (num) { return num >= 0 && num < 10 ? '0' + num : num;},
                 formatString = 'hh:mm:ss';
             return formatString
                 .replace(/(hh)/gi, zF(hours))

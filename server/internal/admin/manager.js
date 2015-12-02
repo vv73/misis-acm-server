@@ -17,6 +17,7 @@ var async       = require('async');
 var Problem     = require('../problemset/problem');
 var contestManager = require('../contest/manager');
 var Contest     = require('../contest/contest');
+var usersManager = require('../user/manager');
 
 module.exports = {
     searchGroups: SearchGroups,
@@ -26,7 +27,8 @@ module.exports = {
     repairContest: RepairContest,
     getContestInfo: GetContestInfo,
     updateContest: UpdateContest,
-    getUsers: GetUsers
+    getUsers: GetUsers,
+    deleteUser: DeleteUser
 };
 
 function SearchGroups(q, callback) {
@@ -366,93 +368,22 @@ function GetContestInfo(params, user, callback) {
 }
 
 function GetUsers(count, offset, callback) {
-    if (typeof count === 'function') {
-        callback = count;
-        count = null;
-    } else if (typeof offset === 'function') {
-        callback = offset;
-        offset = null;
-    }
-
-    mysqlPool.connection(function (err, connection) {
+    usersManager.getUsers(count, offset, function (err, result) {
         if (err) {
-            return callback(new Error('An error with db', 1001));
+            return callback(err);
         }
-        execute(connection, function (err, result) {
-            connection.release();
-            if (err) {
-                return callback(err);
-            }
-            callback(null, result);
+        result.users = result.users.map(function (user) {
+            return user.getObjectFactory();
         });
+        callback(null, result);
     });
+}
 
-    function execute(connection, callback) {
-        mysqlPool.connection(function (err, connection) {
-            if (err) {
-                return callback(new Error('An error with db querying', 1001));
-            }
-            execute(connection, function (err, result) {
-                connection.release();
-                if (err) {
-                    return callback(err);
-                }
-                callback(null, result);
-            });
-        });
-
-        function execute(connection, callback) {
-            count = count || 20;
-            offset = offset || 0;
-
-            count = Math.max(Math.min(count, 200), 0);
-            offset = Math.max(offset, 0);
-
-            var sql = 'SELECT contests.*, contests.start_time + contests.duration_time AS finish_time ' +
-                'FROM contests ' +
-                'WHERE ' + readyWhereStatements[category] + ' ' +
-                'ORDER BY ?? ' + sort_order.toUpperCase() + ' ' +
-                'LIMIT ?, ?; ' +
-                'SELECT COUNT(contests.id) AS all_items_count ' +
-                'FROM contests ' +
-                'WHERE ' + readyWhereStatements[category] + ';';
-
-            sql = mysql.format(sql, [
-                availableSorts[sort],
-                offset,
-                count
-            ]);
-
-            connection.query(sql, function (err, results, fields) {
-                if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
-                    console.log(err);
-                    return callback(err);
-                }
-                var contests = results[0].map(function (row) {
-                    var contest = new Contest();
-                    contest.setObjectRow(row);
-                    return contest;
-                });
-                var authorAllocates = [];
-                contests.forEach(function (contest) {
-                    authorAllocates.push(
-                        contest.allocateAuthor.bind(contest),
-                        contest.allocateAllowedGroups.bind(contest)
-                    );
-                });
-                async.parallel(authorAllocates, function(err, asyncResults) {
-                    if (err) {
-                        return callback(err);
-                    }
-                    var result = {
-                        contests: contests.map(function (contest) {
-                            return contest.getObjectFactory();
-                        }),
-                        all_items_count: results[1][0].all_items_count
-                    };
-                    callback(null, result);
-                });
-            })
+function DeleteUser(userId, callback) {
+    usersManager.deleteUser(userId, function (err, result) {
+        if (err) {
+            return callback(err);
         }
-    }
+        callback(null, result);
+    });
 }
