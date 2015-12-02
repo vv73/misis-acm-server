@@ -1,1 +1,27 @@
-div Создать пользователя
+div.admin-content-layer
+  div.admin-content-layer__inner
+
+    div.contest-creation
+      div.contests-list__title Создать контест
+
+      div.contest-creation__inner
+        form.contest-creation__form(ng-submit='submitForm()', name='userForm')
+
+          div.contest-creation__row
+            div.contest-creation__row-title Фио пользователя
+            div(layout)
+                md-input-container(flex)
+                  label Имя
+                  input(md-maxlength='200', required, name='firstName', ng-model='form.firstName')
+                  div(ng-messages='userForm.firstName.$error')
+                    div(ng-message='required') Поле не может быть пустым.
+                    div(ng-message='md-maxlength') Введите не больше 200 символов
+                md-input-container(flex)
+                  label Фамилия
+                  input(md-maxlength='200', required, name='firstName', ng-model='form.firstName')
+                  div(ng-messages='userForm.firstName.$error')
+                    div(ng-message='required') Поле не может быть пустым.
+                    div(ng-message='md-maxlength') Введите не больше 200 символов
+
+          div.contest-creation__row.contest-creation__row_type_create
+            md-button.md-primary.md-raised(ng-disabled='!userForm.$valid', aria-label='Send') Создать пользователя

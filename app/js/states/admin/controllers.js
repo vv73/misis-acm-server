@@ -11,6 +11,7 @@
 
 /* Controllers */
 
+/* global angular */
 angular.module('Qemy.controllers.admin', [])
 
     .controller('AdminBaseController', ['$scope', '$rootScope', '$state', '_', 'UserManager',
@@ -45,7 +46,7 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.users-list',
                 name: 'Пользователи'
-            }, {
+            }/*, {
                 uiSref: 'admin.index',
                 name: 'Группы пользователей'
             }, {
@@ -54,7 +55,7 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.index',
                 name: 'Аккаунты в тестирующих системах'
-            }];
+            }*/];
         }
     ])
 
@@ -722,6 +723,25 @@ angular.module('Qemy.controllers.admin', [])
             $scope.$emit('change_title', {
                 title: 'Создание пользователя | ' + _('app_name')
             });
+            
+            $scope.form = {};
+
+            $scope.chips = {
+                selectedItem: '',
+                searchText: ''
+            };
+
+            $scope.groupSearch = function (query) {
+                return AdminManager.searchGroups({ q: query }).then(function (data) {
+                    return data;
+                });
+            };
+
+            $scope.submitForm = function () {
+                $rootScope.$broadcast('data loading');
+                var form = angular.copy($scope.form);
+                console.log(form);
+            };
         }
     ])
 
