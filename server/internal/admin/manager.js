@@ -140,7 +140,7 @@ function CreateContest(params, callback) {
 
     function execute(connection, callback) {
         var sD = params.contestStartTime;
-        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours);
+        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0));
         var durationTime = params.contestRelativeFinishTime * 60 * 60 * 1000;
         var relativeFreezeTime = durationTime - params.contestFreezeTime * 60 * 60 * 1000;
         var practiceDurationTime = params.contestPracticeTime * 60 * 60 * 1000;
@@ -162,7 +162,7 @@ function CreateContest(params, callback) {
             if (contest.isEmpty()) {
                 return callback(new Error('Contest is empty'));
             }
-            var problemsIds = params.problems.reverse(),
+            var problemsIds = params.problems,
                 contestId = contest.getId(),
                 problemsRows = problemsIds.map(function (problemId) {
                     return [ contestId, problemId ];
@@ -199,7 +199,7 @@ function UpdateContest(params, callback) {
     function execute(connection, callback) {
         var contestId = params.contest_id;
         var sD = params.contestStartTime;
-        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours);
+        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0));
         var durationTime = params.contestRelativeFinishTime * 60 * 60 * 1000;
         var relativeFreezeTime = durationTime - params.contestFreezeTime * 60 * 60 * 1000;
         var practiceDurationTime = params.contestPracticeTime * 60 * 60 * 1000;
