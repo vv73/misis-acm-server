@@ -61,7 +61,7 @@ function CreateContest(params, callback) {
             '(name, start_time, relative_freeze_time, duration_time, practice_duration_time, user_id, creation_time, allowed_groups) ' +
             'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [ params.name, params.start_time, params.relative_freeze_time,
-                params.duration_time, params.practice_duration_time, params.user_id, new Date().getTime(), params.allowed_groups.join(',') ]
+                params.duration_time, params.practice_duration_time, params.user_id, new Date().getTime(), params.allowed_groups ]
         );
         connection.query(
             sql,
@@ -1035,6 +1035,8 @@ function GetTable(contestId, user, callback) {
                                 }
                             });
                         }
+                        var isAdmin = function (access_level) { return access_level === 5 && user.getAccessGroup().access_level !== 5 };
+
                         connection.query(
                             'SELECT sent_solutions.*, verdicts.*, users.username, ' +
                             'CONCAT(users.first_name, " ", users.last_name) AS user_full_name, users.access_level ' +
@@ -1063,7 +1065,8 @@ function GetTable(contestId, user, callback) {
                                         var usersEnters = results;
                                         for (var i = 0; i < usersEnters.length; ++i) {
                                             var usersEntersRow = usersEnters[ i ];
-                                            if (!Array.isArray(table.users[ usersEntersRow.user_id ])) {
+                                            if (!Array.isArray(table.users[ usersEntersRow.user_id ])
+                                                && !isAdmin(usersEntersRow.access_level)) {
                                                 table.users[ usersEntersRow.user_id ] = {
                                                     info: usersEntersRow,
                                                     problems: {},

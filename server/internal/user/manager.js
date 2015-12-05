@@ -164,6 +164,8 @@ function GetUsers(count, offset, category, sort, sort_order, callback) {
 function DeleteUser(user_id, callback) {
     if (!user_id) {
         return callback(new Error('User id not specified', 1006));
+    } else if (user_id === 2 || user_id === 1) {
+        return callback(new Error('This user is non-removable', 1006));
     }
 
     mysqlPool.connection(function (err, connection) {

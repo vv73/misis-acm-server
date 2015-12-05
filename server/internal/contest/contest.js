@@ -230,8 +230,8 @@ Contest.prototype.allocateAllowedGroups = function (callback) {
 };
 
 Contest.prototype.isAllowed = function (userGroups) {
-    if (!Array.isArray(userGroups)) {
-        return;
+    if (!Array.isArray(userGroups) || userGroups.length === 0) {
+        return true;
     }
     var allowedGroups = this._contestRow.allowed_groups;
     if (!allowedGroups || !allowedGroups.length) {

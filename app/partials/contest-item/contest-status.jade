@@ -40,7 +40,7 @@ div.contest
                   div.sent-list__cell
                     span {{sent.user_full_name}}
                   div.sent-list__cell.sent-list__cell-task
-                    a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})') {{sent.internal_index + '. ' + sent.title}}
+                    a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})', title='{{sent.internal_index + ". " + sent.title}}') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
                   div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id')
@@ -94,7 +94,7 @@ div.contest
                   div.sent-list__cell
                     span {{sent.user_full_name}}
                   div.sent-list__cell.sent-list__cell-task
-                    a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})') {{sent.internal_index + '. ' + sent.title}}
+                    a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})', title='{{sent.internal_index + ". " + sent.title}}') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
                   div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id')

@@ -23,10 +23,18 @@ div.admin-content-layer
 
               div.contest-creation__second-field-inline
                 md-input-container
-                  Label Время
+                  Label Час
                   md-select(ng-model='form.contestStartTime', name='contestStartTime', required)
                     md-option(ng-repeat='time in startTimes', value='{{time.time}}', ng-bind='time.name')
                   div(ng-messages="contestForm.contestStartTime.$error")
+                    div(ng-message="required") Поле не может быть пустым.
+
+              div.contest-creation__second-field-inline
+                md-input-container
+                  Label Минута
+                  md-select(ng-model='form.contestStartTimeMinutes', name='contestStartTimeMinutes', required)
+                    md-option(ng-repeat='time in startTimesMinutes', value='{{time.time}}', ng-bind='time.name')
+                  div(ng-messages="contestForm.contestStartTimeMinutes.$error")
                     div(ng-message="required") Поле не может быть пустым.
 
           div.contest-creation__row

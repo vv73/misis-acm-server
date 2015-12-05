@@ -18,6 +18,8 @@ var system_accounts = [];
 var processing_accounts = [];
 var async_queue = [];
 
+var initedAccounts = 0;
+
 var ACCOUNT_TIMEOUT = 10 * 1000; // ms
 
 var ACM_BASE_URI = 'http://acmp.ru';
@@ -68,6 +70,7 @@ function Init(accounts, callback) {
                                 continue;
                             }
                             accountId = curHref.match(/main\=user\&id\=(\d+)/i)[1];
+                            initedAccounts++;
                             break;
                         }
                     }
@@ -139,6 +142,9 @@ function RefreshAccount(neededAccount, callback) {
 }
 
 function GetIdle(callback) {
+    if (!initedAccounts) {
+        return callback(new Error('No ready accounts'));
+    }
     if (processing_accounts.length >= system_accounts.length) {
         if (async_queue.length > QUEUE_LENGTH_LIMIT) {
             return callback(new Error('Queue length limit has exceeded.'));

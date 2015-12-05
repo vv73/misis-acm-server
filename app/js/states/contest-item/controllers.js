@@ -56,18 +56,20 @@ angular.module('Qemy.controllers.contest-item', [])
             });
 
             function contestFill (contest) {
-                function getMonthName (num) {
+                function getMonthName(num) {
                     num = num || 1;
                     if (num < 1 || num > 12) {
                         num = 1;
                     }
                     var month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
                         'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-                    return month[ num ];
+                    return month[num];
                 }
+
                 function zeroFill(num) {
                     return num >= 0 && num < 10 ? '0' + num : num;
                 }
+
                 function formatDate(timeMs) {
                     var curDate = new Date(timeMs);
                     return [curDate.getHours(), curDate.getMinutes(), curDate.getSeconds()]
@@ -126,8 +128,8 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ContestItemConditionsController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
-        function ($scope, $rootScope, $state, ContestItemManager, _) {
+    .controller('ContestItemConditionsController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', 'UserManager',
+        function ($scope, $rootScope, $state, ContestItemManager, _, UserManager) {
             $scope.$emit('change_title', {
                 title: 'Условия | ' + _('app_name')
             });
@@ -141,6 +143,12 @@ angular.module('Qemy.controllers.contest-item', [])
                         return;
                     }
                     $scope.conditions = result;
+                });
+
+            $scope.user = {};
+            UserManager.getCurrentUser()
+                .then(function (user) {
+                    $scope.user = user;
                 });
         }
     ])

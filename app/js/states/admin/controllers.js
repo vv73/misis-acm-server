@@ -221,6 +221,7 @@ angular.module('Qemy.controllers.admin', [])
             var contestId = $state.params.contestId;
             $scope.form = {};
             $scope.startTimes = [];
+            $scope.startTimesMinutes = [];
 
             $scope.$watch('form.contestStartTime', function (newVal) {
                 if (newVal > 1 && newVal < 4) {
@@ -239,7 +240,13 @@ angular.module('Qemy.controllers.admin', [])
             for (var i = 0; i < 24; ++i) {
                 $scope.startTimes.push({
                     time: i,
-                    name: zF(i) + ':00'
+                    name: zF(i)
+                });
+            }
+            for (i = 0; i < 60; ++i) {
+                $scope.startTimesMinutes.push({
+                    time: i,
+                    name: zF(i)
                 });
             }
 
@@ -366,10 +373,12 @@ angular.module('Qemy.controllers.admin', [])
                     year: contestStartDate.getFullYear(),
                     month: contestStartDate.getMonth(),
                     day: contestStartDate.getDate(),
-                    hours: parseInt(form.contestStartTime)
+                    hours: parseInt(form.contestStartTime),
+                    minutes: parseInt(form.contestStartTimeMinutes)
                 };
                 form.contestStartTime = contestStartDate;
                 delete form.contestStartDate;
+                delete form.contestStartTimeMinutes;
 
                 var problems = $scope.selectedProblems;
                 form.problems = problems.map(function (problem) {
@@ -416,8 +425,9 @@ angular.module('Qemy.controllers.admin', [])
                             contestFreezeTime: (result.relativeDurationTime - result.relativeFreezeTime) / (1000 * 60 * 60),
                             contestPracticeTime: result.relativePracticeTime / (1000 * 60 * 60),
                             contestStartTime: startDate.getHours(),
+                            contestStartTimeMinutes: startDate.getMinutes(),
                             hasPractice: result.hasPracticeTime,
-                            groups: result.allowedGroups
+                            groups: result.allowedGroups || []
                         };
                         $scope.selectedProblems = result.problems.map(function (problem) {
                             switch (problem.system_type) {
@@ -453,9 +463,11 @@ angular.module('Qemy.controllers.admin', [])
                 contestFreezeTime: 1,
                 contestPracticeTime: 0,
                 contestStartTime: 9,
+                contestStartTimeMinutes: 0,
                 groups: []
             };
             $scope.startTimes = [];
+            $scope.startTimesMinutes = [];
 
             $scope.$watch('form.contestStartTime', function (newVal) {
                 if (newVal > 1 && newVal < 4) {
@@ -474,7 +486,13 @@ angular.module('Qemy.controllers.admin', [])
             for (var i = 0; i < 24; ++i) {
                 $scope.startTimes.push({
                     time: i,
-                    name: zF(i) + ':00'
+                    name: zF(i)
+                });
+            }
+            for (i = 0; i < 60; ++i) {
+                $scope.startTimesMinutes.push({
+                    time: i,
+                    name: zF(i)
                 });
             }
 
@@ -601,10 +619,12 @@ angular.module('Qemy.controllers.admin', [])
                     year: contestStartDate.getFullYear(),
                     month: contestStartDate.getMonth(),
                     day: contestStartDate.getDate(),
-                    hours: parseInt(form.contestStartTime)
+                    hours: parseInt(form.contestStartTime),
+                    minutes: parseInt(form.contestStartTimeMinutes)
                 };
                 form.contestStartTime = contestStartDate;
                 delete form.contestStartDate;
+                delete form.contestStartTimeMinutes;
 
                 var problems = $scope.selectedProblems;
                 form.problems = problems.map(function (problem) {
@@ -718,13 +738,15 @@ angular.module('Qemy.controllers.admin', [])
         }
     ])
 
-    .controller('AdminCreateUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog',
-        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog) {
+    .controller('AdminCreateUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog', '$filter',
+        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog, $filter) {
             $scope.$emit('change_title', {
                 title: 'Создание пользователя | ' + _('app_name')
             });
             
-            $scope.form = {};
+            $scope.form = {
+                groups: []
+            };
 
             $scope.chips = {
                 selectedItem: '',
@@ -740,8 +762,40 @@ angular.module('Qemy.controllers.admin', [])
             $scope.submitForm = function () {
                 $rootScope.$broadcast('data loading');
                 var form = angular.copy($scope.form);
-                console.log(form);
+                form.groups = (form.groups || []).map(function (group) {
+                    return group.id;
+                });
+                AdminManager.createUser(form)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (result.error) {
+                            return alert('Произошла ошибка: ' + result.error);
+                        }
+                        $state.go('admin.users-list');
+                    });
             };
+
+            var fioChanged = function () {
+                var firstName = $scope.form.firstName || '',
+                    lastName = $scope.form.lastName || '',
+                    username;
+                if (!firstName && !lastName) {
+                    $scope.form.username = '';
+                    $scope.form.password = '';
+                    return;
+                } else if (!firstName) {
+                    username = $filter('latinize')(lastName);
+                } else if (!lastName) {
+                    username = $filter('latinize')(firstName);
+                } else {
+                    username = $filter('latinize')(firstName[0]) + '.' + $filter('latinize')(lastName);
+                }
+                $scope.form.username = username;
+                $scope.form.password = username;
+            };
+
+            $scope.$watch('form.firstName', fioChanged);
+            $scope.$watch('form.lastName', fioChanged);
         }
     ])
 
@@ -769,7 +823,7 @@ angular.module('Qemy.controllers.admin', [])
                         .then(function (result) {
                             $rootScope.$broadcast('data loaded');
                             if (result.error) {
-                                return alert('Произошла ошибка');
+                                return alert('Произошла ошибка: ' + result.error);
                             }
                             $scope.$emit('admin update users list');
                         });

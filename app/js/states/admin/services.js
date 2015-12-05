@@ -110,6 +110,16 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function createUser(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/createUser',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -119,7 +129,8 @@ angular.module('Qemy.services.admin', [
             getContestInfo: getContestInfo,
             updateContest: updateContest,
             getUsers: getUsers,
-            deleteUser: deleteUser
+            deleteUser: deleteUser,
+            createUser: createUser
         }
     }])
 ;

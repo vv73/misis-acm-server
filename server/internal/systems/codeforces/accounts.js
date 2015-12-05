@@ -17,6 +17,8 @@ var system_accounts = [];
 var processing_accounts = [];
 var async_queue = [];
 
+var initedAccounts = 0;
+
 var ACCOUNT_TIMEOUT = 10 * 1000; // ms
 
 var ACM_BASE_URI = 'http://codeforces.com';
@@ -83,6 +85,7 @@ function Init(accounts, callback) {
                     csrf_token: csrf_token,
                     cookieJar: cookieJar
                 };
+                initedAccounts++;
                 callback();
             });
         });
@@ -155,6 +158,9 @@ function RefreshAccount(neededAccount, callback) {
 }
 
 function GetIdle(callback) {
+    if (!initedAccounts) {
+        return callback(new Error('No ready accounts'));
+    }
     if (processing_accounts.length >= system_accounts.length) {
         if (async_queue.length > QUEUE_LENGTH_LIMIT) {
             return callback(new Error('Queue length limit has exceeded.'));

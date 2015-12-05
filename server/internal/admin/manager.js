@@ -28,7 +28,8 @@ module.exports = {
     getContestInfo: GetContestInfo,
     updateContest: UpdateContest,
     getUsers: GetUsers,
-    deleteUser: DeleteUser
+    deleteUser: DeleteUser,
+    createUser: CreateUser
 };
 
 function SearchGroups(q, callback) {
@@ -140,12 +141,11 @@ function CreateContest(params, callback) {
 
     function execute(connection, callback) {
         var sD = params.contestStartTime;
-        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0));
+        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0), sD.minutes);
         var durationTime = params.contestRelativeFinishTime * 60 * 60 * 1000;
         var relativeFreezeTime = durationTime - params.contestFreezeTime * 60 * 60 * 1000;
         var practiceDurationTime = params.contestPracticeTime * 60 * 60 * 1000;
         var user_id = params.user.getId();
-        var allowed_groups = params.groups;
         var creationParams = {
             name: params.contestName,
             start_time: startDate.getTime(),
@@ -153,7 +153,7 @@ function CreateContest(params, callback) {
             duration_time: durationTime,
             practice_duration_time: practiceDurationTime,
             user_id: user_id,
-            allowed_groups: allowed_groups
+            allowed_groups: (params.groups || []).join(',')
         };
         contestManager.create(creationParams, function (err, contest) {
             if (err) {
@@ -162,7 +162,12 @@ function CreateContest(params, callback) {
             if (contest.isEmpty()) {
                 return callback(new Error('Contest is empty'));
             }
-            var problemsIds = params.problems,
+
+            if (!params.problems.length) {
+                return callback(null, { result: true });
+            }
+
+            var problemsIds = params.problems.reverse(),
                 contestId = contest.getId(),
                 problemsRows = problemsIds.map(function (problemId) {
                     return [ contestId, problemId ];
@@ -199,7 +204,7 @@ function UpdateContest(params, callback) {
     function execute(connection, callback) {
         var contestId = params.contest_id;
         var sD = params.contestStartTime;
-        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0));
+        var startDate = new Date(sD.year, sD.month, sD.day, sD.hours - (process.env.IP ? 3 : 0), sD.minutes);
         var durationTime = params.contestRelativeFinishTime * 60 * 60 * 1000;
         var relativeFreezeTime = durationTime - params.contestFreezeTime * 60 * 60 * 1000;
         var practiceDurationTime = params.contestPracticeTime * 60 * 60 * 1000;
@@ -220,12 +225,12 @@ function UpdateContest(params, callback) {
             if (contest.isEmpty()) {
                 return callback(new Error('Contest is empty'));
             }
+
             var problemsIds = params.problems.reverse(),
                 contestId = contest.getId(),
                 problemsRows = problemsIds.map(function (problemId) {
                     return [ contestId, problemId ];
                 });
-
             connection.query(
                 'DELETE FROM problems_to_contest ' +
                 'WHERE contest_id = ?',
@@ -233,6 +238,9 @@ function UpdateContest(params, callback) {
                 function (err) {
                     if (err) {
                         return callback(new Error('An error with db', 1001));
+                    }
+                    if (!params.problems.length) {
+                        return callback(null, { result: true });
                     }
                     connection.query(
                         'INSERT INTO problems_to_contest (contest_id, problem_id) ' +
@@ -386,4 +394,75 @@ function DeleteUser(userId, callback) {
         }
         callback(null, result);
     });
+}
+
+function CreateUser(params, callback) {
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        if (!params.firstName || !params.lastName || !params.username || !params.password) {
+            return callback(new Error('Params not specified.'));
+        }
+        params.groups = params.groups || [];
+        connection.query(
+            'SELECT * ' +
+            'FROM users ' +
+            'WHERE username = ?',
+            [ params.username.trim() ],
+            function (err, results, fields) {
+                if (err) {
+                    return callback(new Error('An error with db.'));
+                }
+                if (results.length) {
+                    return callback(new Error('Current username exists.'));
+                }
+                usersManager.create({
+                    username: params.username.trim(),
+                    first_name: params.firstName.trim(),
+                    last_name: params.lastName.trim(),
+                    password: params.password.trim()
+                }, function (err, user) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    if (user.isEmpty()) {
+                        return callback(new Error('User is empty'));
+                    }
+
+                    if (!params.groups.length) {
+                        return callback(null, { result: true });
+                    }
+
+                    var groupIds = params.groups,
+                        userId = user.getId(),
+                        usersRows = groupIds.map(function (groupId) {
+                            return [ userId, groupId ];
+                        });
+                    connection.query(
+                        'INSERT INTO users_to_groups (user_id, group_id) ' +
+                        'VALUES ?',
+                        [ usersRows ],
+                        function (err) {
+                            if (err) {
+                                return callback(new Error('An error with db'));
+                            }
+                            callback(null, { result: true });
+                        }
+                    );
+                })
+            }
+        );
+    }
 }
