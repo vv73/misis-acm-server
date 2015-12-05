@@ -13,8 +13,8 @@
 
 angular.module('Qemy.controllers.contest-item', [])
 
-    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_',
-        function ($scope, $rootScope, $state, ContestsManager, _) {
+    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_', 'SocketService',
+        function ($scope, $rootScope, $state, ContestsManager, _, SocketService) {
             $scope.$emit('change_title', {
                 title: 'Контест | ' + _('app_name')
             });
@@ -51,10 +51,6 @@ angular.module('Qemy.controllers.contest-item', [])
 
             $scope.updateContest = updateContest;
 
-            $scope.$on('$destroy', function () {
-                $rootScope.$broadcast('header expand close');
-            });
-
             function contestFill (contest) {
                 function getMonthName(num) {
                     num = num || 1;
@@ -85,6 +81,17 @@ angular.module('Qemy.controllers.contest-item', [])
 
                 return contest;
             }
+
+            SocketService.joinContest(contestId);
+            var newSolutionListener = SocketService.setListener('verdict updated', function (data) {
+                console.log(data);
+            });
+
+            $scope.$on('$destroy', function () {
+                $rootScope.$broadcast('header expand close');
+                SocketService.leaveContest(contestId);
+                newSolutionListener.removeListener();
+            });
         }
     ])
 

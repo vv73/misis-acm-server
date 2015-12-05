@@ -110,4 +110,84 @@ angular.module('Qemy.services', [
             logout: logout
         }
     }])
+
+    .service('SocketService', ['$rootScope', '$q', '$http', function ($rootScope, $q, $http) {
+        var socket = io();
+        var queue = [];
+
+        var interval = setInterval(function () {
+            console.log('Check connection...');
+            if (socket.connected) {
+                console.log('Connected');
+                flushQueue();
+                clearInterval(interval);
+            } else {
+                console.log('Not connected. Trying again...');
+            }
+        }, 500);
+
+        function flushQueue() {
+            while (queue.length) {
+                var event = queue.shift();
+                socket.emit(event.name, event.data);
+                console.log('Flushed event:', event);
+            }
+        }
+
+        function getSocket() {
+            return socket;
+        }
+
+        function getIo() {
+            return io;
+        }
+
+        function joinContest(contestId) {
+            if (!socket.connected) {
+                return queue.push({
+                    name: 'join contest',
+                    data: {
+                        contest_id: contestId
+                    }
+                });
+            }
+            socket.emit('join contest', {
+                contest_id: contestId
+            });
+        }
+
+        function leaveContest(contestId) {
+            if (!socket.connected) {
+                return queue.push({
+                    name: 'leave contest',
+                    data: {
+                        contest_id: contestId
+                    }
+                });
+            }
+            socket.emit('leave contest', {
+                contest_id: contestId
+            });
+        }
+
+        function setListener(eventName, callback) {
+            socket.on(eventName, callback);
+            return {
+                removeListener: removeListener.bind(this, eventName, callback)
+            }
+        }
+
+        function removeListener(eventName, callback) {
+            socket.removeListener(eventName, callback);
+        }
+
+        return {
+            getSocket: getSocket,
+            getIo: getIo,
+            joinContest: joinContest,
+            leaveContest: leaveContest,
+            setListener: setListener,
+            removeListener: removeListener
+        }
+    }])
 ;

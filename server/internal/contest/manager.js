@@ -17,8 +17,9 @@ var Contest     = require('../contest/contest');
 var crypto      = require('crypto');
 var async       = require('async');
 var problemsetManager = require('../problemset/manager');
-var Problem = require('../problemset/problem');
-var acmManager = require('../systems/manager');
+var Problem     = require('../problemset/problem');
+var acmManager  = require('../systems/manager');
+var sockets     = require('../../sockets/sockets');
 
 
 var DEFAULT_CONTESTS_COUNT = 20;
@@ -573,6 +574,16 @@ function SendSolution(params, callback) {
                                                         console.log(err);
                                                     }
                                                     user.incrementSolvedCount();
+
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: verdictId,
+                                                        verdict_name: verdict.verdict,
+                                                        memory: verdict.memoryConsumed,
+                                                        time: verdict.timeConsumed,
+                                                        testNum: verdict.testNum
+                                                    });
                                                 }
                                             );
                                         }
@@ -602,6 +613,12 @@ function SendSolution(params, callback) {
                                                     if (err) {
                                                         console.log(err);
                                                     }
+
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: verdictId
+                                                    });
                                                 }
                                             );
                                         }
@@ -620,6 +637,9 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
                                                 });
                                                 break;
                                             case 'cf':
@@ -648,6 +668,9 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
                                                 });
                                                 break;
                                             case 'acmp':
@@ -663,6 +686,9 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
                                                 });
                                                 break;
                                             case 'sgu':
@@ -678,6 +704,9 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
+                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
                                                 });
                                                 break;
                                             default:
