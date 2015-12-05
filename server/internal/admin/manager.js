@@ -80,7 +80,7 @@ function SearchProblems(q, system_type, callback) {
     function execute(connection, callback) {
         system_type = system_type || 'all';
         if (!q || !q.length) {
-            return callback(null, []);
+            return callback(null, { q: q, items: [] });
         }
         var sqlQuery = mysql.format(
                 'SELECT problemset.* ' +
@@ -89,7 +89,7 @@ function SearchProblems(q, system_type, callback) {
                 (system_type !== 'all' ? 'problemset.system_type = ' + connection.escape(system_type) + ' AND' : '') + ' ' +
                 '(problemset.title LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
                 'problemset.text LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%") ' +
-                'LIMIT 0, 50'
+                'LIMIT 0, 20'
             );
         /*
          sqlQuery = mysql.format(
@@ -113,13 +113,16 @@ function SearchProblems(q, system_type, callback) {
                     return callback(new Error('An error with db', 1001));
                 }
                 if (!results.length) {
-                    return callback(null, []);
+                    return callback(null, { q: q, items: [] });
                 }
-                callback(null, results.map(function (row) {
-                    var problem = new Problem();
-                    problem.setObjectRow(row);
-                    return problem.getObjectFactory();
-                }));
+                callback(null, {
+                    items: results.map(function (row) {
+                        var problem = new Problem();
+                        problem.setObjectRow(row);
+                        return problem.getObjectFactory();
+                    }),
+                    q: q
+                });
             }
         );
     }

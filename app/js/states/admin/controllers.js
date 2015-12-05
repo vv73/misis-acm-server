@@ -283,15 +283,20 @@ angular.module('Qemy.controllers.admin', [])
 
             $scope.selectedProblems = [];
 
+            var newQ = '';
             $scope.searchProblems = function () {
+                newQ = $scope.qProblems;
                 AdminManager.searchProblems({
                     q: $scope.qProblems,
                     type: $scope.systemType
                 }).then(function (results) {
                     if (results.error) {
-                        return alert('Произошла ошибка');
+                        return alert('Произошла ошибка: ' + results.error);
                     }
-                    $scope.problems = results.map(function (problem) {
+                    if (newQ !== results.q) {
+                        return console.log('Skipped result');
+                    }
+                    $scope.problems = results.items.map(function (problem) {
                         switch (problem.system_type) {
                             case 'cf':
                                 var pTypeObj = problem.system_problem_number.split(':');
@@ -529,15 +534,20 @@ angular.module('Qemy.controllers.admin', [])
 
             $scope.selectedProblems = [];
 
+            var newQ = '';
             $scope.searchProblems = function () {
+                newQ = $scope.qProblems;
                 AdminManager.searchProblems({
                     q: $scope.qProblems,
                     type: $scope.systemType
                 }).then(function (results) {
                     if (results.error) {
-                        return alert('Произошла ошибка');
+                        return alert('Произошла ошибка: ' + results.error);
                     }
-                    $scope.problems = results.map(function (problem) {
+                    if (newQ !== results.q) {
+                        return console.log('Skipped result');
+                    }
+                    $scope.problems = results.items.map(function (problem) {
                         switch (problem.system_type) {
                             case 'cf':
                                 var pTypeObj = problem.system_problem_number.split(':');
