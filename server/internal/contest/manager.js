@@ -595,6 +595,7 @@ function SendSolution(params, callback) {
                                         function saveResult(verdict) {
                                             console.log('Saving verdict:', verdict);
                                             var verdictId = getVerdictId(verdict.verdict);
+                                            verdict.verdict = getVerdictById(verdictId);
                                             connection.query(
                                                 'UPDATE sent_solutions ' +
                                                 'SET verdict_id = ?, ' +
@@ -638,10 +639,10 @@ function SendSolution(params, callback) {
                                         function saveWithErrors(error) {
                                             console.log('Saving error verdict:', error);
                                             var verdictId = 10,
-                                                verdictName = 'Unknown System Error';
+                                                verdictName = getVerdictById(verdictId);
                                             if (error.message === 'Resending the same solution.') {
-                                                verdictName = 'Same solution';
                                                 verdictId = 11;
+                                                verdictName = getVerdictById(11);
                                             }
                                             connection.query(
                                                 'UPDATE sent_solutions ' +
@@ -736,7 +737,7 @@ function SendSolution(params, callback) {
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
-                                                        verdict_name: progressCurrentTest.verdict,
+                                                        verdict_name: progressCurrentTest.verdict.toLowerCase(),
                                                         memory: progressCurrentTest.memoryConsumed,
                                                         time: progressCurrentTest.timeConsumed,
                                                         testNum: progressCurrentTest.testNum,
@@ -827,6 +828,33 @@ function SendSolution(params, callback) {
                                                 return 9;
                                             } else {
                                                 return 10;
+                                            }
+                                        }
+
+                                        function getVerdictById(verdictId) {
+                                            switch (verdictId) {
+                                                case 1:
+                                                    return 'Accepted';
+                                                case 2:
+                                                    return 'Wrong Answer';
+                                                case 3:
+                                                    return 'Compilation Error';
+                                                case 4:
+                                                    return 'Runtime Error';
+                                                case 5:
+                                                    return 'Presentation Error';
+                                                case 6:
+                                                    return 'Time Limit Exceeded';
+                                                case 7:
+                                                    return 'Memory Limit Exceeded';
+                                                case 8:
+                                                    return 'Idleness Limit Exceeded';
+                                                case 9:
+                                                    return 'Security Violated';
+                                                case 10:
+                                                    return 'Unknown System Error';
+                                                case 11:
+                                                    return 'Same solution';
                                             }
                                         }
                                     }

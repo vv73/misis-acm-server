@@ -30,7 +30,7 @@ div.contest
                     span Память
 
                 div.sent-list__item.animation(ng-repeat='sent in sents',
-                ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 3, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [10, 11].indexOf(sent.verdict_id) !== -1}')
+                ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [3, 10, 11].indexOf(sent.verdict_id) !== -1}')
                   div.sent-list__cell(ng-switch='sent.contestant_id === currentUser.id || currentUser.access_group.access_level === 5')
                     span(ng-switch-when='true')
                       a.link.sent-list__source-link.sent-list__bold(title='Посмотреть решение', ui-sref='contest.source-code({sourceId: sent.sent_id})') {{sent.sent_id}}
@@ -85,7 +85,7 @@ div.contest
                     span Память
 
                 div.sent-list__item.animation(ng-repeat='sent in sents',
-                ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 3, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [10, 11].indexOf(sent.verdict_id) !== -1}')
+                ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [3, 10, 11].indexOf(sent.verdict_id) !== -1}')
                   div.sent-list__cell(ng-switch='sent.contestant_id === currentUser.id || currentUser.access_group.access_level === 5')
                     span(ng-switch-when='true')
                       a.link.sent-list__source-link.sent-list__bold(title='Посмотреть решение', ui-sref='contest.source-code({sourceId: sent.sent_id})') {{sent.sent_id}}

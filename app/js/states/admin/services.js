@@ -120,6 +120,33 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function scanTimus() {
+            return $http({
+                method: 'post',
+                url: '/api/admin/scanTimus'
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function scanCfProblemset() {
+            return $http({
+                method: 'post',
+                url: '/api/admin/scanCf'
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function scanCfGym() {
+            return $http({
+                method: 'post',
+                url: '/api/admin/scanCfGyms'
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -130,7 +157,10 @@ angular.module('Qemy.services.admin', [
             updateContest: updateContest,
             getUsers: getUsers,
             deleteUser: deleteUser,
-            createUser: createUser
+            createUser: createUser,
+            scanTimus: scanTimus,
+            scanCfProblemset: scanCfProblemset,
+            scanCfGym: scanCfGym
         }
     }])
 ;

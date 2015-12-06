@@ -88,6 +88,7 @@ function SearchProblems(q, system_type, callback) {
                 'WHERE ' +
                 (system_type !== 'all' ? 'problemset.system_type = ' + connection.escape(system_type) + ' AND' : '') + ' ' +
                 '(problemset.title LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
+                'problemset.foreign_problem_id LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
                 'problemset.text LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%") ' +
                 'LIMIT 0, 20'
             );

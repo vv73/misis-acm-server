@@ -46,12 +46,12 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.users-list',
                 name: 'Пользователи'
+            }, {
+                uiSref: 'admin.problems',
+                name: 'Задачи'
             }/*, {
                 uiSref: 'admin.index',
                 name: 'Группы пользователей'
-            }, {
-                uiSref: 'admin.index',
-                name: 'Задачи'
             }, {
                 uiSref: 'admin.index',
                 name: 'Аккаунты в тестирующих системах'
@@ -837,6 +837,39 @@ angular.module('Qemy.controllers.admin', [])
                             }
                             $scope.$emit('admin update users list');
                         });
+                });
+            };
+        }
+    ])
+
+    .controller('AdminProblemsController', ['$scope', '$rootScope', '$mdDialog', '$state', 'AdminManager',
+        function($scope, $rootScope, $mdDialog, $state, AdminManager) {
+            $scope.loadingTimus = false;
+
+            $scope.scan = function (systemType) {
+                var promise;
+                $scope.loading = true;
+                $scope.$emit('data loading');
+                switch (systemType) {
+                    case 'timus':
+                        promise = AdminManager.scanTimus();
+                        break;
+                    case 'cf:problemset':
+                        promise = AdminManager.scanCfProblemset();
+                        break;
+                    case 'cf:gym':
+                        promise = AdminManager.scanCfGym();
+                        break;
+                    default:
+                        promise = AdminManager.scanTimus();
+                }
+                promise.then(function (data) {
+                    $scope.loading = false;
+                    $scope.$emit('data loaded');
+                    if (data.error) {
+                        return alert('Произошла ошибка: ' + data.error);
+                    }
+                    $scope.result = data;
                 });
             };
         }

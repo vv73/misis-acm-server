@@ -429,7 +429,7 @@ router.get('/contest/getTable', function (req, res) {
 });
 
 
-router.get('/admin/scanTimus', function (req, res) {
+router.post('/admin/scanTimus', function (req, res) {
 
     execute(function (err, result) {
         if (err) {
@@ -447,6 +447,62 @@ router.get('/admin/scanTimus', function (req, res) {
             return callback(new Error('User is not specified'));
         }
         scanner.scanTimusTasks(user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.post('/admin/scanCf', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        scanner.scanCodeforcesTasks(user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.post('/admin/scanCfGyms', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        scanner.scanCodeforcesTasksGyms(user, function (err, result) {
             if (err) {
                 return callback({
                     error: err.toString()
