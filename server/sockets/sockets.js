@@ -9,7 +9,8 @@
 
 
 var io,
-    salt = 'misis_acm_belov';
+    salt = 'misis_acm_belov',
+    initTime;
 
 var crypto = require('crypto');
 
@@ -23,6 +24,7 @@ module.exports = {
 
 function Create(s_io) {
     io = s_io;
+    initTime = new Date().getTime();
 }
 
 function GetIO() {
@@ -32,10 +34,16 @@ function GetIO() {
 function Handle(socket) {
     console.log('Connected:', socket.id);
 
+    socket.emit('server started', {
+        socket_id: socket.id,
+        startedAt: initTime
+    });
+
     socket.on('join contest', function (data) {
         if (!data.contest_id) {
             return;
         }
+        console.log('Join to contest:', data.contest_id);
         var contestHashKey = getHash(data.contest_id + salt);
         socket.join(contestHashKey);
     });
@@ -49,7 +57,7 @@ function Handle(socket) {
     });
 
     socket.on('disconnect', function (data) {
-        console.log('Disconnected');
+        console.log('Disconnected:', socket.id);
     });
 }
 

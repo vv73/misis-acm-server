@@ -114,24 +114,43 @@ angular.module('Qemy.services', [
     .service('SocketService', ['$rootScope', '$q', '$http', function ($rootScope, $q, $http) {
         var socket = io();
         var queue = [];
+        var connectCallback = angular.noop;
 
         var interval = setInterval(function () {
-            console.log('Check connection...');
+            console.log('Check socket connection...');
             if (socket.connected) {
-                console.log('Connected');
-                flushQueue();
+                connectCallback();
+                dispatchQueueEvents();
                 clearInterval(interval);
             } else {
                 console.log('Not connected. Trying again...');
             }
         }, 500);
 
-        function flushQueue() {
+        function dispatchQueueEvents() {
             while (queue.length) {
                 var event = queue.shift();
-                socket.emit(event.name, event.data);
-                console.log('Flushed event:', event);
+                emitEvent(event.name, event.data);
+                console.log('Dispatching event:', event);
             }
+        }
+
+        function emitEvent(eventName, eventArgs) {
+            if (!socket.connected) {
+                console.log('Added to queue', eventName, eventArgs);
+                return queue.push({
+                    name: eventName,
+                    data: eventArgs
+                });
+            }
+            socket.emit(eventName, eventArgs);
+        }
+
+        function onConnect(callback) {
+            if (socket.connected) {
+                return callback();
+            }
+            connectCallback = callback;
         }
 
         function getSocket() {
@@ -143,29 +162,13 @@ angular.module('Qemy.services', [
         }
 
         function joinContest(contestId) {
-            if (!socket.connected) {
-                return queue.push({
-                    name: 'join contest',
-                    data: {
-                        contest_id: contestId
-                    }
-                });
-            }
-            socket.emit('join contest', {
+            emitEvent('join contest', {
                 contest_id: contestId
             });
         }
 
         function leaveContest(contestId) {
-            if (!socket.connected) {
-                return queue.push({
-                    name: 'leave contest',
-                    data: {
-                        contest_id: contestId
-                    }
-                });
-            }
-            socket.emit('leave contest', {
+            emitEvent('leave contest', {
                 contest_id: contestId
             });
         }
@@ -187,7 +190,8 @@ angular.module('Qemy.services', [
             joinContest: joinContest,
             leaveContest: leaveContest,
             setListener: setListener,
-            removeListener: removeListener
+            removeListener: removeListener,
+            onConnect: onConnect
         }
     }])
 ;

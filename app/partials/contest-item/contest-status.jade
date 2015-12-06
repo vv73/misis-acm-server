@@ -29,7 +29,7 @@ div.contest
                   div.sent-list__cell
                     span Память
 
-                div.sent-list__item(ng-repeat='sent in sents',
+                div.sent-list__item.animation(ng-repeat='sent in sents',
                 ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 3, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [10, 11].indexOf(sent.verdict_id) !== -1}')
                   div.sent-list__cell(ng-switch='sent.contestant_id === currentUser.id || currentUser.access_group.access_level === 5')
                     span(ng-switch-when='true')
@@ -43,12 +43,13 @@ div.contest
                     a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})', title='{{sent.internal_index + ". " + sent.title}}') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
-                  div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id')
+                  div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id || sent.verdict_id === -1')
                     span(ng-switch-when='true')
-                      div.sent-list__loading
+                      div.sent-list__loading(style='display: inline-block;')
                         div.content-spin__layer
                           div.search-spin-layer_
                             div.search-spin
+                      span(ng-if='sent.verdict_id === -1', style='display: inline-block;') {{sent.verdict_name}}
                     span(ng-switch-default) {{sent.verdict_name}}
                   div.sent-list__cell(ng-switch='sent.test_num === 0')
                     span(ng-switch-when='true') -
@@ -83,7 +84,7 @@ div.contest
                   div.sent-list__cell
                     span Память
 
-                div.sent-list__item(ng-repeat='sent in sents',
+                div.sent-list__item.animation(ng-repeat='sent in sents',
                 ng-class='{"sent-list__success": sent.verdict_id === 1, "sent-list__failed": [2, 3, 4, 5, 6, 7, 8, 9].indexOf(sent.verdict_id) !== -1, "sent-list__unknown": [10, 11].indexOf(sent.verdict_id) !== -1}')
                   div.sent-list__cell(ng-switch='sent.contestant_id === currentUser.id || currentUser.access_group.access_level === 5')
                     span(ng-switch-when='true')
@@ -97,12 +98,13 @@ div.contest
                     a.link.sent-list__link(ui-sref='^.conditions-item({problemIndex: sent.internal_index})', title='{{sent.internal_index + ". " + sent.title}}') {{sent.internal_index + '. ' + sent.title}}
                   div.sent-list__cell
                     span {{sent.system_lang_name}}
-                  div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id')
+                  div.sent-list__cell.sent-list__verdict(ng-switch='!sent.verdict_id || sent.verdict_id === -1')
                     span(ng-switch-when='true')
-                      div.sent-list__loading
+                      div.sent-list__loading(style='display: inline-block;')
                         div.content-spin__layer
                           div.search-spin-layer_
                             div.search-spin
+                      span(ng-if='sent.verdict_id === -1', style='display: inline-block;') {{sent.verdict_name}}
                     span(ng-switch-default) {{sent.verdict_name}}
                   div.sent-list__cell(ng-switch='sent.test_num === 0')
                     span(ng-switch-when='true') -

@@ -551,6 +551,47 @@ function SendSolution(params, callback) {
                                         });
 
                                         var insertedId = result.insertId;
+                                        var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();};
+
+                                        connection.query(
+                                            'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                                            'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
+                                            'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
+                                            'system_langs.id AS lang_id, system_langs.name AS system_lang_name, problemset.id AS problem_id, ' +
+                                            'problemset.title, problemset.system_type, problemset.foreign_problem_id, ' +
+                                            'contests.start_time AS contest_start_time, contests.relative_freeze_time AS contest_freeze_time, contests.duration_time AS contest_duration_time ' +
+                                            'FROM sent_solutions ' +
+                                            'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                                            'LEFT JOIN problemset ON problemset.id = sent_solutions.problem_id ' +
+                                            'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
+                                            'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                                            'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
+                                            'WHERE sent_solutions.contest_id = ? AND sent_solutions.id = ? ' +
+                                            (inFreeze(curTime)
+                                                ? 'AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
+                                            'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ')' : ''),
+                                            [ contestId, insertedId ],
+                                            function (err, results, fields) {
+                                                if (err) {
+                                                    return console.log(err);
+                                                }
+                                                var list = results;
+                                                if (typeof list === 'undefined'
+                                                    || !Array.isArray(list)
+                                                    || list.length === 0) {
+                                                    console.log('In freeze');
+                                                    return;
+                                                }
+                                                var solution = list[0];
+                                                solution.internal_index = problemIndex;
+
+                                                var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                var io = sockets.getIo();
+                                                io.to(contestHashKey).emit('new solution', solution);
+                                            }
+                                        );
+
+
                                         function saveResult(verdict) {
                                             console.log('Saving verdict:', verdict);
                                             var verdictId = getVerdictId(verdict.verdict);
@@ -571,7 +612,7 @@ function SendSolution(params, callback) {
                                                 ],
                                                 function (err) {
                                                     if (err) {
-                                                        console.log(err);
+                                                        return console.log(err);
                                                     }
                                                     user.incrementSolvedCount();
 
@@ -582,16 +623,24 @@ function SendSolution(params, callback) {
                                                         verdict_name: verdict.verdict,
                                                         memory: verdict.memoryConsumed,
                                                         time: verdict.timeConsumed,
-                                                        testNum: verdict.testNum
+                                                        testNum: verdict.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
                                                     });
+                                                    if (!inFreeze(curTime)) {
+                                                        io.to(contestHashKey).emit('table update');
+                                                    }
                                                 }
                                             );
                                         }
 
                                         function saveWithErrors(error) {
                                             console.log('Saving error verdict:', error);
-                                            var verdictId = 10;
+                                            var verdictId = 10,
+                                                verdictName = 'Unknown System Error';
                                             if (error.message === 'Resending the same solution.') {
+                                                verdictName = 'Same solution';
                                                 verdictId = 11;
                                             }
                                             connection.query(
@@ -613,11 +662,17 @@ function SendSolution(params, callback) {
                                                     if (err) {
                                                         console.log(err);
                                                     }
-
                                                     var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
-                                                        verdict_id: verdictId
+                                                        verdict_id: verdictId,
+                                                        verdict_name: verdictName,
+                                                        memory: 0,
+                                                        time: 0,
+                                                        testNum: 0,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
                                                     });
                                                 }
                                             );
@@ -639,7 +694,16 @@ function SendSolution(params, callback) {
                                                     console.log(progressCurrentTest);
                                                     var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
                                                     var io = sockets.getIo();
-                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: -1,
+                                                        verdict_name: progressCurrentTest.verdict,
+                                                        memory: progressCurrentTest.memoryConsumed,
+                                                        time: progressCurrentTest.timeConsumed,
+                                                        testNum: progressCurrentTest.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
+                                                    });
                                                 });
                                                 break;
                                             case 'cf':
@@ -670,7 +734,16 @@ function SendSolution(params, callback) {
                                                     console.log(progressCurrentTest);
                                                     var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
                                                     var io = sockets.getIo();
-                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: -1,
+                                                        verdict_name: progressCurrentTest.verdict,
+                                                        memory: progressCurrentTest.memoryConsumed,
+                                                        time: progressCurrentTest.timeConsumed,
+                                                        testNum: progressCurrentTest.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
+                                                    });
                                                 });
                                                 break;
                                             case 'acmp':
@@ -688,7 +761,16 @@ function SendSolution(params, callback) {
                                                     console.log(progressCurrentTest);
                                                     var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
                                                     var io = sockets.getIo();
-                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: -1,
+                                                        verdict_name: progressCurrentTest.verdict,
+                                                        memory: progressCurrentTest.memoryConsumed,
+                                                        time: progressCurrentTest.timeConsumed,
+                                                        testNum: progressCurrentTest.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
+                                                    });
                                                 });
                                                 break;
                                             case 'sgu':
@@ -706,7 +788,16 @@ function SendSolution(params, callback) {
                                                     console.log(progressCurrentTest);
                                                     var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
                                                     var io = sockets.getIo();
-                                                    io.to(contestHashKey).emit('verdict updated', progressCurrentTest);
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: -1,
+                                                        verdict_name: progressCurrentTest.verdict,
+                                                        memory: progressCurrentTest.memoryConsumed,
+                                                        time: progressCurrentTest.timeConsumed,
+                                                        testNum: progressCurrentTest.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
+                                                    });
                                                 });
                                                 break;
                                             default:

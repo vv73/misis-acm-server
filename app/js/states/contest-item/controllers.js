@@ -82,15 +82,54 @@ angular.module('Qemy.controllers.contest-item', [])
                 return contest;
             }
 
-            SocketService.joinContest(contestId);
-            var newSolutionListener = SocketService.setListener('verdict updated', function (data) {
-                console.log(data);
+            var socketId,
+                verdictUpdatesListener,
+                newSolutionListener,
+                tableUpdateListener;
+
+            SocketService.onConnect(function () {
+                socketId = SocketService.getSocket().id;
+                console.log('Connected:', socketId);
+
+                SocketService.joinContest(contestId);
+
+                SocketService.getSocket().on('reconnect', function (data) {
+                    console.log('Reconnected', SocketService.getSocket().id);
+                    setTimeout(function () {
+                        SocketService.joinContest(contestId);
+                    }, 500);
+                    //attachEvents();
+                });
+
+                attachEvents();
             });
+
+            function attachEvents() {
+                verdictUpdatesListener = SocketService.setListener('verdict updated', function (data) {
+                    $rootScope.$broadcast('verdict updated', data);
+                });
+                newSolutionListener = SocketService.setListener('new solution', function (data) {
+                    $rootScope.$broadcast('new solution', data);
+                });
+                tableUpdateListener = SocketService.setListener('table update', function () {
+                    $rootScope.$broadcast('table update');
+                });
+            }
+
+            function removeEvents() {
+                try {
+                    verdictUpdatesListener.removeListener();
+                    newSolutionListener.removeListener();
+                    tableUpdateListener.removeListener();
+                } catch (err) {
+                    console.log(err);
+                }
+            }
 
             $scope.$on('$destroy', function () {
                 $rootScope.$broadcast('header expand close');
                 SocketService.leaveContest(contestId);
-                newSolutionListener.removeListener();
+                removeEvents();
             });
         }
     ])
@@ -113,8 +152,10 @@ angular.module('Qemy.controllers.contest-item', [])
             $scope.contestTable = {};
             $scope.user = {};
 
-            function updateTable() {
-                $rootScope.$broadcast('data loading');
+            function updateTable(withoutLoading) {
+                if (!withoutLoading) {
+                    $rootScope.$broadcast('data loading');
+                }
                 ContestItemManager.getTable({contest_id: contestId})
                     .then(function (result) {
                         if (result.error) {
@@ -132,6 +173,10 @@ angular.module('Qemy.controllers.contest-item', [])
             }
             updateTable();
             $scope.updateTable = updateTable;
+
+            $scope.$on('table update', function () {
+                updateTable(true);
+            });
         }
     ])
 
@@ -403,6 +448,47 @@ angular.module('Qemy.controllers.contest-item', [])
             $scope.currentUser = {};
             UserManager.getCurrentUser().then(function (user) {
                 $scope.currentUser = user;
+            });
+
+            $scope.$on('verdict updated', function (ev, args) {
+                var sents = $scope.sents;
+                for (var i = 0; i < sents.length; ++i) {
+                    if (sents[i].sent_id === args.solution_id) {
+                        if (typeof args.time !== 'undefined') {
+                            sents[i].execution_time = args.time;
+                        }
+                        if (typeof args.memory !== 'undefined') {
+                            sents[i].memory = args.memory;
+                        }
+                        if (typeof args.testNum !== 'undefined') {
+                            sents[i].test_num = args.testNum;
+                        }
+                        if (typeof args.verdict_id !== 'undefined') {
+                            sents[i].verdict_id = args.verdict_id;
+                        }
+                        if (typeof args.verdict_name !== 'undefined') {
+                            sents[i].verdict_name = args.verdict_name;
+                        }
+                        $scope.$apply();
+                        break;
+                    }
+                }
+            });
+
+            $scope.$on('new solution', function (ev, data) {
+                console.log(data);
+                var userId = data.contestant_id,
+                    select = $scope.params.select;
+                if (select === 'my' && userId !== $scope.currentUser.id) {
+                    return;
+                }
+                var sents = $scope.sents;
+                for (var i = 0; i < sents.length; ++i) {
+                    if (sents[i].sent_id === data.sent_id) {
+                        return;
+                    }
+                }
+                sents.unshift(data);
             });
         }
     ])

@@ -19,6 +19,9 @@ div.contest
                 md-option(ng-repeat='lang in currentLangs', value='{{lang.id}}')
                   span {{lang.name}}
 
+            div.send-content__submit(ng-if='solution.length > 0')
+              md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent') Отправить
+
           div.send-content__textarea
             md-input-container(flex)
               label Решение

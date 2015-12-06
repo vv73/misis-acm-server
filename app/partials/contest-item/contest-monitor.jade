@@ -4,6 +4,9 @@ div.contest
       div.contest__title-section
         h2 Таблица результатов
 
+      //div.contest-monitor__table-update
+        md-button.md-primary.md-raised(ng-click='updateTable()') Обновить таблицу
+
       div.contest__status
         span
           div.contest-item__status(ng-switch='contest.status')
