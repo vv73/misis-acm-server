@@ -127,6 +127,12 @@ function ScanTimusTasks(user, callback) {
                     updated: updateCounter,
                     inserted: insertCounter
                 });
+                for (var i = 0; i < problems.length; ++i) {
+                    for (var el in problems[i]) {
+                        problems[i][el] = null;
+                    }
+                }
+                problems = [];
             };
 
             q.push(problems, function (err, problem) {
@@ -317,6 +323,12 @@ function ScanCodeforcesTasks(user, callback) {
                         result: true,
                         all_items_count: problems.length
                     });
+                    for (var i = 0; i < problems.length; ++i) {
+                        for (var el in problems[i]) {
+                            problems[i][el] = null;
+                        }
+                    }
+                    problems = [];
                 };
 
                 q.push(problems, function (err, problem) {
@@ -583,6 +595,12 @@ function ScanCodeforcesTasksGyms(user, callback) {
                             result: true,
                             all_items_count: problems.length
                         });
+                        for (var i = 0; i < problems.length; ++i) {
+                            for (var el in problems[i]) {
+                                problems[i][el] = null;
+                            }
+                        }
+                        problems = [];
                     };
 
                     q.push(problems, function (err, problem) {
