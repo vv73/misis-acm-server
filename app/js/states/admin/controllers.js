@@ -847,29 +847,38 @@ angular.module('Qemy.controllers.admin', [])
             $scope.loadingTimus = false;
 
             $scope.scan = function (systemType) {
-                var promise;
-                $scope.loading = true;
-                $scope.$emit('data loading');
-                switch (systemType) {
-                    case 'timus':
-                        promise = AdminManager.scanTimus();
-                        break;
-                    case 'cf:problemset':
-                        promise = AdminManager.scanCfProblemset();
-                        break;
-                    case 'cf:gym':
-                        promise = AdminManager.scanCfGym();
-                        break;
-                    default:
-                        promise = AdminManager.scanTimus();
-                }
-                promise.then(function (data) {
-                    $scope.loading = false;
-                    $scope.$emit('data loaded');
-                    if (data.error) {
-                        return alert('Произошла ошибка: ' + data.error);
+                var confirm = $mdDialog.confirm()
+                    .title('Подтверждение')
+                    .content('Вы действительно хотите произвести сканирование? После этого желательно произвести перезагрузку сервера.')
+                    .ariaLabel('Seriously?')
+                    .ok('Да')
+                    .cancel('Отмена');
+
+                $mdDialog.show(confirm).then(function () {
+                    var promise;
+                    $scope.loading = true;
+                    $scope.$emit('data loading');
+                    switch (systemType) {
+                        case 'timus':
+                            promise = AdminManager.scanTimus();
+                            break;
+                        case 'cf:problemset':
+                            promise = AdminManager.scanCfProblemset();
+                            break;
+                        case 'cf:gym':
+                            promise = AdminManager.scanCfGym();
+                            break;
+                        default:
+                            promise = AdminManager.scanTimus();
                     }
-                    $scope.result = data;
+                    promise.then(function (data) {
+                        $scope.loading = false;
+                        $scope.$emit('data loaded');
+                        if (data.error) {
+                            return alert('Произошла ошибка: ' + data.error);
+                        }
+                        $scope.result = data;
+                    });
                 });
             };
         }
