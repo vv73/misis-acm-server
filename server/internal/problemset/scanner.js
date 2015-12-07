@@ -297,7 +297,7 @@ function ScanCodeforcesTasks(user, callback) {
 
                         cb(null, problem);
                     });
-                }, 80);
+                }, 30);
 
                 q.drain = function() {
                     console.log('All problems have been processed');
@@ -332,6 +332,7 @@ function ScanCodeforcesTasks(user, callback) {
                                             return console.log(err);
                                         }
                                         console.log('Finished processing item (update):', problem.number);
+                                        problem = null;
                                     }
                                 );
                             } else {
@@ -345,6 +346,7 @@ function ScanCodeforcesTasks(user, callback) {
                                             return console.log(err);
                                         }
                                         console.log('Finished processing item (insert):', problem.number);
+                                        problem = null;
                                     }
                                 );
                             }
@@ -557,7 +559,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                 cb(null, problem);
                             }
                         });
-                    }, 50);
+                    }, 30);
 
                     q.drain = function() {
                         console.log('All problems have been processed');
