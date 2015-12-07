@@ -718,7 +718,7 @@ function SendSolution(params, callback) {
                                                     return callback(new Error('Something went wrong. Please contact your administrator.'));
                                                 }
                                                 var iContestId = problemCode.match(/^(\d+)/i)[1],
-                                                    iProblemIndex = problemCode.match(/([a-zA-Z]+)$/i)[1];
+                                                    iProblemIndex = problemCode.replace(/^(\d+)/i, '');
                                                 acmManager.send(problem.system_type, {
                                                     language: lang.foreign_id,
                                                     task_type: taskType,
