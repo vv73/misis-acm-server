@@ -17,6 +17,8 @@ var Problem     = require('../problemset/problem');
 var restler     = require('restler');
 var cheerio     = require('cheerio');
 
+var saveProblemsPer = 5;
+
 module.exports = {
     scanTimusTasks: ScanTimusTasks,
     scanCodeforcesTasks: ScanCodeforcesTasks,
@@ -297,7 +299,7 @@ function ScanCodeforcesTasks(user, callback) {
 
                         cb(null, problem);
                     });
-                }, 30);
+                }, saveProblemsPer);
 
                 q.drain = function() {
                     console.log('All problems have been processed');
@@ -559,7 +561,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                 cb(null, problem);
                             }
                         });
-                    }, 30);
+                    }, saveProblemsPer);
 
                     q.drain = function() {
                         console.log('All problems have been processed');
