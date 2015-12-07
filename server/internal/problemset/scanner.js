@@ -25,6 +25,14 @@ module.exports = {
     scanCodeforcesTasksGyms: ScanCodeforcesTasksGyms
 };
 
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
 
 function ScanTimusTasks(user, callback) {
     mysqlPool.connection(function (err, connection) {
@@ -294,10 +302,12 @@ function ScanCodeforcesTasks(user, callback) {
                             _.attr('class', classes.join(' '));
                         });
 
-                        problem.html = content.html();
-                        problem.text = content.text();
+                        var newObjProblem = clone(problem);
+                        newObjProblem.html = content.html();
+                        newObjProblem.text = content.text();
+                        newObjProblem.dispose = function () { for (var key in this) this[key] = null; };
 
-                        cb(null, problem);
+                        cb(null, newObjProblem);
                     });
                 }, saveProblemsPer);
 
@@ -334,7 +344,7 @@ function ScanCodeforcesTasks(user, callback) {
                                             return console.log(err);
                                         }
                                         console.log('Finished processing item (update):', problem.number);
-                                        problem = null;
+                                        problem.dispose();
                                     }
                                 );
                             } else {
@@ -348,7 +358,7 @@ function ScanCodeforcesTasks(user, callback) {
                                             return console.log(err);
                                         }
                                         console.log('Finished processing item (insert):', problem.number);
-                                        problem = null;
+                                        problem.dispose();
                                     }
                                 );
                             }
@@ -529,10 +539,12 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                     _.attr('class', classes.join(' '));
                                 });
 
-                                problem.html = content.html();
-                                problem.text = '';
+                                var newObjProblem = clone(problem);
+                                newObjProblem.html = content.html();
+                                newObjProblem.text = '';
+                                newObjProblem.dispose = function () { for (var key in this) this[key] = null; };
 
-                                cb(null, problem);
+                                cb(null, newObjProblem);
                             } else {
                                 //problem html
                                 content.find('img').each(function () {
@@ -555,10 +567,12 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                     _.attr('class', classes.join(' '));
                                 });
 
-                                problem.html = content.html();
-                                problem.text = content.text();
+                                newObjProblem = clone(problem);
+                                newObjProblem.html = content.html();
+                                newObjProblem.text = content.text();
+                                newObjProblem.dispose = function () { for (var key in this) this[key] = null; };
 
-                                cb(null, problem);
+                                cb(null, newObjProblem);
                             }
                         });
                     }, saveProblemsPer);
@@ -596,7 +610,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                                 return console.log(err);
                                             }
                                             console.log('Finished processing item (update):', problem.number);
-                                            problem = null;
+                                            problem.dispose();
                                         }
                                     );
                                 } else {
@@ -610,7 +624,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                                 return console.log(err);
                                             }
                                             console.log('Finished processing item (insert):', problem.number);
-                                            problem = null;
+                                            problem.dispose();
                                         }
                                     );
                                 }
