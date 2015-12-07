@@ -17,7 +17,7 @@ var Problem     = require('../problemset/problem');
 var restler     = require('restler');
 var cheerio     = require('cheerio');
 
-var saveProblemsPer = 5;
+var saveProblemsPer = 2;
 
 module.exports = {
     scanTimusTasks: ScanTimusTasks,
@@ -39,8 +39,13 @@ function ScanTimusTasks(user, callback) {
         if (err) {
             return callback(new Error('An error with db', 1001));
         }
+        
+        var _once = true;
         execute(connection, function (err, result) {
-            connection.release();
+            if (_once) {
+                connection.release();
+                _once = false;
+            }
             if (err) {
                 return callback(err);
             }
@@ -121,12 +126,6 @@ function ScanTimusTasks(user, callback) {
 
             q.drain = function() {
                 console.log('All items have been processed');
-                callback(null, {
-                    result: true,
-                    all_items_count: problems.length,
-                    updated: updateCounter,
-                    inserted: insertCounter
-                });
                 for (var i = 0; i < problems.length; ++i) {
                     for (var el in problems[i]) {
                         problems[i][el] = null;
@@ -135,6 +134,10 @@ function ScanTimusTasks(user, callback) {
                 problems = [];
             };
 
+            callback(null, {
+                result: true,
+                all_items_count: problems.length
+            });
             q.push(problems, function (err, problem) {
                 if (err || !problem.number) {
                     return;
@@ -189,8 +192,12 @@ function ScanCodeforcesTasks(user, callback) {
         if (err) {
             return callback(new Error('An error with db', 1001));
         }
+        var _once = true;
         execute(connection, function (err, result) {
-            connection.release();
+            if (_once) {
+                connection.release();
+                _once = false;
+            }
             if (err) {
                 return callback(err);
             }
@@ -207,6 +214,9 @@ function ScanCodeforcesTasks(user, callback) {
         restler.get(acmTasksUrl, {
             headers: {
                 'Accept-Language': 'ru,en;q=0.8'
+            },
+            query: {
+                locale: 'ru'
             }
         }).on('complete', function(data, response) {
             var bodyResponse = data;
@@ -227,6 +237,9 @@ function ScanCodeforcesTasks(user, callback) {
                 restler.get(pageUrl, {
                     headers: {
                         'Accept-Language': 'ru,en;q=0.8'
+                    },
+                    query: {
+                        locale: 'ru'
                     }
                 }).on('complete', function (data, response) {
                     if (!data) {
@@ -281,6 +294,9 @@ function ScanCodeforcesTasks(user, callback) {
                     restler.get(pageUrl, {
                         headers: {
                             'Accept-Language': 'ru,en;q=0.8'
+                        },
+                        query: {
+                            locale: 'ru'
                         }
                     }).on('complete', function (data, response) {
                         if (!data) {
@@ -319,10 +335,6 @@ function ScanCodeforcesTasks(user, callback) {
 
                 q.drain = function() {
                     console.log('All problems have been processed');
-                    callback(null, {
-                        result: true,
-                        all_items_count: problems.length
-                    });
                     for (var i = 0; i < problems.length; ++i) {
                         for (var el in problems[i]) {
                             problems[i][el] = null;
@@ -331,6 +343,11 @@ function ScanCodeforcesTasks(user, callback) {
                     problems = [];
                 };
 
+                callback(null, {
+                    result: true,
+                    all_items_count: problems.length
+                });
+                    
                 q.push(problems, function (err, problem) {
                     if (err) {
                         console.log(err);
@@ -387,8 +404,12 @@ function ScanCodeforcesTasksGyms(user, callback) {
         if (err) {
             return callback(new Error('An error with db', 1001));
         }
+        var _once = true;
         execute(connection, function (err, result) {
-            connection.release();
+            if (_once) {
+                connection.release();
+                _once = false;
+            }
             if (err) {
                 return callback(err);
             }
@@ -405,6 +426,9 @@ function ScanCodeforcesTasksGyms(user, callback) {
         restler.get(acmTasksUrl, {
             headers: {
                 'Accept-Language': 'ru,en;q=0.8'
+            },
+            query: {
+                locale: 'ru'
             }
         }).on('complete', function(data, response) {
             var bodyResponse = data;
@@ -427,6 +451,9 @@ function ScanCodeforcesTasksGyms(user, callback) {
                 restler.get(pageUrl, {
                     headers: {
                         'Accept-Language': 'ru,en;q=0.8'
+                    },
+                    query: {
+                        locale: 'ru'
                     }
                 }).on('complete', function (data, response) {
                     if (!data) {
@@ -464,6 +491,9 @@ function ScanCodeforcesTasksGyms(user, callback) {
                     restler.get(pageUrl, {
                         headers: {
                             'Accept-Language': 'ru,en;q=0.8'
+                        },
+                        query: {
+                            locale: 'ru'
                         }
                     }).on('complete', function (data, response) {
                         if (!data) {
@@ -514,6 +544,9 @@ function ScanCodeforcesTasksGyms(user, callback) {
                         restler.get(pageUrl, {
                             headers: {
                                 'Accept-Language': 'ru,en;q=0.8'
+                            },
+                            query: {
+                                locale: 'ru'
                             }
                         }).on('complete', function (data, response) {
                             if (!data) {
@@ -591,10 +624,6 @@ function ScanCodeforcesTasksGyms(user, callback) {
 
                     q.drain = function() {
                         console.log('All problems have been processed');
-                        callback(null, {
-                            result: true,
-                            all_items_count: problems.length
-                        });
                         for (var i = 0; i < problems.length; ++i) {
                             for (var el in problems[i]) {
                                 problems[i][el] = null;
@@ -603,6 +632,11 @@ function ScanCodeforcesTasksGyms(user, callback) {
                         problems = [];
                     };
 
+                    callback(null, {
+                        result: true,
+                        all_items_count: problems.length
+                    });
+                    
                     q.push(problems, function (err, problem) {
                         if (err) {
                             return console.log(err);
