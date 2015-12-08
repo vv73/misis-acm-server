@@ -596,6 +596,9 @@ function SendSolution(params, callback) {
                                             console.log('Saving verdict:', verdict);
                                             var verdictId = getVerdictId(verdict.verdict);
                                             verdict.verdict = getVerdictById(verdictId);
+                                            if (verdictId === 1) {
+                                                verdict.testNum = 0;
+                                            }
                                             connection.query(
                                                 'UPDATE sent_solutions ' +
                                                 'SET verdict_id = ?, ' +
@@ -1278,7 +1281,7 @@ function GetTable(contestId, user, callback) {
                                                         resultAdded = false;
                                                     for (var iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
                                                         var curSent = curProblemSentsArray[iSent];
-                                                        var scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
+                                                        var scoreMinutes = Math.floor((curSent.sent_time - startTime) / (60 * 1000));
                                                         if (curSent.verdict_id !== 1) {
                                                             if (curSent.scored) {
                                                                 nWrongs--;
@@ -1319,7 +1322,7 @@ function GetTable(contestId, user, callback) {
                                                     for (iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
                                                         curSent = curProblemSentsArray[iSent];
                                                         var sentTime = curSent.sent_time;
-                                                        scoreMinutes = (curSent.sent_time - startTime) / (60 * 1000);
+                                                        scoreMinutes = Math.floor((curSent.sent_time - startTime) / (60 * 1000));
 
                                                         if (curSent.verdict_id !== 1) {
                                                             if (curSent.scored && !inFreeze(sentTime)) {

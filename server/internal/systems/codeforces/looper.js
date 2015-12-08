@@ -69,7 +69,7 @@ function Watch(params, callback, progressCallback) {
                             callback(null, {
                                 solutionId: currentSolution.id,
                                 verdict: currentSolution.verdict,
-                                testNum: currentSolution.passedTestCount,
+                                testNum: currentSolution.passedTestCount + 1,
                                 timeConsumed: parseFloat((currentSolution.timeConsumedMillis / 1000).toFixed(4)),
                                 memoryConsumed: Math.floor(currentSolution.memoryConsumedBytes / 1024)
                             });
@@ -79,7 +79,7 @@ function Watch(params, callback, progressCallback) {
                             progressCallback({
                                 solutionId: currentSolution.id,
                                 verdict: currentSolution.verdict,
-                                testNum: currentSolution.passedTestCount,
+                                testNum: currentSolution.passedTestCount + 1,
                                 timeConsumed: parseFloat((currentSolution.timeConsumedMillis / 1000).toFixed(4)),
                                 memoryConsumed: Math.floor(currentSolution.memoryConsumedBytes / 1024)
                             });
