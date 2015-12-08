@@ -513,6 +513,34 @@ router.post('/admin/scanCfGyms', function (req, res) {
     }
 });
 
+router.get('/admin/scanAcmp', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        scanner.scanAcmpTasks(user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 router.get('/admin/searchGroups', function (req, res) {
 
     execute(function (err, result) {

@@ -16,13 +16,15 @@ var Contest     = require('../contest/contest');
 var Problem     = require('../problemset/problem');
 var restler     = require('restler');
 var cheerio     = require('cheerio');
+var fetch       = require('fetch');
 
 var saveProblemsPer = 2;
 
 module.exports = {
     scanTimusTasks: ScanTimusTasks,
     scanCodeforcesTasks: ScanCodeforcesTasks,
-    scanCodeforcesTasksGyms: ScanCodeforcesTasksGyms
+    scanCodeforcesTasksGyms: ScanCodeforcesTasksGyms,
+    scanAcmpTasks: ScanAcmpTasks
 };
 
 function clone(obj) {
@@ -283,7 +285,7 @@ function ScanCodeforcesTasks(user, callback) {
             for (var i = 1; i <= allPages; ++i) {
                 qPages.push({ page: i }, function (err) {
                     if (err) {
-                        console.log(err);
+                        return console.log(err);
                     }
                 });
             }
@@ -350,7 +352,7 @@ function ScanCodeforcesTasks(user, callback) {
                     
                 q.push(problems, function (err, problem) {
                     if (err) {
-                        console.log(err);
+                        return console.log(err);
                     }
                     problem.number = 'problemset:' + problem.contest_id + problem.index;
                     connection.query(
@@ -686,5 +688,194 @@ function ScanCodeforcesTasksGyms(user, callback) {
                 }
             }
         });
+    }
+}
+
+function ScanAcmpTasks(user, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        var _once = true;
+        execute(connection, function (err, result) {
+            if (_once) {
+                connection.release();
+                _once = false;
+            }
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        if (user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        var acmTasksUrl = 'http://acmp.ru/index.asp?main=tasks&page=0',
+            systemType = 'acmp';
+        fetch.fetchUrl(acmTasksUrl, function(error, meta, body) {
+            if (error) {
+                return cb(new Error('Resource has not been reached'));
+            }
+            var bodyResponse = body.toString();
+            if (!bodyResponse) {
+                return callback(new Error('Response has no body'));
+            }
+            var $ = cheerio.load(bodyResponse),
+                problems = [];
+            var allPagesElements = $('a.small');
+            if (!allPagesElements || !allPagesElements.length) {
+                return callback(new Error('Pages counter not found'));
+            }
+            var allPages = parseInt(allPagesElements.eq(allPagesElements.length - 1).text().trim());
+
+
+            var qPages = async.queue(function (page, cb) {
+                var pageNumber = page.page;
+                var pageUrl = 'http://acmp.ru/index.asp?main=tasks&page=' + pageNumber;
+                fetch.fetchUrl(pageUrl, function(error, meta, body) {
+                    if (error) {
+                        return cb(new Error('Resource has not been reached'));
+                    }
+                    var data = body.toString();
+                    if (!data) {
+                        return cb(new Error('Resource has not been reached'));
+                    }
+                    var $ = cheerio.load(data),
+                        content = $('.white');
+                    content.each(function () {
+                        var _ = $(this),
+                            tds = _.find('td');
+                        if (!tds.length) {
+                            return;
+                        }
+                        try {
+                            var taskNumber = +(tds.eq(0).text().trim());
+                            var taskName = tds.eq(1).text().trim();
+                            problems.push({
+                                id: taskNumber,
+                                name: taskName
+                            });
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    });
+                    cb();
+                });
+            }, 10);
+
+            qPages.drain = function() {
+                console.log('All pages have been processed');
+                saveProblems(problems);
+            };
+
+            for (var i = 0; i < allPages; ++i) {
+                qPages.push({ page: i }, function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            function saveProblems(problems) {
+                var q = async.queue(function (problem, cb) {
+                    var pageUrl = 'http://acmp.ru/index.asp?main=task&id_task=' + problem.id;
+                    fetch.fetchUrl(pageUrl, function(error, meta, body) {
+                        if (error) {
+                            return cb(new Error('Resource has not been reached'));
+                        }
+                        var data = body.toString();
+                        if (!data) {
+                            return cb(new Error('Resource has not been reached'));
+                        }
+                        data = data.replace(/((\<|\>)(\=|\d+))/gi, ' $2 $3 ');
+                        var $ = cheerio.load(data),
+                            content = $('table td[background="/images/notepad2.gif"]');
+                        content.find('img').each(function () {
+                            var imgThis = $(this),
+                                src = imgThis.attr('src');
+                            if (src && src.indexOf('http://acmp.ru') === -1) {
+                                imgThis.attr('src', 'http://acmp.ru' + src);
+                            }
+                        });
+                        content.find('h4 a').remove();
+                        content.find('h4 i').remove();
+                        content.find('ins').remove();
+                        content.find('script').remove();
+
+                        var newObjProblem = clone(problem);
+                        newObjProblem.html = content.html().replace(/\s(?=\s)/gi, '').replace(/(\=\"\")/gi, '');
+                        newObjProblem.text = content.text().trim();
+                        newObjProblem.dispose = function () { for (var key in this) this[key] = null; };
+
+                        cb(null, newObjProblem);
+                    });
+                }, 10);
+
+                q.drain = function() {
+                    console.log('All problems have been processed');
+                    for (var i = 0; i < problems.length; ++i) {
+                        for (var el in problems[i]) {
+                            problems[i][el] = null;
+                        }
+                    }
+                    problems = [];
+                };
+
+                callback(null, {
+                    result: true,
+                    all_items_count: problems.length
+                });
+
+                q.push(problems, function (err, problem) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    problem.number = problem.id;
+                    connection.query(
+                        'SELECT * ' +
+                        'FROM problemset ' +
+                        'WHERE foreign_problem_id = ? AND system_type = ?',
+                        [ problem.number, systemType ],
+                        function (err, results, fields) {
+                            if (err) {
+                                return console.log(err);
+                            }
+                            if (results.length) {
+                                connection.query(
+                                    'UPDATE problemset ' +
+                                    'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
+                                    'WHERE foreign_problem_id = ? AND system_type = ?',
+                                    [ problem.name, problem.html, problem.text, new Date().getTime(), problem.number, systemType ],
+                                    function (err) {
+                                        if (err) {
+                                            return console.log(err);
+                                        }
+                                        console.log('Finished processing item (update):', problem.number);
+                                        problem.dispose();
+                                    }
+                                );
+                            } else {
+                                connection.query(
+                                    'INSERT INTO problemset ' +
+                                    '(system_type, foreign_problem_id, title, formatted_text, text, creation_time) ' +
+                                    'VALUES (?, ?, ?, ?, ?, ?)',
+                                    [ systemType, problem.number, problem.name, problem.html, problem.text, new Date().getTime() ],
+                                    function (err) {
+                                        if (err) {
+                                            return console.log(err);
+                                        }
+                                        console.log('Finished processing item (insert):', problem.number);
+                                        problem.dispose();
+                                    }
+                                );
+                            }
+                        }
+                    );
+                });
+            }
+        })
     }
 }
