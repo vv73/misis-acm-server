@@ -70,8 +70,10 @@ function Watch(params, callback, progressCallback) {
 
                     if (/on\stest\s(\d+)/i.test(verdict)) {
                         testNum = verdict.match(/on\stest\s(\d+)/i)[1];
+                        verdict = verdict.replace(/(\s?on\stest\s?\d+)/i, '');
                     } else if (/Running\:\s(\d+)/i.test(verdict)) {
                         testNum = verdict.match(/Running\:\s(\d+)/i)[1];
+                        verdict = verdict.replace(/(\:\s\d+)$/i, '');
                     }
                     testNum = parseInt(testNum);
 
@@ -96,7 +98,7 @@ function Watch(params, callback, progressCallback) {
                         if (!finish) {
                             callback(null, {
                                 solutionId: lSolutionId,
-                                verdict: verdict.replace(/(\s?on\stest\s?\d+)/i, ''),
+                                verdict: verdict,
                                 testNum: testNum,
                                 timeConsumed: timeConsumed,
                                 memoryConsumed: memoryConsumed
@@ -108,7 +110,7 @@ function Watch(params, callback, progressCallback) {
                         async.nextTick(function () {
                             progressCallback({
                                 solutionId: lSolutionId,
-                                verdict: verdict.replace(/(\s?on\stest\s?\d+)/i, ''),
+                                verdict: verdict,
                                 testNum: testNum,
                                 timeConsumed: timeConsumed,
                                 memoryConsumed: memoryConsumed
