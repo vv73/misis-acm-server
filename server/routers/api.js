@@ -513,7 +513,7 @@ router.post('/admin/scanCfGyms', function (req, res) {
     }
 });
 
-router.get('/admin/scanAcmp', function (req, res) {
+router.post('/admin/scanAcmp', function (req, res) {
 
     execute(function (err, result) {
         if (err) {

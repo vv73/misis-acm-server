@@ -147,6 +147,15 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function scanAcmp() {
+            return $http({
+                method: 'post',
+                url: '/api/admin/scanAcmp'
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -160,7 +169,8 @@ angular.module('Qemy.services.admin', [
             createUser: createUser,
             scanTimus: scanTimus,
             scanCfProblemset: scanCfProblemset,
-            scanCfGym: scanCfGym
+            scanCfGym: scanCfGym,
+            scanAcmp: scanAcmp
         }
     }])
 ;

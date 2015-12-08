@@ -868,6 +868,9 @@ angular.module('Qemy.controllers.admin', [])
                         case 'cf:gym':
                             promise = AdminManager.scanCfGym();
                             break;
+                        case 'acmp':
+                            promise = AdminManager.scanAcmp();
+                            break;
                         default:
                             promise = AdminManager.scanTimus();
                     }
