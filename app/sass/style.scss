@@ -1,7 +1,6 @@
 $media: screen;
 $laptop_min_width: 1024px;
 $phone_max_width: 799px;
-$phone_min_width: 300px;
 
 
 @mixin box-shadow($shadows...) {
