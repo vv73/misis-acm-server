@@ -9,7 +9,6 @@ var debug = require('debug')('Acm-misis:server');
 var http = require('http');
 var config = require('../server/config/config');
 var sockets = require('../server/sockets/sockets');
-require('v8-profiler');
 
 /**
  * Get port from environment and store in Express.

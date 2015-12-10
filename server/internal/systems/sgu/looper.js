@@ -88,7 +88,8 @@ function Watch(params, callback, progressCallback) {
                         'Runtime error',
                         'Restricted function',
                         'Presentation Error',
-                        'Global Error'
+                        'Global Error',
+                        'Presentation error'
                     ];
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;

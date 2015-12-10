@@ -62,23 +62,24 @@ function SendSolution(solution, callback, progressCallback) {
         console.log('Taken idle account:', acmAccount.login);
         TrySend(solution, acmAccount, function (err, statusCode) {
             if (err) {
-                onAccountFinished();
-                return callback(err);
-            } else if (statusCode !== 302) {
+                console.log(err);
                 accounts_manager.refreshAccount(acmAccount, function (err, refreshedAccount) {
-                    if (err) {
-                        return callback(new Error('Error when the account was refreshed.'));
-                    }
                     onAccountFinished();
+                    if (err) {
+                        return console.log('Error in refreshing account', err);
+                    }
+                    console.log('ACMP account has been refreshed');
                 });
                 return callback(new Error('Wrong status code: ' + statusCode));
             }
+            
             looper.watch({
                 acmAccount: acmAccount,
                 solution: solution
             }, function (err, verdict) {
                 onAccountFinished();
                 if (err) {
+                    console.log(err);
                     return callback(err);
                 }
                 callback(null, verdict);
@@ -97,21 +98,51 @@ function flushQueue() {
 
 function TrySend(solution, acmAccount, callback) {
     if (!acmAccount) {
-        return callback(new Error('Codeforces account not found'));
+        return callback(new Error('ACMP account not found'));
     }
 
-    var submitUrl = ACM_BASE_URI + '/?main=update&mode=upload&id_task=' + solution.task_num,
-        cookieJar = acmAccount.rest.cookieJar;
-    var data = {
-        lang: solution.language,
-        source: solution.source,
-        fname: ''
-    };
-
-    request.post({url: submitUrl, jar: cookieJar, formData: data}, function (err, response, body) {
+    request.post({url: ACM_BASE_URI, jar: acmAccount.rest.cookieJar, followRedirect: true}, function (err, response, body) {
         if (!body || err) {
-            return callback(new Error('Resource no reached'));
+            return callback(new Error('Resource no reached.'));
+        } else if (response.statusCode !== 302 && response.statusCode !== 200) {
+            return callback(new Error('Wrong status code: ' + response.statusCode));
         }
-        callback(null, response.statusCode);
+
+        var $ = cheerio.load(body);
+        var curjQueryObj = $('.menu_title'),
+            accountId = false;
+        if (curjQueryObj.length) {
+            curjQueryObj = curjQueryObj.eq(0).parent().parent();
+            if (curjQueryObj.length) {
+                var links = curjQueryObj.find('a'),
+                    curHref;
+                for (var i = 0; i < links.length; ++i) {
+                    curHref = links.eq(i).attr('href');
+                    if (!/main\=user\&id\=(\d+)/i.test(curHref)) {
+                        continue;
+                    }
+                    accountId = curHref.match(/main\=user\&id\=(\d+)/i)[1];
+                    break;
+                }
+            }
+        }
+        if (!accountId) {
+            return callback(new Error('ACM_ACCOUNT_REFRESH_NEEDED'));
+        }
+        
+        var submitUrl = ACM_BASE_URI + '/?main=update&mode=upload&id_task=' + solution.task_num,
+            cookieJar = acmAccount.rest.cookieJar;
+        var data = {
+            lang: solution.language,
+            source: solution.source,
+            fname: ''
+        };
+    
+        request.post({url: submitUrl, jar: cookieJar, formData: data}, function (err, response, body) {
+            if (!body || err) {
+                return callback(new Error('Resource no reached'));
+            }
+            callback(null, response.statusCode);
+        });
     });
 }

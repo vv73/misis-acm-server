@@ -740,7 +740,8 @@ function SendSolution(params, callback) {
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
-                                                        verdict_name: progressCurrentTest.verdict.toLowerCase(),
+                                                        verdict_name: progressCurrentTest.verdict ? 
+                                                            progressCurrentTest.verdict.toLowerCase() : 'testing',
                                                         memory: progressCurrentTest.memoryConsumed,
                                                         time: progressCurrentTest.timeConsumed,
                                                         testNum: progressCurrentTest.testNum,

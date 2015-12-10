@@ -24,7 +24,8 @@ module.exports = {
 
 function Watch(params, callback, progressCallback) {
     var authorStatusUrl = ACM_BASE_URI + '/index.asp?main=status&id_mem=' + params.acmAccount.id,
-        beginTime = new Date().getTime();
+        beginTime = new Date().getTime(),
+        attempts = 0;
 
     async.forever(function (next) {
         var curTime = new Date().getTime();
@@ -42,10 +43,10 @@ function Watch(params, callback, progressCallback) {
                     return;
                 }
                 var $ = cheerio.load(bodyResponse);
-                var found, terminalExistence;
+                var found, terminalExistence, failed;
 
                 $('.white').each(function () {
-                    if (found) {
+                    if (found || failed) {
                         return;
                     }
                     var _ = $(this),
@@ -61,7 +62,11 @@ function Watch(params, callback, progressCallback) {
 
                     if (params.acmAccount.id != loginId
                         || typeof verdict !== 'string'
-                        || taskNumber != params.solution.task_num) {
+                        || taskNumber != params.solution.task_num
+                        || params.acmAccount.lastSolutionId && lSolutionId == params.acmAccount.lastSolutionId) {
+                            if (params.acmAccount.lastSolutionId && lSolutionId == params.acmAccount.lastSolutionId) {
+                                failed = true;
+                            }
                         return;
                     }
                     found = true;
@@ -79,7 +84,8 @@ function Watch(params, callback, progressCallback) {
                         'Output limit exceeded',
                         'Idleness limit exceeded',
                         'Runtime error',
-                        'Restricted function'
+                        'Restricted function',
+                        'Presentation error'
                     ];
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;
@@ -93,6 +99,7 @@ function Watch(params, callback, progressCallback) {
                             timeConsumed: timeConsumed,
                             memoryConsumed: memoryConsumed
                         });
+                        params.acmAccount.lastSolutionId = lSolutionId;
                         return next(true);
                     } else if (typeof progressCallback === 'function') {
                         async.nextTick(function () {
@@ -108,6 +115,13 @@ function Watch(params, callback, progressCallback) {
                 });
 
                 if (!terminalExistence) {
+                    if (!found) {
+                        attempts++;
+                    }
+                    if (attempts > 10) {
+                        callback(new Error('ACCOUNT_REFRESH_NEEDED'));
+                        return next(true);
+                    }
                     setTimeout(function () {
                         next();
                     }, looperTimeout);

@@ -71,7 +71,8 @@ function Watch(params, callback, progressCallback) {
                         'Output limit exceeded',
                         'Idleness limit exceeded',
                         'Runtime error',
-                        'Restricted function'
+                        'Restricted function',
+                        'Presentation error'
                     ];
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;

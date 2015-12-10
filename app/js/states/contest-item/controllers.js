@@ -173,9 +173,13 @@ angular.module('Qemy.controllers.contest-item', [])
             }
             updateTable();
             $scope.updateTable = updateTable;
+            
+            $scope.disableUpdating = false;
 
             $scope.$on('table update', function () {
-                updateTable(true);
+                if (!$scope.disableUpdating) {
+                    updateTable(true);
+                }
             });
         }
     ])
@@ -479,7 +483,8 @@ angular.module('Qemy.controllers.contest-item', [])
                 console.log(data);
                 var userId = data.contestant_id,
                     select = $scope.params.select;
-                if (select === 'my' && userId !== $scope.currentUser.id) {
+                if (select === 'my' && userId !== $scope.currentUser.id
+                    || $scope.pageNumber !== 1) {
                     return;
                 }
                 var sents = $scope.sents;
@@ -487,6 +492,9 @@ angular.module('Qemy.controllers.contest-item', [])
                     if (sents[i].sent_id === data.sent_id) {
                         return;
                     }
+                }
+                if (sents.length > 0) {
+                    sents.pop();
                 }
                 sents.unshift(data);
             });

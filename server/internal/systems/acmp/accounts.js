@@ -116,7 +116,7 @@ function RefreshAccount(neededAccount, callback) {
 
             var $ = cheerio.load(body);
             var curjQueryObj = $('.menu_title'),
-                accountId = 1;
+                accountId = false;
             if (curjQueryObj.length) {
                 curjQueryObj = curjQueryObj.eq(0).parent().parent();
                 if (curjQueryObj.length) {
@@ -131,6 +131,9 @@ function RefreshAccount(neededAccount, callback) {
                         break;
                     }
                 }
+            }
+            if (!accountId) {
+                return callback(new Error('Account id not found'));
             }
             neededAccount.id = accountId;
             neededAccount.rest = {

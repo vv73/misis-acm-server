@@ -72,3 +72,6 @@ div.contest
                 span(ng-bind='row.solutions')
               div.monitor-content__cell.monitor-content__cell-score
                 span(ng-bind='row.score')
+          
+      div(style='padding: 10px 0;')      
+        md-checkbox(ng-model="disableUpdating", aria-label="Checkbox") Отключить обновление данных таблицы в реальном времени.
