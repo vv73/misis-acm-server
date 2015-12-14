@@ -155,6 +155,15 @@ angular.module('Qemy.services.admin', [
                 return data.data;
             });
         }
+        
+        function restart() {
+            return $http({
+                method: 'post',
+                url: '/api/admin/restart'
+            }).then(function (data) {
+                return data.data;
+            });
+        }
 
         return {
             searchGroups: searchGroups,
@@ -170,7 +179,8 @@ angular.module('Qemy.services.admin', [
             scanTimus: scanTimus,
             scanCfProblemset: scanCfProblemset,
             scanCfGym: scanCfGym,
-            scanAcmp: scanAcmp
+            scanAcmp: scanAcmp,
+            restart: restart
         }
     }])
 ;

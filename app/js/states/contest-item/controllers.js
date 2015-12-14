@@ -403,7 +403,7 @@ angular.module('Qemy.controllers.contest-item', [])
                         $timeout(function () {
                             $rootScope.$broadcast('data loaded');
                             $scope.loadingData = false;
-                        }, 500);
+                        }, 0);
                         if (result.error) {
                             return alert('Произошла ошибка: ' + result.error);
                         }
@@ -496,6 +496,7 @@ angular.module('Qemy.controllers.contest-item', [])
                 if (sents.length > 0) {
                     sents.pop();
                 }
+                console.log('Insert element');
                 sents.unshift(data);
             });
         }

@@ -732,7 +732,7 @@ my-timer-element {
     }
   }
   .sent-list__cell-task {
-    min-width: 115px;
+    min-width: 175px;
   }
   &:hover:not(.sent-list__header) {
     background-color: rgba(0, 121, 255, 0.09);
@@ -747,6 +747,9 @@ my-timer-element {
 }
 .sent-list__item:nth-child(2n) {
   background-color: #f8f8f8;
+}
+.sent-list__item:last-child {
+  border-bottom: 0;
 }
 .sent-list__success {
   background-color: rgba(31, 242, 10, 0.06) !important;

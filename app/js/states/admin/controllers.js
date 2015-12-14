@@ -49,6 +49,9 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.problems',
                 name: 'Задачи'
+            }, {
+                uiSref: 'admin.server',
+                name: 'Сервер'
             }/*, {
                 uiSref: 'admin.index',
                 name: 'Группы пользователей'
@@ -844,7 +847,7 @@ angular.module('Qemy.controllers.admin', [])
 
     .controller('AdminProblemsController', ['$scope', '$rootScope', '$mdDialog', '$state', 'AdminManager',
         function($scope, $rootScope, $mdDialog, $state, AdminManager) {
-            $scope.loadingTimus = false;
+            $scope.loading = false;
 
             $scope.scan = function (systemType) {
                 var confirm = $mdDialog.confirm()
@@ -881,6 +884,35 @@ angular.module('Qemy.controllers.admin', [])
                             return alert('Произошла ошибка: ' + data.error);
                         }
                         $scope.result = data;
+                    });
+                });
+            };
+        }
+    ])
+    
+    .controller('AdminServerController', ['$scope', '$rootScope', '$mdDialog', '$state', 'AdminManager', '$timeout',
+        function($scope, $rootScope, $mdDialog, $state, AdminManager, $timeout) {
+
+            $scope.restart = function () {
+                var confirm = $mdDialog.confirm()
+                    .title('Подтверждение')
+                    .content('Вы действительно хотите произвести рестарт системы? Перезапуск занимает от 1 до 2 секунд.')
+                    .ariaLabel('Seriously?')
+                    .ok('Да')
+                    .cancel('Отмена');
+
+                $mdDialog.show(confirm).then(function () {
+                    $scope.loading = true;
+                    $scope.$emit('data loading');
+                    
+                    AdminManager.restart().then(function (data) {
+                        $timeout(function () {
+                            $scope.loading = false;
+                        }, 2000);
+                        $scope.$emit('data loaded');
+                        if (data.error) {
+                            return alert('Произошла ошибка: ' + data.error);
+                        }
                     });
                 });
             };

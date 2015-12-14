@@ -47,6 +47,7 @@
     "morgan": "~1.5.3",
     "mysql": "^2.9.0",
     "node.extend": "^1.1.5",
+    "pm2": "^0.15.10",
     "promise": "^7.0.4",
     "querystring": "^0.2.0",
     "request": "^2.65.0",

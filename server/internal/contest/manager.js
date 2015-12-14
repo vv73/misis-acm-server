@@ -516,6 +516,10 @@ function SendSolution(params, callback) {
                             return readyObject;
                         });
                         var problem = mapped[0];
+                        if (problem.system_type === 'acmp' 
+                            && (!solution || solution.length < 12)) {
+                            return callback(new Error('Solution is too short. Please send the solution more then 12 characters.'));
+                        }
 
                         connection.query(
                             'SELECT * ' +
@@ -546,6 +550,7 @@ function SendSolution(params, callback) {
                                         if (err) {
                                             return callback(new Error('An error with db', 1001));
                                         }
+                                        
                                         callback(null, {
                                             result: true
                                         });

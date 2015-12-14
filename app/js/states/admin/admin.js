@@ -71,5 +71,10 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-users-edit'),
                     controller: 'AdminEditUserController'
                 })
+                .state('admin.server', {
+                    url: '/server',
+                    templateUrl: templateUrl('admin', 'admin-server'),
+                    controller: 'AdminServerController'
+                })
         }
     ]);
