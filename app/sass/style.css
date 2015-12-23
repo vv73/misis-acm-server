@@ -270,7 +270,7 @@ contest-list-item {
   user-select: none; }
 
 .contest-item__title {
-  font-size: 19px;
+  font-size: 1.2em;
   margin-bottom: 10px;
   font-weight: bold;
   color: #2196F3; }
@@ -330,7 +330,7 @@ my-timer-element {
   background-color: rgba(77, 170, 102, 0.75);
   color: #fff;
   padding: 7px 10px;
-  font-size: 12px; }
+  font-size: 0.7em; }
 
 .contests-list__item-layer {
   outline: none; }
@@ -816,9 +816,9 @@ label:not(.md-no-float), .send-content__textarea md-input-container.md-input-has
   .monitor-content__row:not(.monitor-content__row_type_header):nth-child(2n + 1):hover {
     background-color: rgba(0, 0, 0, 0.1); }
   .monitor-content__row:not(.monitor-content__row_type_header):nth-child(2n + 1).monitor-content__row_group_even {
-    background-color: rgba(192, 255, 158, 0.55); }
+    background-color: rgba(154, 255, 134, 0.53); }
   .monitor-content__row:not(.monitor-content__row_type_header):nth-child(2n + 1).monitor-content__row_group_even:hover {
-    background-color: rgba(176, 238, 142, 0.55); }
+    background-color: rgba(136, 230, 116, 0.61); }
 
 .monitor-content__row_group_even:hover {
   background-color: rgba(136, 230, 116, 0.61); }
@@ -1039,5 +1039,47 @@ label:not(.md-no-float), .send-content__textarea md-input-container.md-input-has
 
 .sent-list__verdict span {
   text-transform: capitalize; }
+
+@media screen and (max-width: 450px) {
+  .contest-menu__layer {
+    min-width: auto;
+    width: 100%;
+    overflow-x: auto; }
+
+  .header__inner {
+    min-width: 100%; }
+
+  .header__profile {
+    position: absolute;
+    top: 19px;
+    right: 15px;
+    height: auto; }
+
+  .profile__panel {
+    background: #fff;
+    border-radius: 4px; }
+
+  .logo__text {
+    display: none; }
+
+  .contest__content {
+    min-width: 700px; }
+
+  .page__wrapper {
+    padding: 24px 0; }
+
+  .page__inner {
+    width: 100%;
+    min-width: auto; }
+
+  .status-content {
+    font-size: 0.8em; }
+
+  .standart-layer {
+    width: auto;
+    min-width: auto; }
+
+  .contests-list {
+    font-size: 0.8em; } }
 
 /*# sourceMappingURL=style.css.map */

@@ -50,3 +50,7 @@ To access the local server, enter the following URL into your web browser:
 ```
 http://localhost:3000/
 ```
+
+###Photos
+
+![Awesome screenshot 1](http://s.twosphere.ru/screenshots/12-23-15_23-27-31.png)

@@ -53,9 +53,9 @@ angular.module('Qemy.controllers.contest-item', [])
 
             function contestFill (contest) {
                 function getMonthName(num) {
-                    num = num || 1;
-                    if (num < 1 || num > 12) {
-                        num = 1;
+                    num = num || 0;
+                    if (num < 0 || num > 12) {
+                        num = 0;
                     }
                     var month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
                         'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
