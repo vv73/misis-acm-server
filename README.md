@@ -53,4 +53,18 @@ http://localhost:3000/
 
 ###Photos
 
+#### Real-time monitor table
 ![Awesome screenshot 1](http://s.twosphere.ru/screenshots/12-23-15_23-27-31.png)
+----------
+#### Updating status list in real time (not in frozen state)
+![Awesome screenshot 2](http://s.twosphere.ru/screenshots/12-23-15_23-32-49.png)
+----------
+#### List of contests with custom groups
+![Awesome screenshot 3](http://s.twosphere.ru/screenshots/12-23-15_23-35-54.png)
+----------
+#### The easiest way to create custom contest
+![Awesome screenshot 4](http://s.twosphere.ru/screenshots/12-23-15_23-40-27.png)
+----------
+#### Admin panel
+![Awesome screenshot 5](http://s.twosphere.ru/screenshots/12-23-15_23-42-25.png)
+----------
