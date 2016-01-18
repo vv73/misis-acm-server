@@ -483,7 +483,7 @@ function SendSolution(params, callback) {
         function makeSourceWatermark(source) {
             source += '\n\n// Date: ' + (new Date()).toString();
             source += '\n// Sent by: #' + user.getId() + ' ' + user.getDisplayName();
-            source += '\n// Contest id: ' + solution.contest_id;
+            source += '\n// Contest id: ' + contestId;
             return source;
         }
 
