@@ -375,6 +375,7 @@ router.get('/contest/getSourceCodeRaw', function (req, res) {
                 error: err.toString()
             });
         }
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(result);
     });
 
