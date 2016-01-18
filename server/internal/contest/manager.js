@@ -479,6 +479,18 @@ function SendSolution(params, callback) {
             user = params.user,
             offset = getNumberByInternalIndex(problemIndex),
             langId = params.langId;
+
+        function makeSourceWatermark(source) {
+            source += '\n\n// Date: ' + (new Date()).toString();
+            source += '\n// Sent by: #' + user.getId() + ' ' + user.getDisplayName();
+            source += '\n// Contest id: ' + solution.contest_id;
+            return source;
+        }
+
+        if (typeof solution !== 'undefined') {
+            solution = makeSourceWatermark(solution);
+        }
+
         contest.allocate(contestId, function (err, result) {
             if (err) {
                 return callback(err);

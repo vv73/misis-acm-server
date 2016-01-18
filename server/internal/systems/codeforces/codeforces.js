@@ -147,17 +147,6 @@ function TrySend(solution, acmAccount, callback) {
         }, data);
     }
 
-    function makeSourceWatermark(source) {
-        source += '\n\n// Date: ' + (new Date()).toString();
-        source += '\n// Sent by: ' + acmAccount.login;
-        source += '\n// Contest id: ' + solution.contest_id;
-        return source;
-    }
-
-    if (typeof solution.source !== 'undefined') {
-        solution.source = makeSourceWatermark(solution.source);
-    }
-
     restler.post(selectedBaseUri + '/submit?csrf_token=' + csrf_token, {
         multipart: true,
         headers: {
