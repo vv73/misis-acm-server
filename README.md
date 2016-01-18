@@ -43,7 +43,7 @@ grunt
 ####4. Running application
 To start the web server for production, run:
 ```
-npm build-all-start
+npm run build-all-start
 ```
 
 To access the local server, enter the following URL into your web browser:
