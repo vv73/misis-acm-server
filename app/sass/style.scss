@@ -1147,11 +1147,26 @@ my-timer-element {
     color: #219CF5;
   }
   a {
-    color: rgb(33,150,243);
+    color: #2196f3;
     text-decoration: none;
     text-align: center;
     display: block;
+    padding: 6px 15px;
+    border-radius: 3px;
+    transition: background-color .1s ease-out;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.9em;
   }
+  a:hover {
+    background: #ECECEC;
+  }
+  a:active {
+    background: #e8e8e8;
+  }
+}
+.md-button {
+  padding: 0 12px;
 }
 @media screen and (max-width: 450px) {
   .contest-menu__layer {
