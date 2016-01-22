@@ -1146,6 +1146,12 @@ my-timer-element {
     padding: 9px 15px;
     color: #219CF5;
   }
+  a {
+    color: rgb(33,150,243);
+    text-decoration: none;
+    text-align: center;
+    display: block;
+  }
 }
 @media screen and (max-width: 450px) {
   .contest-menu__layer {
