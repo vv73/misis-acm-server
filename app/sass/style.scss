@@ -1132,6 +1132,21 @@ my-timer-element {
 .sent-list__verdict span {
   text-transform: capitalize;
 }
+.task__problem-cf_type_gym {
+  td, th, table {
+    border: 1px solid #555;
+    padding: 5px 10px;
+    border-spacing: 0;
+    border-collapse: collapse;
+  }
+  th {
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+    padding: 9px 15px;
+    color: #219CF5;
+  }
+}
 @media screen and (max-width: 450px) {
   .contest-menu__layer {
     min-width: auto;
