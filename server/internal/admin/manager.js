@@ -171,22 +171,28 @@ function CreateContest(params, callback) {
                 return callback(null, { result: true });
             }
 
-            var problemsIds = params.problems.reverse(),
+            var problemsIds = params.problems,
                 contestId = contest.getId(),
                 problemsRows = problemsIds.map(function (problemId) {
                     return [ contestId, problemId ];
                 });
-            connection.query(
-                'INSERT INTO problems_to_contest (contest_id, problem_id) ' +
-                'VALUES ?',
-                [ problemsRows ],
-                function (err) {
-                    if (err) {
-                        return callback(new Error('An error with db'));
+
+            var asyncQueue = async.queue(function (task, callback) {
+                connection.query(
+                    'INSERT INTO problems_to_contest (contest_id, problem_id) ' +
+                    'VALUES (?, ?)', task,
+                    function (err) {
+                        if (err) {
+                            return callback(new Error('An error with db'));
+                        }
+                        callback();
                     }
-                    callback(null, { result: true });
-                }
-            );
+                );
+            }, 1);
+            asyncQueue.push(problemsRows);
+            asyncQueue.drain = function() {
+                callback(null, { result: true });
+            };
         })
     }
 }
@@ -246,17 +252,23 @@ function UpdateContest(params, callback) {
                     if (!params.problems.length) {
                         return callback(null, { result: true });
                     }
-                    connection.query(
-                        'INSERT INTO problems_to_contest (contest_id, problem_id) ' +
-                        'VALUES ?',
-                        [ problemsRows ],
-                        function (err) {
-                            if (err) {
-                                return callback(new Error('An error with db'));
+
+                    var asyncQueue = async.queue(function (task, callback) {
+                        connection.query(
+                            'INSERT INTO problems_to_contest (contest_id, problem_id) ' +
+                            'VALUES (?, ?)', task,
+                            function (err) {
+                                if (err) {
+                                    return callback(new Error('An error with db'));
+                                }
+                                callback();
                             }
-                            callback(null, { result: true });
-                        }
-                    );
+                        );
+                    }, 1);
+                    asyncQueue.push(problemsRows);
+                    asyncQueue.drain = function() {
+                        callback(null, { result: true });
+                    };
                 }
             );
         })
