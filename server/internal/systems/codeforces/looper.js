@@ -13,7 +13,7 @@ var async = require('async');
 var unirest = require('unirest');
 
 var looperTimeout = 200;
-var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
+var MAX_WAITING_TIMEOUT = 5 * 60 * 1000;
 
 module.exports = {
     watch: Watch

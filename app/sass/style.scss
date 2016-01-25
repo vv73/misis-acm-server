@@ -730,6 +730,9 @@ my-timer-element {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .sent-list__cell-loading {
+      white-space: nowrap;
+    }
   }
   .sent-list__cell-task {
     min-width: 175px;
@@ -1210,4 +1213,8 @@ my-timer-element {
   .contests-list {
     font-size: 0.8em;
   }
+}
+.sent-list__actions-menu {
+  top: -5px;
+  position: relative;
 }

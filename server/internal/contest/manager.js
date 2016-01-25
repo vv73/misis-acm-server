@@ -36,6 +36,7 @@ module.exports = {
     canJoin: CanJoin,
     join: Join,
     sendSolution: SendSolution,
+    refreshSolution: RefreshSolution,
     getSents: GetSents,
     getSourceCode: GetSourceCode,
     getSourceCodeRaw: GetSourceCodeRaw,
@@ -480,17 +481,6 @@ function SendSolution(params, callback) {
             offset = getNumberByInternalIndex(problemIndex),
             langId = params.langId;
 
-        function makeSourceWatermark(source) {
-            source += '\n\n// Date: ' + (new Date()).toString();
-            source += '\n// Sent by: #' + user.getId() + ' ' + user.getDisplayName();
-            source += '\n// Contest id: ' + contestId;
-            return source;
-        }
-
-        if (typeof solution !== 'undefined') {
-            solution = makeSourceWatermark(solution);
-        }
-
         contest.allocate(contestId, function (err, result) {
             if (err) {
                 return callback(err);
@@ -511,6 +501,7 @@ function SendSolution(params, callback) {
                     'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
                     'LEFT JOIN contests ON problems_to_contest.contest_id = contests.id ' +
                     'WHERE contests.id = ? ' +
+                    'ORDER BY problems_to_contest.id ASC ' +
                     'LIMIT ?, 1',
                     [ contestId, offset ],
                     function (err, results, fields) {
@@ -602,7 +593,7 @@ function SendSolution(params, callback) {
                                                 var solution = list[0];
                                                 solution.internal_index = problemIndex;
 
-                                                var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                var contestHashKey = sockets.getRoomHash(contest.getId());
                                                 var io = sockets.getIo();
                                                 io.to(contestHashKey).emit('new solution', solution);
                                             }
@@ -637,7 +628,7 @@ function SendSolution(params, callback) {
                                                     }
                                                     user.incrementSolvedCount();
 
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: verdictId,
@@ -683,7 +674,7 @@ function SendSolution(params, callback) {
                                                     if (err) {
                                                         console.log(err);
                                                     }
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: verdictId,
@@ -713,7 +704,7 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
@@ -753,7 +744,7 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
@@ -781,7 +772,7 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
@@ -808,7 +799,7 @@ function SendSolution(params, callback) {
                                                     saveResult(verdict);
                                                 }, function (progressCurrentTest) {
                                                     console.log(progressCurrentTest);
-                                                    var contestHashKey = sockets.getHash(contest.getId() + sockets.salt);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
                                                     var io = sockets.getIo();
                                                     io.to(contestHashKey).emit('verdict updated', {
                                                         verdict_id: -1,
@@ -880,6 +871,413 @@ function SendSolution(params, callback) {
                                         }
                                     }
                                 );
+                            }
+                        );
+                    }
+                );
+            });
+        });
+    }
+}
+
+function RefreshSolution(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        var onceInvoke = true;
+        execute(connection, function (err, result) {
+            if (!onceInvoke) {
+                return;
+            }
+            onceInvoke = false;
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contestId = params.contestId,
+            contest = new Contest(),
+            problemIndex = params.problemIndex,
+            solution = params.solution,
+            user = params.user,
+            offset = getNumberByInternalIndex(problemIndex),
+            langId = params.langId,
+            sendId = params.sendId;
+
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                if ([ 'NOT_ENABLED', 'REMOVED', 'FINISHED', 'WAITING' ].indexOf(contest.getStatus()) !== -1) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT problemset.* ' +
+                    'FROM problemset ' +
+                    'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
+                    'LEFT JOIN contests ON problems_to_contest.contest_id = contests.id ' +
+                    'WHERE contests.id = ? ' +
+                    'ORDER BY problems_to_contest.id ASC ' +
+                    'LIMIT ?, 1',
+                    [ contestId, offset ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        if (!results.length) {
+                            return callback(new Error('Problem not found'));
+                        }
+                        var mapped = results.map(function (row) {
+                            var problem = new Problem();
+                            problem.setObjectRow(row);
+                            var readyObject = problem.getObjectFactory();
+                            readyObject.internal_index = problemIndex.toUpperCase();
+                            return readyObject;
+                        });
+                        var problem = mapped[0];
+                        if (problem.system_type === 'acmp'
+                            && (!solution || solution.length < 12)) {
+                            return callback(new Error('Solution is too short. Please send the solution more then 12 characters.'));
+                        }
+
+                        connection.query(
+                            'SELECT * ' +
+                            'FROM system_langs ' +
+                            'WHERE id = ?',
+                            [ parseInt(langId) ],
+                            function (err, results, fields) {
+                                if (err) {
+                                    return callback(new Error('An error with db', 1001));
+                                }
+                                if (!results.length) {
+                                    return callback(new Error('Langs not found', 1001));
+                                }
+                                var lang = results[0],
+                                    curTime = new Date().getTime();
+
+                                callback(null, {
+                                    result: true
+                                });
+
+                                var insertedId = sendId;
+                                var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();};
+
+                                connection.query(
+                                    'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                                    'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
+                                    'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
+                                    'system_langs.id AS lang_id, system_langs.name AS system_lang_name, problemset.id AS problem_id, ' +
+                                    'problemset.title, problemset.system_type, problemset.foreign_problem_id, ' +
+                                    'contests.start_time AS contest_start_time, contests.relative_freeze_time AS contest_freeze_time, contests.duration_time AS contest_duration_time ' +
+                                    'FROM sent_solutions ' +
+                                    'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                                    'LEFT JOIN problemset ON problemset.id = sent_solutions.problem_id ' +
+                                    'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
+                                    'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                                    'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
+                                    'WHERE sent_solutions.contest_id = ? AND sent_solutions.id = ? ' +
+                                    (inFreeze(curTime)
+                                        ? 'AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
+                                    'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ')' : ''),
+                                    [ contestId, insertedId ],
+                                    function (err, results, fields) {
+                                        if (err) {
+                                            return console.log(err);
+                                        }
+                                        var list = results;
+                                        if (typeof list === 'undefined'
+                                            || !Array.isArray(list)
+                                            || list.length === 0) {
+                                            console.log('In freeze');
+                                            return;
+                                        }
+                                        var solution = list[0];
+                                        solution.internal_index = problemIndex;
+                                    }
+                                );
+
+
+                                function saveResult(verdict) {
+                                    console.log('Saving verdict:', verdict);
+                                    var verdictId = getVerdictId(verdict.verdict);
+                                    verdict.verdict = getVerdictById(verdictId);
+                                    if (verdictId === 1) {
+                                        verdict.testNum = 0;
+                                    }
+                                    connection.query(
+                                        'UPDATE sent_solutions ' +
+                                        'SET verdict_id = ?, ' +
+                                        'verdict_time = ?, ' +
+                                        'execution_time = ?, ' +
+                                        'memory = ?, ' +
+                                        'test_num = ? ' +
+                                        'WHERE id = ?', [
+                                            verdictId,
+                                            new Date().getTime(),
+                                            verdict.timeConsumed,
+                                            verdict.memoryConsumed,
+                                            verdict.testNum,
+                                            insertedId
+                                        ],
+                                        function (err) {
+                                            if (err) {
+                                                return console.log(err);
+                                            }
+                                            user.incrementSolvedCount();
+
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: verdictId,
+                                                verdict_name: verdict.verdict,
+                                                memory: verdict.memoryConsumed,
+                                                time: verdict.timeConsumed,
+                                                testNum: verdict.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                            if (!inFreeze(curTime)) {
+                                                io.to(contestHashKey).emit('table update');
+                                            }
+                                        }
+                                    );
+                                }
+
+                                function saveWithErrors(error) {
+                                    console.log('Saving error verdict:', error);
+                                    var verdictId = 10,
+                                        verdictName = getVerdictById(verdictId);
+                                    if (error.message === 'Resending the same solution.') {
+                                        verdictId = 11;
+                                        verdictName = getVerdictById(11);
+                                    }
+                                    connection.query(
+                                        'UPDATE sent_solutions ' +
+                                        'SET verdict_id = ?, ' +
+                                        'verdict_time = ?, ' +
+                                        'execution_time = ?, ' +
+                                        'memory = ?, ' +
+                                        'test_num = ? ' +
+                                        'WHERE id = ?', [
+                                            verdictId,
+                                            new Date().getTime(),
+                                            0,
+                                            0,
+                                            0,
+                                            insertedId
+                                        ],
+                                        function (err) {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: verdictId,
+                                                verdict_name: verdictName,
+                                                memory: 0,
+                                                time: 0,
+                                                testNum: 0,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        }
+                                    );
+                                }
+
+                                switch (problem.system_type) {
+                                    case 'timus':
+                                        acmManager.send(problem.system_type, {
+                                            language: lang.foreign_id,
+                                            task_num: problem.system_problem_number,
+                                            source: solution
+                                        }, function (err, verdict) {
+                                            if (err) {
+                                                saveWithErrors(err);
+                                                return callback(err);
+                                            }
+                                            saveResult(verdict);
+                                        }, function (progressCurrentTest) {
+                                            console.log(progressCurrentTest);
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: -1,
+                                                verdict_name: progressCurrentTest.verdict,
+                                                memory: progressCurrentTest.memoryConsumed,
+                                                time: progressCurrentTest.timeConsumed,
+                                                testNum: progressCurrentTest.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        });
+                                        break;
+                                    case 'cf':
+                                        var pairCode = problem.system_problem_number.split(':');
+                                        if (pairCode.length !== 2) {
+                                            return callback(new Error('Something went wrong.'));
+                                        }
+                                        var taskType = pairCode[0],
+                                            problemCode = pairCode[1];
+                                        if (!/^\d+[a-zA-Z]{1,}/i.test(problemCode)) {
+                                            return callback(new Error('Something went wrong. Please contact your administrator.'));
+                                        }
+                                        var iContestId = problemCode.match(/^(\d+)/i)[1],
+                                            iProblemIndex = problemCode.replace(/^(\d+)/i, '');
+                                        acmManager.send(problem.system_type, {
+                                            language: lang.foreign_id,
+                                            task_type: taskType,
+                                            contest_id: iContestId,
+                                            problem_index: iProblemIndex,
+                                            source: solution
+                                        }, function (err, verdict) {
+                                            if (err) {
+                                                saveWithErrors(err);
+                                                return callback(err);
+                                            }
+                                            saveResult(verdict);
+                                        }, function (progressCurrentTest) {
+                                            console.log(progressCurrentTest);
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: -1,
+                                                verdict_name: progressCurrentTest.verdict ?
+                                                    progressCurrentTest.verdict.toLowerCase() : 'testing',
+                                                memory: progressCurrentTest.memoryConsumed,
+                                                time: progressCurrentTest.timeConsumed,
+                                                testNum: progressCurrentTest.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        });
+                                        break;
+                                    case 'acmp':
+                                        acmManager.send(problem.system_type, {
+                                            language: lang.foreign_id,
+                                            task_num: problem.system_problem_number,
+                                            source: solution
+                                        }, function (err, verdict) {
+                                            if (err) {
+                                                saveWithErrors(err);
+                                                return callback(err);
+                                            }
+                                            saveResult(verdict);
+                                        }, function (progressCurrentTest) {
+                                            console.log(progressCurrentTest);
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: -1,
+                                                verdict_name: progressCurrentTest.verdict,
+                                                memory: progressCurrentTest.memoryConsumed,
+                                                time: progressCurrentTest.timeConsumed,
+                                                testNum: progressCurrentTest.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        });
+                                        break;
+                                    case 'sgu':
+                                        acmManager.send(problem.system_type, {
+                                            language: lang.name,
+                                            task_num: problem.system_problem_number,
+                                            source: solution
+                                        }, function (err, verdict) {
+                                            if (err) {
+                                                saveWithErrors(err);
+                                                return callback(err);
+                                            }
+                                            saveResult(verdict);
+                                        }, function (progressCurrentTest) {
+                                            console.log(progressCurrentTest);
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: -1,
+                                                verdict_name: progressCurrentTest.verdict,
+                                                memory: progressCurrentTest.memoryConsumed,
+                                                time: progressCurrentTest.timeConsumed,
+                                                testNum: progressCurrentTest.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        });
+                                        break;
+                                    default:
+                                        return callback(new Error('System is not defined.'));
+                                        break;
+                                }
+
+                                function getVerdictId(verdictName) {
+                                    verdictName = verdictName.toLowerCase();
+                                    if (verdictName === 'ok' || verdictName === 'accepted') {
+                                        return 1;
+                                    } else if ([ 'wrong answer', 'wrong_answer' ].indexOf(verdictName) !== -1) {
+                                        return 2;
+                                    } else if ([ 'compilation error', 'compilation_error' ].indexOf(verdictName) !== -1) {
+                                        return 3;
+                                    } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded' ].indexOf(verdictName) !== -1) {
+                                        return 4;
+                                    } else if ([ 'presentation error', 'presentation_error' ].indexOf(verdictName) !== -1) {
+                                        return 5;
+                                    } else if ([ 'time limit exceeded', 'time_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                        return 6;
+                                    } else if ([ 'memory limit exceeded', 'memory_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                        return 7;
+                                    } else if ([ 'idleness limit exceeded', 'idleness_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                        return 8;
+                                    } else if ([ 'security violated', 'restricted function', 'security_violated' ].indexOf(verdictName) !== -1) {
+                                        return 9;
+                                    } else {
+                                        return 10;
+                                    }
+                                }
+
+                                function getVerdictById(verdictId) {
+                                    switch (verdictId) {
+                                        case 1:
+                                            return 'Accepted';
+                                        case 2:
+                                            return 'Wrong Answer';
+                                        case 3:
+                                            return 'Compilation Error';
+                                        case 4:
+                                            return 'Runtime Error';
+                                        case 5:
+                                            return 'Presentation Error';
+                                        case 6:
+                                            return 'Time Limit Exceeded';
+                                        case 7:
+                                            return 'Memory Limit Exceeded';
+                                        case 8:
+                                            return 'Idleness Limit Exceeded';
+                                        case 9:
+                                            return 'Security Violated';
+                                        case 10:
+                                            return 'Unknown System Error';
+                                        case 11:
+                                            return 'Same solution';
+                                    }
+                                }
                             }
                         );
                     }
@@ -968,7 +1366,8 @@ function GetSents(contestId, user, select, count, offset, callback) {
                     'SELECT problemset.id ' +
                     'FROM problemset ' +
                     'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
-                    'WHERE problems_to_contest.contest_id = ?',
+                    'WHERE problems_to_contest.contest_id = ? ' +
+                    'ORDER BY problems_to_contest.id ASC',
                     [ contestId ],
                     function (err, results, fields) {
                         if (err) {
@@ -1168,7 +1567,8 @@ function GetTable(contestId, user, callback) {
                     'SELECT problemset.id,problemset.title ' +
                     'FROM problemset ' +
                     'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
-                    'WHERE problems_to_contest.contest_id = ?',
+                    'WHERE problems_to_contest.contest_id = ? ' +
+                    'ORDER BY problems_to_contest.id ASC',
                     [ contestId ],
                     function (err, results, fields) {
                         if (err) {

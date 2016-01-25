@@ -165,6 +165,46 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function setVerdictForSent(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/setVerdictForSent',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function sendSolutionAgain(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/sendSolutionAgain',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function refreshSolution(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/refreshSolution',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
+        function deleteSolution(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/deleteSolution',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -180,7 +220,11 @@ angular.module('Qemy.services.admin', [
             scanCfProblemset: scanCfProblemset,
             scanCfGym: scanCfGym,
             scanAcmp: scanAcmp,
-            restart: restart
+            restart: restart,
+            setVerdictForSent: setVerdictForSent,
+            sendSolutionAgain: sendSolutionAgain,
+            refreshSolution: refreshSolution,
+            deleteSolution: deleteSolution
         }
     }])
 ;
