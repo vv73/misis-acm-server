@@ -148,7 +148,7 @@ function TrySend(solution, acmAccount, callback) {
     }
 
     function makeSourceWatermark(source) {
-        source += '\n\n// Date: ' + (new Date()).toString();
+        //source += '\n\n// Date: ' + (new Date()).toString();
         return source;
     }
 
