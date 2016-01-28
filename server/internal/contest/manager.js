@@ -445,6 +445,10 @@ function Join(params, callback) {
                         if (err) {
                             return callback(new Error('An error whith db process', 1001));
                         }
+                        var contestHashKey = sockets.getRoomHash(contestId);
+                        var io = sockets.getIo();
+                        io.to(contestHashKey).emit('table update');
+
                         callback(null, { result: true });
                     }
                 );
@@ -558,8 +562,27 @@ function SendSolution(params, callback) {
                                             result: true
                                         });
 
+                                        function makeSourceWatermark(source, commentSyntaxTemplate) {
+                                            commentSyntaxTemplate = commentSyntaxTemplate || '//';
+                                            source += '\n\n' + commentSyntaxTemplate + ' ' + new Date().toString();
+                                            return source;
+                                        }
+
+                                        if (lang.language_family
+                                            && problem.system_type === 'cf'
+                                            && typeof solution !== 'undefined') {
+                                            if (~[ 'c', 'csharp', 'java', 'javascript', 'php' ].indexOf(lang.language_family)) {
+                                                solution = makeSourceWatermark( solution );
+                                            } else if (~[ 'python' ].indexOf(lang.language_family)) {
+                                                solution = makeSourceWatermark( solution, '#' );
+                                            }
+                                        }
+
                                         var insertedId = result.insertId;
-                                        var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();};
+                                        var inFreeze = function (time) {
+                                            return time >= contest.getAbsoluteFreezeTimeMs()
+                                            && time <= contest.getAbsoluteDurationTimeMs();
+                                        };
 
                                         connection.query(
                                             'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
@@ -970,6 +993,22 @@ function RefreshSolution(params, callback) {
                                 callback(null, {
                                     result: true
                                 });
+
+                                function makeSourceWatermark(source, commentSyntaxTemplate) {
+                                    commentSyntaxTemplate = commentSyntaxTemplate || '//';
+                                    source += '\n\n' + commentSyntaxTemplate + ' ' + new Date().toString();
+                                    return source;
+                                }
+
+                                if (lang.language_family
+                                    && problem.system_type === 'cf'
+                                    && typeof solution !== 'undefined') {
+                                    if (~[ 'c', 'csharp', 'java', 'javascript', 'php' ].indexOf(lang.language_family)) {
+                                        solution = makeSourceWatermark( solution );
+                                    } else if (~[ 'python' ].indexOf(lang.language_family)) {
+                                        solution = makeSourceWatermark( solution, '#' );
+                                    }
+                                }
 
                                 var insertedId = sendId;
                                 var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();};

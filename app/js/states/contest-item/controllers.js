@@ -236,14 +236,22 @@ angular.module('Qemy.controllers.contest-item', [])
             });
             var contestId = $state.params.contestId;
             $scope.conditions = [];
-            $scope.selectedCondition = $state.params.problemIndex || 'A';
+            $scope.selectedCondition = $state.params.problemIndex;
             $scope.currentLangs = [];
             $scope.selectedLangId = null;
+
+            var curLang = {};
 
             $scope.$watch('selectedCondition', function (newValue, oldValue) {
                 if (!newValue) {
                     return;
                 }
+                Storage.get('selected_problems').then(function (selectedProblems) {
+                    selectedProblems = selectedProblems || {};
+                    selectedProblems[ 'contest' + contestId ] = $scope.selectedCondition;
+                    Storage.set({ selected_problems: selectedProblems });
+                });
+
                 $rootScope.$broadcast('data loading');
                 ContestItemManager.getLangs({
                     contest_id: contestId,
@@ -274,7 +282,6 @@ angular.module('Qemy.controllers.contest-item', [])
                 });
             });
 
-            var curLang = {};
             $scope.$watch('selectedLangId', function (newVal, oldVal) {
                 curLang.id = newVal;
                 if (newVal == oldVal) {
@@ -297,11 +304,22 @@ angular.module('Qemy.controllers.contest-item', [])
                 .then(function (result) {
                     $rootScope.$broadcast('data loaded');
                     if (result.error) {
-                        return;
+                        return alert('Произошла ошибка: ' + result.error);
                     }
                     $scope.conditions = result;
-                    $scope.selectedCondition = $scope.conditions && $scope.conditions.length && $scope.selectedCondition === 'A' ?
-                        $scope.conditions[0].internal_index : $scope.selectedCondition;
+                    Storage.get('selected_problems').then(function (selectedProblems) {
+                        selectedProblems = selectedProblems || {};
+                        if (!('contest' + contestId in selectedProblems)) {
+                            $scope.selectedCondition = $state.params.problemIndex || 'A';
+                            selectedProblems[ 'contest' + contestId ] = $scope.selectedCondition;
+                            Storage.set({ selected_problems: selectedProblems });
+                        } else {
+                            var curProblemIndex = selectedProblems[ 'contest' + contestId ];
+                            if (curProblemIndex) {
+                                $scope.selectedCondition = $state.params.problemIndex || curProblemIndex;
+                            }
+                        }
+                    });
                 });
 
             $scope.solution = '';
@@ -342,7 +360,7 @@ angular.module('Qemy.controllers.contest-item', [])
 
             var contestId = $state.params.contestId;
             var select = $state.params.select;
-            var defaultCount = 50;
+            var defaultCount = 15;
 
             $scope.pageNumber = parseInt($state.params.pageNumber || 1);
             $scope.params = {
