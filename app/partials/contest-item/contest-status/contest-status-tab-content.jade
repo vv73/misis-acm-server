@@ -30,7 +30,7 @@ div.sent-list
         a.link.sent-list__source-link.sent-list__bold(title='Посмотреть решение', ui-sref='contest.source-code({sourceId: sent.sent_id})') {{sent.sent_id}}
       span(ng-switch-default) {{sent.sent_id}}
     div.sent-list__cell
-      span {{(sent.sent_time - sent.contest_start_time) | formatStartTime}}
+      span(title='{{sent.sent_time | date:"hh:mm:ss (dd.MM.yy)"}}') {{(sent.sent_time - sent.contest_start_time) | formatStartTime}}
     div.sent-list__cell
       span {{sent.user_full_name}}
     div.sent-list__cell.sent-list__cell-task

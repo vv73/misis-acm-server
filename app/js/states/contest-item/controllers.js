@@ -315,9 +315,7 @@ angular.module('Qemy.controllers.contest-item', [])
                             Storage.set({ selected_problems: selectedProblems });
                         } else {
                             var curProblemIndex = selectedProblems[ 'contest' + contestId ];
-                            if (curProblemIndex) {
-                                $scope.selectedCondition = $state.params.problemIndex || curProblemIndex;
-                            }
+                            $scope.selectedCondition = $state.params.problemIndex || curProblemIndex || 'A';
                         }
                     });
                 });
