@@ -974,4 +974,33 @@ router.post('/admin/deleteSolution', function(req, res) {
     }
 });
 
+router.get('/contest/getSentsForCell', function(req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var params = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('Access denied'));
+        }
+        params.authUser = user;
+        contestManager.getSentsForCell(params, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
 module.exports = router;

@@ -40,7 +40,8 @@ module.exports = {
     getSents: GetSents,
     getSourceCode: GetSourceCode,
     getSourceCodeRaw: GetSourceCodeRaw,
-    getTable: GetTable
+    getTable: GetTable,
+    getSentsForCell: GetSentsForCell
 };
 
 
@@ -1680,7 +1681,8 @@ function GetTable(contestId, user, callback) {
                                                     problems: {},
                                                     row: [],
                                                     score: 0,
-                                                    solutions: 0
+                                                    solutions: 0,
+                                                    solutionsInTime: 0
                                                 };
                                             }
                                         }
@@ -1722,7 +1724,8 @@ function GetTable(contestId, user, callback) {
                                             freezeTime = contest.getAbsoluteFreezeTimeMs(),
                                             finishTime = contest.getAbsoluteDurationTimeMs(),
                                             penaltyTime = 20,
-                                            inFreeze = function (time) { return time >= freezeTime && time <= finishTime;},
+                                            inFreeze = function (time) { return time >= freezeTime && time <= finishTime; },
+                                            inTime = function (time) { return time >= startTime && time <= finishTime; },
                                             curTime = new Date().getTime();
 
                                         for (var userIndex in table.users) {
@@ -1738,6 +1741,7 @@ function GetTable(contestId, user, callback) {
                                                         resultAdded = false;
                                                     for (var iSent = 0; iSent < curProblemSentsArray.length; ++iSent) {
                                                         var curSent = curProblemSentsArray[iSent];
+                                                        sentTime = curSent.sent_time;
                                                         var scoreMinutes = Math.floor((curSent.sent_time - startTime) / (60 * 1000));
                                                         if (curSent.verdict_id !== 1) {
                                                             if (curSent.scored) {
@@ -1747,6 +1751,9 @@ function GetTable(contestId, user, callback) {
                                                             // когда вердикт - Accepted
                                                             curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
                                                             curUserObject.solutions++;
+                                                            if (inTime(sentTime)) {
+                                                                curUserObject.solutionsInTime++;
+                                                            }
                                                             curUserObject.row.push({
                                                                 task: problemIndex,
                                                                 result: nWrongs < 0 ?
@@ -1795,6 +1802,9 @@ function GetTable(contestId, user, callback) {
                                                             }
                                                             curUserObject.score += scoreMinutes + -1 * nWrongs * penaltyTime;
                                                             curUserObject.solutions++;
+                                                            if (inTime(sentTime)) {
+                                                                curUserObject.solutionsInTime++;
+                                                            }
                                                             curUserObject.row.push({
                                                                 task: problemIndex,
                                                                 result: nWrongs < 0 ?
@@ -1829,7 +1839,8 @@ function GetTable(contestId, user, callback) {
                                                 user: curUserObject.info,
                                                 row: curUserObject.row,
                                                 score: curUserObject.score,
-                                                solutions: curUserObject.solutions
+                                                solutions: curUserObject.solutions,
+                                                solutionsInTime: curUserObject.solutionsInTime
                                             });
                                         }
 
@@ -1868,6 +1879,125 @@ function GetTable(contestId, user, callback) {
                                         callback(null, readyTable);
                                     }
                                 );
+                            }
+                        );
+                    }
+                );
+            });
+        });
+    }
+}
+
+function GetSentsForCell(params, callback) {
+    var contestId = params.contest_id,
+        user = params.authUser,
+        neededUserId = params.user_id,
+        problemIndex = params.problem_index;
+
+    if (!contestId || !user || user.isEmpty()
+        || !neededUserId || !problemIndex) {
+        return callback(new Error('Params not specified'));
+    }
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'SELECT problemset.id ' +
+                    'FROM problemset ' +
+                    'LEFT JOIN problems_to_contest ON problems_to_contest.problem_id = problemset.id ' +
+                    'WHERE problems_to_contest.contest_id = ? ' +
+                    'ORDER BY problems_to_contest.id ASC',
+                    [ contestId ],
+                    function (err, results, fields) {
+                        if (err) {
+                            return callback(new Error('An error with db', 1001));
+                        }
+                        var indexMapping = {},
+                            nextIndex = createIndexGenerator();
+                        for (var el in results) {
+                            var id = results[el].id;
+                            if (typeof id !== 'undefined') {
+                                indexMapping[id] = nextIndex().toUpperCase();
+                            }
+                        }
+                        var inFreeze = function (time) { return time >= contest.getAbsoluteFreezeTimeMs() && time <= contest.getAbsoluteDurationTimeMs();},
+                            curTime = new Date().getTime(),
+                            problemId;
+
+                        for (var el in indexMapping) {
+                            if (indexMapping[ el ].toLowerCase() === problemIndex.toLowerCase()) {
+                                problemId = el;
+                                break;
+                            }
+                        }
+                        if (!problemId) {
+                            return callback(new Error('Problem id not found'));
+                        }
+
+                        var sqlQuery = mysql.format(
+                            'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+                            'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
+                            'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
+                            'system_langs.id AS lang_id, system_langs.name AS system_lang_name, problemset.id AS problem_id, ' +
+                            'problemset.title, problemset.system_type, problemset.foreign_problem_id, ' +
+                            'contests.start_time AS contest_start_time, contests.relative_freeze_time AS contest_freeze_time, contests.duration_time AS contest_duration_time ' +
+                            'FROM sent_solutions ' +
+                            'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+                            'LEFT JOIN problemset ON problemset.id = sent_solutions.problem_id ' +
+                            'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
+                            'LEFT JOIN system_langs ON system_langs.id = sent_solutions.lang_id ' +
+                            'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
+                            'WHERE sent_solutions.contest_id = ? ' +
+                            (user.getAccessGroup().access_level !== 5 && inFreeze(curTime)
+                                ? ('AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
+                            'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ' ' +
+                            'OR users.id = ' + user.getId() + ')') : '') + ' ' +
+                            'AND sent_solutions.problem_id = ? AND sent_solutions.user_id = ? ' +
+                            'ORDER BY sent_id DESC', [
+                                contestId, problemId, neededUserId
+                            ]
+                        );
+                        connection.query(
+                            sqlQuery,
+                            function (err, results, fields) {
+                                if (err) {
+                                    console.error(err);
+                                    return callback(new Error('An error with db', 1001));
+                                }
+                                var list = results;
+                                if (typeof list === 'undefined') {
+                                    return callback(new Error('Something went wrong'));
+                                }
+                                for (var index in list) {
+                                    list[ index ].internal_index = indexMapping[ list[ index ].problem_id ];
+                                }
+                                callback(null, {
+                                    sents: list
+                                });
                             }
                         );
                     }
