@@ -693,6 +693,10 @@ angular.module('Qemy.controllers.contest-item', [])
                             id: 11,
                             name: 'Same solution',
                             scored: 0
+                        }, {
+                            id: 12,
+                            name: 'Disqualification',
+                            scored: 0
                         }];
 
                         $scope.selectedVerdictId = sentItem.verdict_id;

@@ -769,6 +769,12 @@ my-timer-element {
     font-weight: bold;
   }
 }
+.sent-list__failed_type_highlighted {
+  background-color: rgba(253, 59, 50, 0.13) !important;
+}
+.sent-list__failed_type_highlighted:hover {
+  background-color: rgba(253, 59, 50, 0.19) !important;
+}
 .sent-list__unknown {
   .sent-list__verdict {
     color: rgba(255, 142, 53, 0.76);
