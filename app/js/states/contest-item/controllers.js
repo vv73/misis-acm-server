@@ -1013,13 +1013,12 @@ angular.module('Qemy.controllers.contest-item', [])
                                         return alert('Произошла ошибка: ' + result.error);
                                     }
                                     $mdDialog.hide();
-                                    updateSentsList();
                                 });
                         };
                     }],
                     templateUrl: templateUrl('contest-item/contest-status', 'contest-verdict-selection-dialog'),
                     parent: angular.element(document.body),
-                    targetEvent: ev,
+                    targetEvent: $originalDialogArgs[0],
                     clickOutsideToClose: true,
                     locals: {
                         sentItem: item
@@ -1038,7 +1037,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     .ariaLabel('Duplicate confirmation')
                     .ok('Да')
                     .cancel('Отмена')
-                    .targetEvent(ev);
+                    .targetEvent($originalDialogArgs[0]);
                 return $mdDialog.show(confirm);
             }
 
@@ -1049,7 +1048,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     .ariaLabel('Refresh confirmation')
                     .ok('Да')
                     .cancel('Отмена')
-                    .targetEvent(ev);
+                    .targetEvent($originalDialogArgs[0]);
                 return $mdDialog.show(confirm);
             }
 
@@ -1060,7 +1059,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     .ariaLabel('Delete confirmation')
                     .ok('Да')
                     .cancel('Отмена')
-                    .targetEvent(ev);
+                    .targetEvent($originalDialogArgs[0]);
                 return $mdDialog.show(confirm);
             }
         }
