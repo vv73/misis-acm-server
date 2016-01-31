@@ -10,7 +10,7 @@
     "production": "npm i pm2 -g",
     "build": "npm i",
     "build-all": "npm i bower -g && npm i pm2 -g && npm i",
-    "build-all-start": "npm i bower -g && npm i pm2 -g && npm i && echo \"Starting pm2...\" && pm2 start bin/www"
+    "build-all-start": "npm i bower -g && npm i pm2 -g && npm i && bower i && echo \"Starting pm2...\" && pm2 start bin/www"
   },
   "keywords": [
     "angular",

@@ -1653,7 +1653,7 @@ function GetTable(contestId, user, callback) {
                             'LEFT JOIN verdicts ON verdicts.id = sent_solutions.verdict_id ' +
                             'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
                             'WHERE sent_solutions.contest_id = ? AND sent_solutions.verdict_id <> 0 ' +
-                            'ORDER BY sent_solutions.user_id ASC',
+                            'ORDER BY sent_solutions.user_id ASC, sent_solutions.id ASC',
                             [ contestId ],
                             function (err, results, fields) {
                                 if (err) {
@@ -1662,7 +1662,8 @@ function GetTable(contestId, user, callback) {
                                 var sentRows = Array.isArray(results) ? results : [];
                                 connection.query(
                                     'SELECT user_enters.*, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
-                                    'users.access_level, users.username FROM user_enters ' +
+                                    'users.access_level, users.username ' +
+                                    'FROM user_enters ' +
                                     'LEFT JOIN users ON users.id = user_enters.user_id ' +
                                     'WHERE user_enters.contest_id = ? ' +
                                     'ORDER BY user_enters.id ASC',

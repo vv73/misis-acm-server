@@ -847,7 +847,7 @@ angular.module('Qemy.controllers.contest-item', [])
                         return;
                     }
                 }
-                sents.unshift(data);
+                $scope.sents.unshift( data );
             });
 
             $scope.actionsMenuItems = [{
