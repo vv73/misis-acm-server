@@ -41,7 +41,8 @@ module.exports = {
     getSourceCode: GetSourceCode,
     getSourceCodeRaw: GetSourceCodeRaw,
     getTable: GetTable,
-    getSentsForCell: GetSentsForCell
+    getSentsForCell: GetSentsForCell,
+    getRatingTable: GetRatingTable
 };
 
 
@@ -2005,5 +2006,102 @@ function GetSentsForCell(params, callback) {
                 );
             });
         });
+    }
+}
+
+function GetRatingTable(params, callback) {
+    var scoreForInTimeSolutions = params.score_in_time || 2,
+        scoreForInPracticeSolutions = params.score_in_practice || 1,
+        contestIds = Array.isArray(params.contests) ? params.contests : [];
+    if (!contestIds.length) {
+        return callback(new Error('Contest ids not specified'));
+    }
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var sqlQuery = mysql.format(
+            'SELECT sent_solutions.id AS sent_id, sent_solutions.user_id AS contestant_id, sent_solutions.problem_id, ' +
+            'sent_solutions.contest_id, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
+            'sent_solutions.sent_time, ' +
+            'contests.name AS contest_name, contests.start_time AS contest_start_time, contests.relative_freeze_time, ' +
+            'contests.duration_time, contests.practice_duration_time ' +
+            'FROM sent_solutions ' +
+            'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
+            'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
+            'WHERE contest_id IN (?) AND verdict_id = 1 ' +
+            'GROUP BY problem_id, contestant_id ' +
+            'ORDER BY contestant_id ASC, problem_id ASC;',
+            [ contestIds ]
+        );
+        connection.query(
+            sqlQuery,
+            function (err, result, fields) {
+                if (err) {
+                    console.log(err);
+                    return callback(new Error('An error with db', 1001));
+                }
+                var contests = { };
+                for (var el in result) {
+                    if ( !result.hasOwnProperty( el ) ) continue;
+
+                    var contestIndex = 'contest' + result[ el ].contest_id;
+                    if (typeof contests[ contestIndex ] === 'undefined') {
+                        contests[ contestIndex ] = {
+                            users: { },
+                            info: {
+                                name: result[ el ].contest_name,
+                                id: result[ el ].contest_id,
+                                start_time: result[ el ].contest_start_time,
+                                finish_time: result[ el ].contest_start_time + result[ el ].duration_time,
+                                finish_practice_time: result[ el ].contest_start_time
+                                    + result[ el ].duration_time + result[ el ].practice_duration_time
+                            }
+                        };
+                    }
+                    var userIndex = 'user' + result[ el ].contestant_id;
+                    var localUsers = contests[ contestIndex ].users;
+                    if (typeof localUsers[ userIndex ] === 'undefined') {
+                        localUsers[ userIndex ] = {
+                            accepts: [ ],
+                            info: {
+                                full_name: result[ el ].user_full_name,
+                                id: result[ el ].contestant_id
+                            }
+                        }
+                    }
+                    var localUser = localUsers[ userIndex ];
+                    localUser.accepts.push({
+                        sent_id: result[ el ].sent_id,
+                        accept_time: result[ el ].sent_time,
+                        problem_id: result[ el ].problem_id
+                    });
+                }
+
+                var tempTable = {
+                    header: {
+                        row: [ ]
+                    },
+                    users: { }
+                };
+                for (var el in contests) {
+                    tempTable.header.row.push( contests[ el ].info );
+
+                }
+
+                callback(null, tempTable);
+            }
+        );
     }
 }

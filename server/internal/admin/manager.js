@@ -33,7 +33,8 @@ module.exports = {
     setVerdictForContest: SetVerdictForContest,
     sendSolutionAgain: SendSolutionAgain,
     refreshSolution: RefreshSolution,
-    deleteSolution: DeleteSolution
+    deleteSolution: DeleteSolution,
+    getRatingTable: GetRatingTable
 };
 
 function SearchGroups(q, callback) {
@@ -768,4 +769,14 @@ function DeleteSolution(params, callback) {
             }
         );
     }
+}
+
+function GetRatingTable(params, callback) {
+
+    contestManager.getRatingTable(params, function (err, result) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, result);
+    });
 }
