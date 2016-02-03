@@ -106,7 +106,6 @@ function UpdateContest(contestId, params, callback) {
             'WHERE id = ?',
             [ params, parseInt(contestId) ]
         );
-        console.log(sql);
         connection.query(
             sql,
             function (err, result) {
@@ -252,7 +251,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
 
         connection.query(sql, function (err, results, fields) {
             if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
-                console.log(err);
+                console.error(err);
                 return callback(err);
             }
             var contests = results[0].map(function (row) {

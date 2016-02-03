@@ -22,7 +22,8 @@ module.exports = {
 
 function Watch(params, callback, progressCallback) {
     var beginTime = new Date().getTime(),
-        accountHandle = params.acmAccount.login;
+        accountHandle = params.acmAccount.login,
+        externalContestId = +params.solution.contest_id;
 
     params.acmAccount.lastSentSolutionIds = params.acmAccount.lastSentSolutionIds || [];
 
@@ -32,10 +33,10 @@ function Watch(params, callback, progressCallback) {
             callback(new Error('Max timeout limit has exceeded.'));
             return next(true);
         }
-        codeforcesApi.contest.status({
-            contestId: params.solution.contest_id,
+        codeforcesApi.user.status({
             from: 1,
-            count: 100
+            count: 1,
+            handle: accountHandle
         }, function (err, response) {
             if (err) {
                 callback(err);
@@ -50,7 +51,8 @@ function Watch(params, callback, progressCallback) {
                     break;
                 }
                 currentSolution = resultArray[solutionIndex];
-                var author = currentSolution.author;
+                var author = currentSolution.author,
+                    problemContestId = currentSolution.problem.contestId;
                 if (!author) {
                     continue;
                 }
@@ -63,7 +65,8 @@ function Watch(params, callback, progressCallback) {
                     var member = solutionMembers[ memberIndex ];
                     if (member.handle
                         && member.handle.toLowerCase() === accountHandle.toLowerCase()
-                        && !~params.acmAccount.lastSentSolutionIds.indexOf( resultArray[ solutionIndex ].id )) {
+                        && !~params.acmAccount.lastSentSolutionIds.indexOf( resultArray[ solutionIndex ].id )
+                        && problemContestId === externalContestId) {
                         if (currentSolution.verdict
                             && currentSolution.verdict !== 'TESTING') {
                             params.acmAccount.lastSentSolutionIds.push( currentSolution.id );
