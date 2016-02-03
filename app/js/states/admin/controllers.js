@@ -924,9 +924,7 @@ angular.module('Qemy.controllers.admin', [])
 
     /* Base rating controller */
     .controller('AdminRatingBaseController', ['$scope', '$rootScope', '$state', 'AdminManager',
-        function($scope, $rootScope, $state, AdminManager) {
-
-        }
+        function($scope, $rootScope, $state, AdminManager) {}
     ])
 
     /* Base create rating controller */
