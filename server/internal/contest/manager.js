@@ -2040,7 +2040,7 @@ function GetRatingTable(params, callback) {
             'FROM sent_solutions ' +
             'LEFT JOIN users ON users.id = sent_solutions.user_id ' +
             'LEFT JOIN contests ON contests.id = sent_solutions.contest_id ' +
-            'WHERE contest_id IN (?) AND verdict_id = 1 ' +
+            'WHERE contest_id IN (?) AND verdict_id = 1 AND users.access_level <> 5 ' +
             'GROUP BY problem_id, contestant_id ' +
             'ORDER BY contestant_id ASC, problem_id ASC;',
             [ contestIds ]
