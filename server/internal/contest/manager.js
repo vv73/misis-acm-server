@@ -2010,8 +2010,8 @@ function GetSentsForCell(params, callback) {
 }
 
 function GetRatingTable(params, callback) {
-    var scoreForInTimeSolutions = params.score_in_time || 2,
-        scoreForInPracticeSolutions = params.score_in_practice || 1,
+    var scoreForInTimeSolutions = +params.score_in_time,
+        scoreForInPracticeSolutions = +params.score_in_practice,
         contestIds = Array.isArray(params.contests) ? params.contests : [];
     if (!contestIds.length) {
         return callback(new Error('Contest ids not specified'));
@@ -2091,10 +2091,9 @@ function GetRatingTable(params, callback) {
 
                 function getDividedByTypeSolutionsNumber(contestInfo, acceptedArray) {
                     var inTime = function (time) {
-                            return time >= contestInfo.start_time
-                                && time <= contestInfo.finish_time;
-                        },
-                        curTime = new Date().getTime();
+                        return time >= contestInfo.start_time
+                            && time <= contestInfo.finish_time;
+                    };
                     var inTimeAccepts = (acceptedArray || []).filter(function (acceptedItem) {
                         return inTime(acceptedItem.accept_time);
                     });
@@ -2118,8 +2117,11 @@ function GetRatingTable(params, callback) {
                                 row: [ ]
                             };
                         }
-                        tempTable.users[ userIndex ].contests[ contestIndex ]
-                            = getDividedByTypeSolutionsNumber(contests[ contestIndex ].info, users[ userIndex ].accepts);
+                        tempTable.users[ userIndex ].contests[ contestIndex ] =
+                            getDividedByTypeSolutionsNumber(
+                                contests[ contestIndex ].info,
+                                users[ userIndex ].accepts
+                            );
                     }
                 }
                 for (userIndex in tempTable.users) {

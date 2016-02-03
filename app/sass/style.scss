@@ -1060,6 +1060,7 @@ my-timer-element {
 .admin-content-layer {
   border: 1px solid #E5E5E5;
   padding: 24px;
+  background-color: #fff;
 }
 .admin-content-layer__inner {
   box-sizing: border-box;
@@ -1286,5 +1287,52 @@ my-timer-element {
   .search-spin-layer, .search-spin-layer_ {
     height: 25px;
     width: 25px;
+  }
+}
+.rating-table {
+  font-size: 0.95em;
+
+  .monitor-content__row_type_header {
+    height: 70px;
+  }
+
+  &__header-cell {
+    font-size: 0.8em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 100%;
+  }
+
+  &__subheader-cells {
+    border-top: 1px solid #ccc;
+    font-weight: normal;
+    & > div:not(:first-child) {
+      border-left: 1px solid #ccc;
+    }
+    & > div {
+      padding: 6px;
+    }
+  }
+
+  &__top-cell {
+    padding-bottom: 12px;
+  }
+
+  .rating-table__results {
+    padding: 0 !important;
+    & > .monitor-content__cell:first-child {
+      border-left: 0;
+    }
+    & > .monitor-content__cell:last-child {
+      border-right: 0;
+    }
+    &-sum {
+      font-weight: bold;
+    }
+  }
+
+  .monitor-content__cell {
+    min-width: unset;
   }
 }

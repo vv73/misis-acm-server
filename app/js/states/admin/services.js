@@ -205,6 +205,16 @@ angular.module('Qemy.services.admin', [
             });
         }
 
+        function getRatingTable(params) {
+            return $http({
+                method: 'post',
+                url: '/api/admin/getRatingTable',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         return {
             searchGroups: searchGroups,
             searchProblems: searchProblems,
@@ -224,7 +234,8 @@ angular.module('Qemy.services.admin', [
             setVerdictForSent: setVerdictForSent,
             sendSolutionAgain: sendSolutionAgain,
             refreshSolution: refreshSolution,
-            deleteSolution: deleteSolution
+            deleteSolution: deleteSolution,
+            getRatingTable: getRatingTable
         }
     }])
 ;
