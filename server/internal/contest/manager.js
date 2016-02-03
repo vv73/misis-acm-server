@@ -2089,18 +2089,79 @@ function GetRatingTable(params, callback) {
                     });
                 }
 
+                function getDividedByTypeSolutionsNumber(contestInfo, acceptedArray) {
+                    var inTime = function (time) {
+                            return time >= contestInfo.start_time
+                                && time <= contestInfo.finish_time;
+                        },
+                        curTime = new Date().getTime();
+                    var inTimeAccepts = (acceptedArray || []).filter(function (acceptedItem) {
+                        return inTime(acceptedItem.accept_time);
+                    });
+                    return [ inTimeAccepts.length, acceptedArray.length - inTimeAccepts.length ];
+                }
+
                 var tempTable = {
                     header: {
                         row: [ ]
                     },
                     users: { }
                 };
-                for (var el in contests) {
-                    tempTable.header.row.push( contests[ el ].info );
-
+                for (contestIndex in contests) {
+                    tempTable.header.row.push( contests[ contestIndex ].info );
+                    var users = contests[ contestIndex ].users;
+                    for (userIndex in users) {
+                        if (typeof tempTable.users[ userIndex ] === 'undefined') {
+                            tempTable.users[ userIndex ] = {
+                                info: users[ userIndex ].info,
+                                contests: { },
+                                row: [ ]
+                            };
+                        }
+                        tempTable.users[ userIndex ].contests[ contestIndex ]
+                            = getDividedByTypeSolutionsNumber(contests[ contestIndex ].info, users[ userIndex ].accepts);
+                    }
+                }
+                for (userIndex in tempTable.users) {
+                    var curUser = tempTable.users[ userIndex ];
+                    var allContests = tempTable.header.row;
+                    for (var contestNumberIndex in allContests) {
+                        contestIndex = 'contest' + allContests[ contestNumberIndex ].id;
+                        var userContestResult = curUser.contests[ contestIndex ] || [ 0, 0 ];
+                        curUser.row.push( userContestResult );
+                    }
                 }
 
-                callback(null, tempTable);
+                var readyTable = {
+                    header: tempTable.header,
+                    rows: [ ]
+                };
+                for (userIndex in tempTable.users) {
+                    curUser = tempTable.users[ userIndex ];
+                    readyTable.rows.push({
+                        user: curUser.info,
+                        row: curUser.row,
+                        scoreInTime: curUser.row.reduce(function (prev, cur) {
+                            return prev + cur[0] * scoreForInTimeSolutions;
+                        }, 0),
+                        scoreInPractice: curUser.row.reduce(function (prev, cur) {
+                            return prev + cur[1] * scoreForInPracticeSolutions;
+                        }, 0),
+                        scoreSum: curUser.row.reduce(function (prev, cur) {
+                            return prev + cur[0] * scoreForInTimeSolutions + cur[1] * scoreForInPracticeSolutions;
+                        }, 0)
+                    });
+                }
+                readyTable.rows.sort(function (x, y) {
+                    if (x.scoreSum === y.scoreSum) {
+                        return (x.scoreInTime === y.scoreInTime) ? 0 : (
+                            (x.scoreInTime > y.scoreInTime) ? -1 : 1
+                        );
+                    }
+                    return (x.scoreSum > y.scoreSum) ? -1 : 1;
+                });
+
+                callback(null, readyTable);
             }
         );
     }
