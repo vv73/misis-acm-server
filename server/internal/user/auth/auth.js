@@ -29,6 +29,8 @@ function RestoreUser(req, res, next) {
         if (err) {
             return next();
         }
+        user._ip = req.headers['X-Real-IP'] || req.ip || req.ips;
+        console.log(user._ip, req.headers);
         req.currentUser = user;
         next();
     });
@@ -43,6 +45,8 @@ function RestoreUserByCookie(req, res, next) {
         if (err) {
             return next();
         }
+        user._ip = req.headers['X-Real-IP'] || req.ip || req.ips;
+        console.log(user._ip, req.headers);
         req.currentUser = user;
         req.session.user_id = user.getId();
         next();

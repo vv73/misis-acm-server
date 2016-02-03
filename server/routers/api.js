@@ -256,7 +256,6 @@ router.post('/contest/send', function (req, res) {
     function execute(callback) {
         var body = req.body,
             user = req.currentUser;
-        user._ip = req.ip || req.ips;
         if (!user || user.isEmpty()) {
             return callback(new Error('User is not specified'));
         }
