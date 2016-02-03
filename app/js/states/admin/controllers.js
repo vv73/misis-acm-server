@@ -1130,7 +1130,7 @@ angular.module('Qemy.controllers.admin', [])
             });
 
             if (!contestIds.length) {
-                return $state.go('^.create.index');
+                return $state.go('admin.contests-rating.create.index');
             }
 
             $scope.scoreInTime = 2;

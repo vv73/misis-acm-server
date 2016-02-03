@@ -1,4 +1,4 @@
-div.contests-list__item-layer.admin-contests__contest-item
+div.contests-list__item-layer(style='width: 100%;')
   div.contests-list__item-disabled(ng-if='contest.status === "NOT_ENABLED" || contest.status === "REMOVED"', onclick='event.stopPropagation()')
   div.contests-list__item-disabled.contests-list__item-loading(ng-if='loadingData', onclick='event.stopPropagation()')
     div.content-spin__layer
@@ -6,7 +6,7 @@ div.contests-list__item-layer.admin-contests__contest-item
         div.search-spin
 
   div
-    md-checkbox(ng-checked="existsContest(contest, selectedContests)" ng-click="toggleContest(contest, selectedContests)")
+    md-checkbox(ng-checked="existsContest(contest, selectedContests)" ng-click="toggleContest(contest, selectedContests)", style='width: 100%;')
       div.contests-list__item.contest-item
         div.contest-item__title {{contest.name}}
         div.contest-item__groups
