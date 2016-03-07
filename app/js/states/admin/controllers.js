@@ -33,8 +33,8 @@ angular.module('Qemy.controllers.admin', [])
                     $scope.user = user;
                 }
             ).catch(function (err) {
-                $state.go('auth.form');
-            });
+                    $state.go('auth.form');
+                });
         }
     ])
 
@@ -56,12 +56,12 @@ angular.module('Qemy.controllers.admin', [])
                 uiSref: 'admin.contests-rating.create.index',
                 name: 'Рейтинги'
             }/*, {
-                uiSref: 'admin.index',
-                name: 'Группы пользователей'
-            }, {
-                uiSref: 'admin.index',
-                name: 'Аккаунты в тестирующих системах'
-            }*/];
+             uiSref: 'admin.index',
+             name: 'Группы пользователей'
+             }, {
+             uiSref: 'admin.index',
+             name: 'Аккаунты в тестирующих системах'
+             }*/];
         }
     ])
 
@@ -759,7 +759,7 @@ angular.module('Qemy.controllers.admin', [])
             $scope.$emit('change_title', {
                 title: 'Создание пользователя | ' + _('app_name')
             });
-            
+
             $scope.form = {
                 groups: []
             };
@@ -815,11 +815,81 @@ angular.module('Qemy.controllers.admin', [])
         }
     ])
 
-    .controller('AdminEditUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog',
-        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog) {
+    .controller('AdminEditUserController', ['$scope', '$rootScope', '$state', '_', 'AdminManager', '$mdDialog', '$filter', '$timeout',
+        function ($scope, $rootScope, $state, _, AdminManager, $mdDialog, $filter, $timeout) {
             $scope.$emit('change_title', {
                 title: 'Редактирование пользователя | ' + _('app_name')
             });
+
+            $scope.user = {
+                groups: []
+            };
+            var user_id = $state.params.userId;
+
+            AdminManager.getUser({ user_id: user_id })
+                .then(function (user) {
+                    $scope.user = user;
+                    $scope.$watch('user.first_name', fioChanged);
+                    $scope.$watch('user.last_name', fioChanged);
+                });
+
+            $scope.chips = {
+                selectedItem: '',
+                searchText: ''
+            };
+
+            $scope.accessGroups = [{
+                access_level: 1,
+                name: 'Обычный пользователь'
+            }, {
+                access_level: 5,
+                name: 'Администратор'
+            }];
+
+            $scope.groupSearch = function (query) {
+                return AdminManager.searchGroups({ q: query }).then(function (data) {
+                    return data;
+                });
+            };
+
+            $scope.submitForm = function () {
+                $rootScope.$broadcast('data loading');
+                var form = angular.copy($scope.user);
+                form.groups = (form.groups || []).map(function (group) {
+                    return group.id;
+                });
+                form.user_id = +user_id;
+                AdminManager.updateUser(form)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (result.error) {
+                            return alert('Произошла ошибка: ' + result.error);
+                        }
+                        $state.go('admin.users-list');
+                    });
+            };
+
+            var fioChangesNumber = 0;
+            var fioChanged = function () {
+                if (fioChangesNumber++ < 2) {
+                    return;
+                }
+                var firstName = $scope.user.first_name || '',
+                    lastName = $scope.user.last_name || '',
+                    username;
+                if (!firstName && !lastName) {
+                    $scope.user.username = '';
+                    $scope.user.password = '';
+                    return;
+                } else if (!firstName) {
+                    username = $filter('latinize')(lastName);
+                } else if (!lastName) {
+                    username = $filter('latinize')(firstName);
+                } else {
+                    username = $filter('latinize')(firstName[0]) + '.' + $filter('latinize')(lastName);
+                }
+                $scope.user.username = username;
+            };
         }
     ])
 

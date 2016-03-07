@@ -30,6 +30,8 @@ module.exports = {
     getUsers: GetUsers,
     deleteUser: DeleteUser,
     createUser: CreateUser,
+    updateUser: UpdateUser,
+    getUser: GetUser,
     setVerdictForContest: SetVerdictForContest,
     sendSolutionAgain: SendSolutionAgain,
     refreshSolution: RefreshSolution,
@@ -88,15 +90,15 @@ function SearchProblems(q, system_type, callback) {
             return callback(null, { q: q, items: [] });
         }
         var sqlQuery = mysql.format(
-                'SELECT problemset.* ' +
-                'FROM problemset ' +
-                'WHERE ' +
-                (system_type !== 'all' ? 'problemset.system_type = ' + connection.escape(system_type) + ' AND' : '') + ' ' +
-                '(problemset.title LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
-                'problemset.foreign_problem_id LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
-                'problemset.text LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%") ' +
-                'LIMIT 0, 20'
-            );
+            'SELECT problemset.* ' +
+            'FROM problemset ' +
+            'WHERE ' +
+            (system_type !== 'all' ? 'problemset.system_type = ' + connection.escape(system_type) + ' AND' : '') + ' ' +
+            '(problemset.title LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
+            'problemset.foreign_problem_id LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" OR ' +
+            'problemset.text LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%") ' +
+            'LIMIT 0, 20'
+        );
         /*
          sqlQuery = mysql.format(
          'SELECT problemset.*, ' +
@@ -489,6 +491,24 @@ function CreateUser(params, callback) {
             }
         );
     }
+}
+
+function GetUser(user_id, callback) {
+    usersManager.getUser(user_id, function (err, result) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, result);
+    });
+}
+
+function UpdateUser(user_id, params, callback) {
+    usersManager.updateUser(user_id, params, function (err, result) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, result);
+    });
 }
 
 function SetVerdictForContest(params, callback) {

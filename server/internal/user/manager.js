@@ -23,7 +23,9 @@ var DEFAULT_USERS_SORT_ORDER = 'desc';
 module.exports = {
     create: CreateUser,
     getUsers: GetUsers,
-    deleteUser: DeleteUser
+    getUser: GetUser,
+    deleteUser: DeleteUser,
+    updateUser: UpdateUser
 };
 
 
@@ -161,6 +163,35 @@ function GetUsers(count, offset, category, sort, sort_order, callback) {
     }
 }
 
+function GetUser(user_id, callback) {
+
+    execute(function (err, result) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, result);
+    });
+
+    function execute(callback) {
+        var user = new User();
+        user.allocate(user_id, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            user.getContainGroups(function (err, groups) {
+                if (err) {
+                    return callback(err);
+                }
+                var result = {
+                    user: user.getObjectFactory()
+                };
+                result.user.groups = groups;
+                callback(null, result);
+            });
+        });
+    }
+}
+
 function DeleteUser(user_id, callback) {
     if (!user_id) {
         return callback(new Error('User id not specified', 1006));
@@ -187,6 +218,99 @@ function DeleteUser(user_id, callback) {
                 return callback(err);
             }
             callback(null, { result: true });
+        });
+    }
+}
+
+function UpdateUser(user_id, params, callback) {
+
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db querying', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var user = new User();
+        user.allocate(user_id, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            var updateParams = {},
+                groups = [];
+            if (params.username) {
+                updateParams.username = params.username;
+            }
+            if (params.first_name) {
+                updateParams.first_name = params.first_name;
+            }
+            if (params.last_name) {
+                updateParams.last_name = params.last_name;
+            }
+            if (params.access_group && params.access_group.access_level
+                && !~[1, 2].indexOf(user.getId())) {
+                updateParams.access_level = +params.access_group.access_level;
+            }
+            if (params.password) {
+                user.setPassword(params.password);
+            }
+            if (Array.isArray(params.groups)) {
+                groups = params.groups;
+            }
+
+            var groupIds = groups,
+                userId = user_id,
+                usersRows = groupIds.map(function (groupId) {
+                    return [ userId, groupId ];
+                });
+
+            var sql = 'UPDATE users ' +
+                'SET ? ' +
+                'WHERE id = ?';
+            sql = mysql.format(sql, [
+                updateParams,
+                user_id
+            ]);
+            connection.query(sql, function (err, results, fields) {
+                if (err) {
+                    return callback(err);
+                }
+                connection.query(
+                    'DELETE FROM users_to_groups WHERE user_id = ?',
+                    [ userId ],
+                    function (err) {
+                        if (err) {
+                            return callback(new Error('An error with db'));
+                        }
+                        if (!usersRows.length) {
+                            return callback(null, {
+                                result: true
+                            });
+                        }
+                        connection.query(
+                            'INSERT INTO users_to_groups (user_id, group_id) ' +
+                            'VALUES ?',
+                            [ usersRows ],
+                            function (err) {
+                                if (err) {
+                                    return callback(new Error('An error with db'));
+                                }
+                                callback(null, {
+                                    result: true
+                                });
+                            }
+                        );
+                    }
+                );
+            });
         });
     }
 }
