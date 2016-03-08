@@ -297,6 +297,8 @@ angular.module('Qemy.controllers.contest-item', [])
                     if (result.error) {
                         return $state.go('^.conditions');
                     }
+                    result.formatted_text = result.formatted_text
+                        .replace(/(\<\!\–\–\s?google_ad_section_(start|end)\s?\–\–\>)/gi, '');
                     $scope.condition = result;
                 });
         }

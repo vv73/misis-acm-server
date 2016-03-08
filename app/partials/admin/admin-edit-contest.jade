@@ -5,7 +5,7 @@ div.admin-content-layer
       div.contests-list__title Редактирование контеста
 
       div.contest-creation__inner
-        form.contest-creation__form(ng-submit='submitForm()', name='contestForm')
+        form.contest-creation__form(name='contestForm')
 
           div.contest-creation__row
             div.contest-creation__row-title Введите название
@@ -62,7 +62,7 @@ div.admin-content-layer
             div
               md-checkbox.md-warn.md-align-top-left(ng-model='form.hasPractice', aria-label='Practice checkbox') Есть
                 br
-                span(style='color: saddlebrown;') Дорешивание наступает сразу после окончания контеста.
+                span.sublabel Дорешивание наступает сразу после окончания контеста.
                   | Задачи, решенные во время дорешивания, будут подсвечены в таблице.
                   | Вы можете настроить весовой коеффициент для решённых задач во время дорешивания.
             md-input-container(ng-if='form.hasPractice')
@@ -75,7 +75,7 @@ div.admin-content-layer
 
           div.contest-creation__row
             div.contest-creation__row-title Кому доступен контест?
-            span(style='color: saddlebrown;') Выберите группы пользователей или оставьте поле пустым, если хотите сделать контест доступным для всех.
+            span.sublabel Выберите группы пользователей или оставьте поле пустым, если хотите сделать контест доступным для всех.
             md-input-container.groups(md-no-float)
               md-chips.custom-chips(ng-model="form.groups", md-autocomplete-snap, md-require-match)
                 md-autocomplete(
@@ -93,7 +93,7 @@ div.admin-content-layer
 
           div.contest-creation__row
             div.contest-creation__row-title Поиск задач
-            span(style='color: saddlebrown;') Отметьте задачи, которые хотите добавить в контест.
+            span.sublabel Отметьте задачи, которые хотите добавить в контест.
             div(layout, layout-sm="column")
               md-input-container(flex='2')
                 label Поиск по названию, номеру или тексту задачи
@@ -142,4 +142,4 @@ div.admin-content-layer
                   md-svg-src="/img/icons/ic_visibility_48px.svg")
 
           div.contest-creation__row.contest-creation__row_type_create
-            md-button.md-primary.md-raised(ng-disabled='!contestForm.$valid', aria-label='Send') Сохранить изменения
+            md-button.md-primary.md-raised(ng-disabled='!contestForm.$valid', aria-label='Send', ng-click='submitForm()') Сохранить изменения

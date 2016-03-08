@@ -8,7 +8,7 @@ div.contests-list__item-layer(ng-click='joinContest(contest)')
     div.contest-item__title {{contest.name}}
     div.contest-item__groups
       div.contest-item__groups-for Доступно для:
-      div.contests-list__groups-item(ng-if='!contest.allowedGroups.length', style='background-color: #75BB88')
+      div.contests-list__groups-item(ng-if='!contest.allowedGroups.length', style='background-color: rgba(255, 23, 68, 0.73);')
         span Все категории
       div.contests-list__groups-item(ng-repeat='group in contest.allowedGroups', style='background-color: {{group.color || "#ccc"}}')
         span {{group.name}}

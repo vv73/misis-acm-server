@@ -5,7 +5,7 @@ div.admin-content-layer
       div.contests-list__title Редактировать пользователя
 
       div.contest-creation__inner
-        form.contest-creation__form(ng-submit='submitForm()', name='userForm')
+        form.contest-creation__form(name='userForm')
 
           div.contest-creation__row
             div.contest-creation__row-title Фио пользователя
@@ -25,7 +25,7 @@ div.admin-content-layer
 
           div.contest-creation__row
             div.contest-creation__row-title Данные пользователя для входа
-            span(style='color: saddlebrown;') Если пароль не нужно менять, то оставьте поле пустым.
+            span.sublabel Если пароль не нужно менять, то оставьте поле пустым.
             div(layout)
               md-input-container(flex)
                 label Логин
@@ -47,7 +47,7 @@ div.admin-content-layer
 
           div.contest-creation__row
             div.contest-creation__row-title В какой группе состоит?
-            span(style='color: saddlebrown;') Выберите группу для пользователя или оставьте поле пустым, чтобы пользователь входил в любые контесты.
+            span.sublabel Выберите группу для пользователя или оставьте поле пустым, чтобы пользователь входил в любые контесты.
             md-input-container.groups(md-no-float)
               md-chips.custom-chips(ng-model="user.groups", md-autocomplete-snap, md-require-match)
                 md-autocomplete(
@@ -64,4 +64,4 @@ div.admin-content-layer
                     span {{$chip.name}}
 
           div.contest-creation__row.contest-creation__row_type_create
-            md-button.md-primary.md-raised(ng-disabled='!userForm.$valid', aria-label='Send') Сохранить
+            md-button.md-primary.md-raised(ng-disabled='!userForm.$valid', aria-label='Send', ng-click='submitForm()') Сохранить

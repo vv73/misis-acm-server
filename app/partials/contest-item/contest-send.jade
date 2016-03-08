@@ -5,27 +5,29 @@ div.contest
         h2 Отправить на проверку
 
       div.send-content
-        form(ng-submit='submitSolution()')
+        form
           div.send-content__condition-selector
-            md-input-container(flex)
-              label Выбор задачи
-              md-select(ng-model='selectedCondition')
-                md-option(ng-repeat='condition in conditions', value='{{condition.internal_index}}')
-                  span {{condition.internal_index + ". " + condition.title}}
+            div
+              md-input-container(flex)
+                label Выбор задачи
+                md-select(ng-model='selectedCondition')
+                  md-option(ng-repeat='condition in conditions', value='{{condition.internal_index}}')
+                    span {{condition.internal_index + ". " + condition.title}}
 
-            md-input-container(flex)
-              label Язык
-              md-select(ng-model='selectedLangId')
-                md-option(ng-repeat='lang in currentLangs', value='{{lang.id}}')
-                  span {{lang.name}}
+            div
+              md-input-container(flex)
+                label Язык
+                md-select(ng-model='selectedLangId')
+                  md-option(ng-repeat='lang in currentLangs', value='{{lang.id}}')
+                    span {{lang.name}}
 
             div.send-content__submit(ng-if='solution.length > 0')
-              md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent') Отправить
+              md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent', ng-click='submitSolution()') Отправить
 
           div.send-content__textarea
-            md-input-container(flex)
+            md-input-container(flex, style='width: 100%;')
               label Решение
               textarea.textarea.send-content__textarea-element(ng-model='solution')
 
           div.send-content__submit
-            md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent') Отправить
+            md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent', ng-click='submitSolution()') Отправить

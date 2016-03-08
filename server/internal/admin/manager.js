@@ -36,7 +36,12 @@ module.exports = {
     sendSolutionAgain: SendSolutionAgain,
     refreshSolution: RefreshSolution,
     deleteSolution: DeleteSolution,
-    getRatingTable: GetRatingTable
+    getRatingTable: GetRatingTable,
+    getGroups: GetGroups,
+    getGroup: GetGroup,
+    createGroup: CreateGroup,
+    updateGroup: UpdateGroup,
+    deleteGroup: DeleteGroup
 };
 
 function SearchGroups(q, callback) {
@@ -799,4 +804,244 @@ function GetRatingTable(params, callback) {
         }
         callback(null, result);
     });
+}
+
+function GetGroups(count, offset, callback) {
+
+    if (typeof count === 'function') {
+        callback = count;
+        count = null;
+    } else if (typeof offset === 'function') {
+        callback = offset;
+        offset = null;
+    }
+
+    count = Math.max( Math.min(200, count || 10), 0 );
+    offset = Math.max( 0, offset || 0 );
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var sql = 'SELECT groups.*, COUNT(users_to_groups.id) AS population ' +
+            'FROM groups ' +
+            'LEFT JOIN users_to_groups ON users_to_groups.group_id = groups.id ' +
+            'GROUP BY groups.id ' +
+            'ORDER BY groups.id DESC ' +
+            'LIMIT ?, ?; ' +
+            'SELECT COUNT(id) AS count ' +
+            'FROM groups';
+
+        sql = mysql.format(sql, [
+            offset, count
+        ]);
+
+        connection.query(sql, function (err, results, fields) {
+            if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
+                return callback(err);
+            }
+            var result = {
+                groups: results[0],
+                all_items_count: results[1][0].count
+            };
+            callback(null, result);
+        })
+    }
+}
+
+function GetGroup(group_id, callback) {
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        if (!group_id) {
+            return callback(new Error('Parameters do not exist'));
+        }
+        var sql = 'SELECT * ' +
+            'FROM groups ' +
+            'WHERE id = ?; ' +
+            'SELECT users.*, access_groups.group_name ' +
+            'FROM `groups` ' +
+            'LEFT JOIN users_to_groups ON users_to_groups.group_id = groups.id ' +
+            'LEFT JOIN users ON users.id = users_to_groups.user_id ' +
+            'LEFT JOIN access_groups ON users.access_level = access_groups.access_level ' +
+            'WHERE groups.id = ? AND users.id IS NOT NULL';
+        sql = mysql.format(sql, [
+            group_id,
+            group_id
+        ]);
+        connection.query(sql, function (err, results, fields) {
+            if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
+                return callback(err);
+            }
+            var selGroups = results[0],
+                users = results[1];
+            if (!selGroups.length) {
+                return callback(new Error('Group does not exists'));
+            }
+            var result = {
+                group: selGroups[0],
+                users: users.map(function (userRow) {
+                    var user = new User();
+                    user.setObjectRow(userRow);
+                    return user.getObjectFactory();
+                })
+            };
+            callback(null, result);
+        })
+    }
+}
+
+function CreateGroup(params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+
+        if (!params.name
+            || typeof params.name !== 'string'
+            || !params.name.trim()) {
+            return callback(new Error('Params do not exist'));
+        }
+        params.color = params.color || '#FA5071';
+        params.name = params.name.trim();
+
+        var sql = 'INSERT INTO groups (name, color) ' +
+            'VALUES (?, ?)';
+        sql = mysql.format(sql, [
+            params.name, params.color
+        ]);
+
+        connection.query(sql, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, {
+                result: true
+            });
+        })
+    }
+}
+
+function UpdateGroup(group_id, params, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+
+        if (!params.name
+            || typeof params.name !== 'string'
+            || !params.name.trim()
+            || !group_id) {
+            return callback(new Error('Params do not exist'));
+        }
+        params.color = params.color || '#FA5071';
+        params.name = params.name.trim();
+        delete params.group_id;
+
+        var sql = 'UPDATE groups ' +
+            'SET ? ' +
+            'WHERE id = ?';
+        sql = mysql.format(sql, [
+            params,
+            group_id
+        ]);
+
+        connection.query(sql, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, {
+                result: true
+            });
+        })
+    }
+}
+
+function DeleteGroup(group_id, callback) {
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+
+        if (!group_id) {
+            return callback(new Error('Params do not exist'));
+        }
+
+        var sql = 'DELETE FROM groups ' +
+            'WHERE id = ?';
+        sql = mysql.format(sql, [
+            group_id
+        ]);
+
+        connection.query(sql, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            var sql = 'DELETE FROM users_to_groups ' +
+                'WHERE group_id = ?';
+            sql = mysql.format(sql, [
+                group_id
+            ]);
+            connection.query(sql, function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, {
+                    result: true
+                });
+            })
+        })
+    }
 }

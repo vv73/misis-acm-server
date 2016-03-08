@@ -15,7 +15,7 @@ div.contest
         "task__problem-cf": condition.system_type === "cf", \
         "task__problem-acmp": condition.system_type === "acmp", \
         "task__problem-cf_type_gym": condition.system_problem_number.indexOf("gym") >= 0 }')
-          div(md-template='condition.formatted_text')
+          div(ng-bind-html='condition.formatted_text')
 
         div.task__send-layer
           div.task__send

@@ -50,7 +50,7 @@ div.contest
               div.monitor-content__cell.monitor-content__cell-participant
                 span Участник
               div.monitor-content__cell.monitor-content__cell-result(ng-repeat='headerCell in contestTable.header.row', title='{{headerCell.task.name}}')
-                a.link(ui-sref='^.conditions-item({problemIndex: headerCell.task.index})', ng-bind='headerCell.task.index', title='{{headerCell.task.name}}')
+                a.md-button.md-primary(ui-sref='^.conditions-item({problemIndex: headerCell.task.index})', title='{{headerCell.task.name}}') {{headerCell.task.index}}
               div.monitor-content__cell.monitor-content__cell-solutions
                 span Решения
               div.monitor-content__cell.monitor-content__cell-score
@@ -81,5 +81,5 @@ div.contest
               div.monitor-content__cell.monitor-content__cell-score
                 span(ng-bind='row.score')
           
-      div(style='padding: 10px 0;')      
-        md-checkbox(ng-model="disableUpdating", aria-label="Checkbox") Отключить обновление данных таблицы в реальном времени.
+      div(style='padding: 20px 1px 0;')
+        md-checkbox.md-primary(ng-model="disableUpdating", aria-label="Checkbox") Отключить обновление данных таблицы в реальном времени.

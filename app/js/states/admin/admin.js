@@ -103,5 +103,32 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-rating-table'),
                     controller: 'AdminRatingTableController'
                 })
+
+                .state('admin.groups', {
+                    url: '/groups',
+                    template: '<ui-view/>',
+                    controller: 'AdminGroupsBaseController',
+                    abstract: true
+                })
+                .state('admin.groups.index', {
+                    url: '',
+                    templateUrl: templateUrl('admin', 'groups/index'),
+                    controller: 'AdminGroupsController'
+                })
+                .state('admin.groups.index-pagination', {
+                    url: '/page/:pageNumber',
+                    templateUrl: templateUrl('admin', 'groups/index'),
+                    controller: 'AdminGroupsController'
+                })
+                .state('admin.groups.create', {
+                    url: '/create',
+                    templateUrl: templateUrl('admin', 'groups/create'),
+                    controller: 'AdminGroupsCreateController'
+                })
+                .state('admin.groups.edit', {
+                    url: '/edit/:groupId',
+                    templateUrl: templateUrl('admin', 'groups/edit'),
+                    controller: 'AdminGroupsEditController'
+                })
         }
     ]);

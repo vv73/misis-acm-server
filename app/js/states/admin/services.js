@@ -234,6 +234,54 @@ angular.module('Qemy.services.admin', [
 			});
 		}
 
+		function getGroups(params) {
+			return $http({
+				method: 'get',
+				url: '/api/admin/getGroups?' + dataEncode(params)
+			}).then(function (response) {
+				return response.data;
+			});
+		}
+
+		function getGroup(params) {
+			return $http({
+				method: 'get',
+				url: '/api/admin/getGroup?' + dataEncode(params)
+			}).then(function (response) {
+				return response.data;
+			});
+		}
+
+		function createGroup(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/createGroup',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
+		function updateGroup(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/updateGroup',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
+		function deleteGroup(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/deleteGroup',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
 		return {
 			searchGroups: searchGroups,
 			searchProblems: searchProblems,
@@ -256,7 +304,12 @@ angular.module('Qemy.services.admin', [
 			sendSolutionAgain: sendSolutionAgain,
 			refreshSolution: refreshSolution,
 			deleteSolution: deleteSolution,
-			getRatingTable: getRatingTable
+			getRatingTable: getRatingTable,
+			getGroups: getGroups,
+			getGroup: getGroup,
+			createGroup: createGroup,
+			updateGroup: updateGroup,
+			deleteGroup: deleteGroup
 		}
 	}])
 ;

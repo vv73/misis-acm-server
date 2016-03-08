@@ -201,7 +201,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
                 readyWhereStatements.showOnlyPractice = 'contests.start_time + ' +
                     'contests.duration_time < ' +
                     curDate.getTime() + ' AND ' + curDate.getTime() +
-                    ' <= contests.duration_time + contests.practice_duration_time';
+                    ' <= contests.start_time + contests.duration_time + contests.practice_duration_time';
                 break;
             case 'showOnlyEnabled':
                 readyWhereStatements.showOnlyEnabled = 'contests.enabled = 1';
@@ -211,7 +211,7 @@ function GetContests(count, offset, category, sort, sort_order, callback) {
                 break;
             case 'showOnlyFinished':
                 readyWhereStatements.showOnlyFinished = 'contests.start_time + ' +
-                    'contests.duration_time < ' + curDate.getTime();
+                    'contests.duration_time + contests.practice_duration_time < ' + curDate.getTime();
                 break;
             case 'showOnlyRemoved':
                 readyWhereStatements.showOnlyRemoved = 'contests.removed = 1';

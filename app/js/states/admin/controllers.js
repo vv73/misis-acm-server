@@ -55,10 +55,10 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 uiSref: 'admin.contests-rating.create.index',
                 name: 'Рейтинги'
+            }, {
+                uiSref: 'admin.groups.index',
+                name: 'Группы пользователей'
             }/*, {
-             uiSref: 'admin.index',
-             name: 'Группы пользователей'
-             }, {
              uiSref: 'admin.index',
              name: 'Аккаунты в тестирующих системах'
              }*/];
@@ -1224,6 +1224,177 @@ angular.module('Qemy.controllers.admin', [])
             }
             $scope.updateRatingTable = updateRatingTable;
             updateRatingTable();
+        }
+    ])
+
+    .controller('AdminGroupsBaseController', ['$scope', '$rootScope', '$state', 'AdminManager', '_',
+        function($scope, $rootScope, $state, AdminManager, _) {
+            $scope.$emit('change_title', {
+                title: 'Группы пользователей | ' + _('app_name')
+            });
+        }
+    ])
+
+    .controller('AdminGroupsController', ['$scope', '$rootScope', '$state', 'AdminManager', '_', '$mdDialog',
+        function($scope, $rootScope, $state, AdminManager, _, $mdDialog) {
+            $scope.$emit('change_title', {
+                title: 'Группы пользователей | ' + _('app_name')
+            });
+
+            var defaultCount = 10;
+
+            $scope.pageNumber = parseInt($state.params.pageNumber || 1);
+            $scope.params = {
+                count: defaultCount,
+                offset: ($scope.pageNumber - 1) * defaultCount
+            };
+
+            $scope.all_items_count = 0;
+            $scope.pagination = [];
+            $scope.groups = [];
+            $scope.allPages = 0;
+
+            function generatePaginationArray(offsetCount) {
+                var pages = [],
+                    curPage = $scope.pageNumber,
+                    allItems = $scope.all_items_count,
+                    backOffsetPages = offsetCount,
+                    upOffsetPages = offsetCount,
+                    allPages = Math.floor(allItems / defaultCount) +
+                        (allItems && allItems % defaultCount ? 1 : 0);
+                if (!defaultCount) {
+                    allPages = 1e6;
+                }
+                $scope.allPages = allPages;
+                for (var cur = Math.max(curPage - backOffsetPages, 1);
+                     cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+                    pages.push({
+                        number: cur,
+                        active: cur === curPage
+                    });
+                }
+                return pages;
+            }
+
+            var firstInvokeStateChanged = true;
+            $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+                if (firstInvokeStateChanged) {
+                    return firstInvokeStateChanged = false;
+                }
+                $scope.pageNumber = toParams.pageNumber ?
+                    parseInt(toParams.pageNumber) : 1;
+                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+                updateGroupsList();
+            });
+
+            function updateGroupsList() {
+                $rootScope.$broadcast('data loading');
+                var contestsPromise = AdminManager.getGroups($scope.params);
+                contestsPromise.then(function (result) {
+                    $rootScope.$broadcast('data loaded');
+                    if (!result || !result.hasOwnProperty('all_items_count')) {
+                        return;
+                    }
+                    $scope.all_items_count = result.all_items_count;
+                    $scope.groups = result.groups;
+                    $scope.pagination = generatePaginationArray(5);
+                }).catch(function (err) {
+                    console.log(err);
+                });
+            }
+
+            updateGroupsList();
+
+            $scope.deleteGroup = function (ev, group) {
+                if (!group) {
+                    return;
+                }
+                var confirm = $mdDialog.confirm()
+                    .title('Подтверждение')
+                    .content('Вы действительно хотите удалить группу?')
+                    .ariaLabel('Lucky day')
+                    .ok('Да')
+                    .cancel('Отмена');
+
+                $mdDialog.show(confirm).then(function () {
+                    $rootScope.$broadcast('data loading');
+                    AdminManager.deleteGroup({ group_id: group.id })
+                        .then(function (result) {
+                            $rootScope.$broadcast('data loaded');
+                            if (result.error) {
+                                return alert('Произошла ошибка: ' + result.error);
+                            }
+                            updateGroupsList();
+                        });
+                });
+            };
+        }
+    ])
+
+    .controller('AdminGroupsCreateController', ['$scope', '$rootScope', '$state', 'AdminManager', '_',
+        function($scope, $rootScope, $state, AdminManager, _) {
+            $scope.$emit('change_title', {
+                title: 'Создания группы | ' + _('app_name')
+            });
+
+            $scope.group = {
+                color: '#EF9A9A'
+            };
+
+            $scope.submitForm = function () {
+                $rootScope.$broadcast('data loading');
+                var group = angular.copy($scope.group);
+
+                AdminManager.createGroup(group)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (!result || !result.result || result.error) {
+                            return alert('Произошла ошибка ' + result.error);
+                        }
+                        $state.go('admin.groups.index');
+                    });
+            };
+        }
+    ])
+
+    .controller('AdminGroupsEditController', ['$scope', '$rootScope', '$state', 'AdminManager', '_',
+        function($scope, $rootScope, $state, AdminManager, _) {
+            $scope.$emit('change_title', {
+                title: 'Редактирование группы | ' + _('app_name')
+            });
+
+            var groupId = $state.params.groupId;
+            $scope.group = {
+                color: '#EF9A9A'
+            };
+
+            function fetchGroupData() {
+                $rootScope.$broadcast('data loading');
+                AdminManager.getGroup({ group_id: groupId })
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (result.error) {
+                            return alert('Произошла ошибка: ' + result.error);
+                        }
+                        $scope.group = result.group;
+                    });
+            }
+
+            fetchGroupData(); // initialize
+
+            $scope.submitForm = function () {
+                $rootScope.$broadcast('data loading');
+                var group = angular.copy($scope.group);
+                group.group_id = groupId;
+                AdminManager.updateGroup(group)
+                    .then(function (result) {
+                        $rootScope.$broadcast('data loaded');
+                        if (!result || !result.result || result.error) {
+                            return alert('Произошла ошибка ' + result.error);
+                        }
+                        $state.go('admin.groups.index');
+                    });
+            };
         }
     ])
 ;
