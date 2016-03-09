@@ -947,6 +947,9 @@ angular.module('Qemy.controllers.admin', [])
                         case 'acmp':
                             promise = AdminManager.scanAcmp();
                             break;
+                        case 'sgu':
+                            promise = AdminManager.scanSgu();
+                            break;
                         default:
                             promise = AdminManager.scanTimus();
                     }

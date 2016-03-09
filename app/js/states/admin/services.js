@@ -175,6 +175,15 @@ angular.module('Qemy.services.admin', [
 			});
 		}
 
+		function scanSgu() {
+			return $http({
+				method: 'post',
+				url: '/api/admin/scanSgu'
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
 		function restart() {
 			return $http({
 				method: 'post',
@@ -299,6 +308,7 @@ angular.module('Qemy.services.admin', [
 			scanCfProblemset: scanCfProblemset,
 			scanCfGym: scanCfGym,
 			scanAcmp: scanAcmp,
+			scanSgu: scanSgu,
 			restart: restart,
 			setVerdictForSent: setVerdictForSent,
 			sendSolutionAgain: sendSolutionAgain,

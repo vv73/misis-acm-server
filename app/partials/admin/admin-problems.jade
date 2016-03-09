@@ -18,6 +18,8 @@ div.admin-content-layer
           md-button.md-primary.md-raised(ng-disabled='loading', ng-click='scan("cf:gym")', aria-label='Scan cf gyms') Сканировать Codeforces (Тренировки)
         div
           md-button.md-primary.md-raised(ng-disabled='loading', ng-click='scan("acmp")', aria-label='Scan acmp') Сканировать ACMP.ru
+        div
+          md-button.md-primary.md-raised(ng-disabled='loading', ng-click='scan("sgu")', aria-label='Scan sgu') Сканировать SGU
 
       div(ng-if='result')
         div Обновлено и добавлено: {{result.all_items_count}} задач.

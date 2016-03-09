@@ -542,6 +542,34 @@ router.post('/admin/scanAcmp', function (req, res) {
     }
 });
 
+router.post('/admin/scanSgu', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        scanner.scanSguTasks(user, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 router.get('/admin/searchGroups', function (req, res) {
 
     execute(function (err, result) {
