@@ -962,15 +962,7 @@ function ScanSguTasks(user, callback) {
                             imgThis.attr('src', 'http://acm.sgu.ru' + src);
                         }
                     });
-                    content.find('a[href*="mailto:acm@cs.sgu.ru"]').each(function () {
-                        var a = $(this);
-                        try {
-                            a.parent().parent().empty();
-                        } catch (err) {
-                            console.log(err);
-                        }
-                    });
-                    content.find('a[href*="mailto:acm@cs.sgu.ru"], a[href*="mailto:acm@cs.sgu.ru"]').each(function () {
+                    content.find('a[href*="mailto:acm@cs.sgu.ru"], a[href*="mailto:acm@sgu.ru"]').each(function () {
                         var a = $(this);
                         try {
                             a.parent().parent().empty();
