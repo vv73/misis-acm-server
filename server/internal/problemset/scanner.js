@@ -970,7 +970,7 @@ function ScanSguTasks(user, callback) {
                             console.log(err);
                         }
                     });
-                    content.find('a[href*="mailto:acm@cs.sgu.ru"]').each(function () {
+                    content.find('a[href*="mailto:acm@cs.sgu.ru"], a[href*="mailto:acm@cs.sgu.ru"]').each(function () {
                         var a = $(this);
                         try {
                             a.parent().parent().empty();
