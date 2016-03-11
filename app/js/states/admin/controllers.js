@@ -1389,6 +1389,10 @@ angular.module('Qemy.controllers.admin', [])
 					allPages = 1e6;
 				}
 				$scope.allPages = allPages;
+				curPage = Math.max(Math.min(curPage, allPages), 1);
+				if (curPage !== $scope.pageNumber) {
+					$scope.setPageNumber(null, curPage);
+				}
 				for (var cur = Math.max(curPage - backOffsetPages, 1);
 					 cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
 					pages.push({
