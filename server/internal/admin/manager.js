@@ -104,8 +104,9 @@ function SearchUsers(q, count, offset, callback) {
 
     function execute(connection, callback) {
         connection.query(
-            'SELECT users.* ' +
+            'SELECT users.*, groups.group_name ' +
             'FROM users ' +
+            'LEFT JOIN access_groups AS groups ON users.access_level = groups.access_level ' +
             'WHERE username LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
             'OR first_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
             'OR last_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +

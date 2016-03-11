@@ -6,18 +6,30 @@ md-content(layout='column', layout-fill, ng-controller='AdminGroupsUserControlCo
             md-tab(label='Поиск')
                md-content.md-padding
                   div.group-users__search(ng-if='searchUserText || !params.offset || pageNumber === 1')
-                     div.contest-creation__row
-                        div(layout)
-                           md-input-container(flex)
-                              label Поиск по пользователям
-                              input(name='searchUsers', ng-model='searchUserText', ng-keyup='searchUsers($event, searchUserText)')
+                     div(layout)
+                        md-input-container(flex)
+                           label Поиск по пользователям
+                           input(name='searchUsers', ng-model='searchUserText', ng-keyup='searchUsers($event, searchUserText)')
 
                   div.group-users__items
                      div(ng-if='pageNumber > 1')
                         include pagination
 
-                     div(ng-repeat='item in users') {{item.username}}
-                        hr
+                     md-list
+                        md-subheader.md-no-sticky
+                           span(ng-if='all_items_count')
+                              span {{all_items_count + " item"}}
+                                 span(ng-if='all_items_count > 1') s
+                           span(ng-if='!all_items_count') Поиск не дал результатов
+                        md-list-item.md-3-line(ng-repeat="item in users")
+                           md-checkbox(ng-model='test')
+                           div.md-avatar.group-users__user-photo(ng-class='{"group-users__user-photo_type_admin": item.access_group.access_level === 5}')
+                           div.md-list-item-text(layout='column')
+                              h3 {{item.first_name + " " + item.last_name}}
+                              h4 {{item.username}}
+                              p {{item.access_group.name}}
+
+
 
                      include pagination
 
