@@ -25,5 +25,10 @@ div.admin-content-layer
             div(layout)
               md-color-picker(name='color', ng-model='group.color')
 
+          div.contest-creation__row
+            div.contest-creation__row-title Пользователи
+            div(layout)
+              include users/users-control
+
           div.contest-creation__row.contest-creation__row_type_create
             md-button.md-primary.md-raised(ng-disabled='!groupForm.$valid', aria-label='Send', type='submit') Сохранить изменения

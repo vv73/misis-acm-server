@@ -1341,13 +1341,16 @@ angular.module('Qemy.controllers.admin', [])
             });
 
             $scope.group = {
-                color: '#EF9A9A'
+                color: '#EF9A9A',
+                users: []
             };
 
             $scope.submitForm = function () {
                 $rootScope.$broadcast('data loading');
                 var group = angular.copy($scope.group);
-
+                group.users = group.users.map(function (item) {
+                    return item.id;
+                });
                 AdminManager.createGroup(group)
                     .then(function (result) {
                         $rootScope.$broadcast('data loaded');
@@ -1357,6 +1360,10 @@ angular.module('Qemy.controllers.admin', [])
                         $state.go('admin.groups.index');
                     });
             };
+
+            $scope.$on('users sync', function (e, args) {
+                $scope.group.users = args.users;
+            });
         }
     ])
 
@@ -1374,6 +1381,7 @@ angular.module('Qemy.controllers.admin', [])
 			$scope.all_items_count = 0;
 			$scope.pagination = [];
 			$scope.users = [];
+            $scope.selectedUsers = [];
 			$scope.allPages = 0;
 			$scope.searchUserText = '';
 
@@ -1404,16 +1412,16 @@ angular.module('Qemy.controllers.admin', [])
 			}
 
 			function updateUsersList() {
-				var contestsPromise; //= AdminManager.($scope.params);
+				var requestPromise;
 				if (!$scope.searchUserText) {
-					contestsPromise = AdminManager.getUsers($scope.params);
+					requestPromise = AdminManager.getUsers($scope.params);
 				} else {
 					var params = angular.extend($scope.params, {
 						q: $scope.searchUserText
 					});
-					contestsPromise = AdminManager.searchUsers(params);
+					requestPromise = AdminManager.searchUsers(params);
 				}
-				contestsPromise.then(function (result) {
+				requestPromise.then(function (result) {
 					if (!result || !result.hasOwnProperty('all_items_count')) {
 						return;
 					}
@@ -1437,6 +1445,49 @@ angular.module('Qemy.controllers.admin', [])
 				$scope.params.offset = (pageNumber - 1) * defaultCount;
 				updateUsersList();
 			};
+
+            $scope.existsUser = function (user, selected) {
+                return selected.some(function (item) {
+                    return item.id === user.id;
+                });
+            };
+
+            $scope.toggleUser = function (user, selected) {
+                var foundUserIndex, foundUser = selected.filter(function (item, index) {
+                    if (item.id === user.id) {
+                        foundUserIndex = index;
+                        return true;
+                    }
+                    return false;
+                });
+                if (foundUser.length && foundUserIndex !== undefined) {
+                    $scope.selectedUsers.splice(foundUserIndex, 1);
+                } else {
+                    $scope.selectedUsers.push( user );
+                }
+                $scope.sync();
+            };
+
+            $scope.onSwipeLeft = function () {
+                var tabIndexLimit = 1;
+                $scope.selectedIndex = $scope.selectedIndex < tabIndexLimit ?
+                    $scope.selectedIndex + 1 : $scope.selectedIndex;
+            };
+
+            $scope.onSwipeRight = function () {
+                $scope.selectedIndex = $scope.selectedIndex > 0 ?
+                    $scope.selectedIndex - 1 : $scope.selectedIndex;
+            };
+
+            $scope.sync = function () {
+                $scope.$emit('users sync', {
+                    users: $scope.selectedUsers
+                });
+            };
+
+            $scope.$on('users sync', function (e, args) {
+                $scope.selectedUsers = args.users;
+            });
         }
     ])
 
@@ -1448,7 +1499,8 @@ angular.module('Qemy.controllers.admin', [])
 
             var groupId = $state.params.groupId;
             $scope.group = {
-                color: '#EF9A9A'
+                color: '#EF9A9A',
+                users: []
             };
 
             function fetchGroupData() {
@@ -1460,6 +1512,10 @@ angular.module('Qemy.controllers.admin', [])
                             return alert('Произошла ошибка: ' + result.error);
                         }
                         $scope.group = result.group;
+                        $scope.group.users = result.users;
+                        $scope.$broadcast('users sync', {
+                            users: $scope.group.users
+                        });
                     });
             }
 
@@ -1469,6 +1525,9 @@ angular.module('Qemy.controllers.admin', [])
                 $rootScope.$broadcast('data loading');
                 var group = angular.copy($scope.group);
                 group.group_id = groupId;
+                group.users = group.users.map(function (item) {
+                    return item.id;
+                });
                 AdminManager.updateGroup(group)
                     .then(function (result) {
                         $rootScope.$broadcast('data loaded');

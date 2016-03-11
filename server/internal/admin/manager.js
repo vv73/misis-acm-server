@@ -997,6 +997,8 @@ function CreateGroup(params, callback) {
         }
         params.color = params.color || '#FA5071';
         params.name = params.name.trim();
+        params.users = Array.isArray(params.users) ?
+			params.users : [];
 
         var sql = 'INSERT INTO groups (name, color) ' +
             'VALUES (?, ?)';
@@ -1004,13 +1006,40 @@ function CreateGroup(params, callback) {
             params.name, params.color
         ]);
 
-        connection.query(sql, function (err) {
+        connection.query(sql, function (err, result) {
             if (err) {
                 return callback(err);
             }
-            callback(null, {
-                result: true
-            });
+			var insertId = result.insertId;
+
+			var usersIds = params.users,
+				groupId = insertId,
+				rows = usersIds.map(function (userId) {
+					return [ userId, groupId ];
+				});
+
+			if (!rows.length) {
+				return callback(null, {
+					result: true
+				});
+			}
+
+			var sql = mysql.format(
+				'INSERT INTO users_to_groups (user_id, group_id) ' +
+				'VALUES ?',
+				[ rows ]
+			);
+			connection.query(
+				sql,
+				function (err, result) {
+					if (err) {
+						return callback(err);
+					}
+					callback(null, {
+						result: true
+					});
+				}
+			);
         })
     }
 }
@@ -1039,7 +1068,10 @@ function UpdateGroup(group_id, params, callback) {
         }
         params.color = params.color || '#FA5071';
         params.name = params.name.trim();
+		var usersIds = Array.isArray(params.users) ?
+			params.users : [];
         delete params.group_id;
+		delete params.users;
 
         var sql = 'UPDATE groups ' +
             'SET ? ' +
@@ -1053,9 +1085,42 @@ function UpdateGroup(group_id, params, callback) {
             if (err) {
                 return callback(err);
             }
-            callback(null, {
-                result: true
-            });
+			var sql = 'DELETE FROM users_to_groups ' +
+				'WHERE group_id = ?';
+			sql = mysql.format(sql, [
+				group_id
+			]);
+			connection.query(sql, function (err) {
+				if (err) {
+					return callback(err);
+				}
+				var rows = usersIds.map(function (userId) {
+					return [ userId, group_id ];
+				});
+
+				if (!rows.length) {
+					return callback(null, {
+						result: true
+					});
+				}
+
+				var sql = mysql.format(
+					'INSERT INTO users_to_groups (user_id, group_id) ' +
+					'VALUES ?',
+					[ rows ]
+				);
+				connection.query(
+					sql,
+					function (err, result) {
+						if (err) {
+							return callback(err);
+						}
+						callback(null, {
+							result: true
+						});
+					}
+				);
+			})
         })
     }
 }
