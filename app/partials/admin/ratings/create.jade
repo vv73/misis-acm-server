@@ -22,7 +22,7 @@ div.admin-content-layer
     div.contests-list
       div.contests-list__title Создать рейтинг из контестов
       div.contests-list__pagination(ng-if='pageNumber !== 1')
-        include ./admin-rating-contests-pagination
+        include pagination
       div.contests-list__items
         div.contests-list__item-layer(ng-repeat='contest in contestsList')
           contest-list-item-admin-rating(contest='contest')
@@ -30,7 +30,7 @@ div.admin-content-layer
           div.contests-list__no-items Список контестов пуст
 
 
-    include ./admin-rating-contests-pagination
+    include pagination
 
     div.contest-creation__row.contest-creation__row_type_create
       md-button.md-primary.md-raised(ng-disabled='!selectedContests.length', aria-label='Create rating', ng-click='createRating()') Создать рейтинг

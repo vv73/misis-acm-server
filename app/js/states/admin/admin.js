@@ -28,38 +28,43 @@ angular.module('Qemy.ui.admin', [
                 })
                 .state('admin.index', {
                     url: '/contests',
-                    templateUrl: templateUrl('admin', 'admin-index'),
+                    templateUrl: templateUrl('admin', 'contests/index'),
                     controller: 'AdminIndexController'
                 })
                 .state('admin.index-pagination', {
                     url: '/contests/page/:pageNumber',
-                    templateUrl: templateUrl('admin', 'admin-index'),
+                    templateUrl: templateUrl('admin', 'contests/index'),
                     controller: 'AdminIndexController'
                 })
                 .state('admin.edit-contest', {
                     url: '/contests/edit/:contestId',
-                    templateUrl: templateUrl('admin', 'admin-edit-contest'),
+                    templateUrl: templateUrl('admin', 'contests/edit'),
                     controller: 'AdminEditContestController'
                 })
                 .state('admin.create-contest', {
                     url: '/contests/create',
-                    templateUrl: templateUrl('admin', 'admin-create-contest'),
+                    templateUrl: templateUrl('admin', 'contests/create'),
                     controller: 'AdminCreateContestController'
                 })
                 .state('admin.users-list', {
                     url: '/users',
-                    templateUrl: templateUrl('admin', 'admin-users-list'),
+                    templateUrl: templateUrl('admin', 'users/list'),
                     controller: 'AdminUsersListController'
                 })
                 .state('admin.users-pagination', {
                     url: '/users/page/:pageNumber',
-                    templateUrl: templateUrl('admin', 'admin-users-list'),
+                    templateUrl: templateUrl('admin', 'users/list'),
                     controller: 'AdminUsersListController'
                 })
                 .state('admin.create-user', {
                     url: '/users/create',
-                    templateUrl: templateUrl('admin', 'admin-users-create'),
+                    templateUrl: templateUrl('admin', 'users/create'),
                     controller: 'AdminCreateUserController'
+                })
+                .state('admin.create-user-into-group', {
+                    url: '/users/create-into-group',
+                    templateUrl: templateUrl('admin', 'users/create-into-group'),
+                    controller: 'AdminCreateUsersIntoGroupController'
                 })
                 .state('admin.problems', {
                     url: '/problems',
@@ -68,7 +73,7 @@ angular.module('Qemy.ui.admin', [
                 })
                 .state('admin.edit-user', {
                     url: '/users/edit/:userId',
-                    templateUrl: templateUrl('admin', 'admin-users-edit'),
+                    templateUrl: templateUrl('admin', 'users/edit'),
                     controller: 'AdminEditUserController'
                 })
                 .state('admin.server', {
@@ -90,17 +95,17 @@ angular.module('Qemy.ui.admin', [
                 })
                 .state('admin.contests-rating.create.index', {
                     url: '',
-                    templateUrl: templateUrl('admin', 'admin-rating-create'),
+                    templateUrl: templateUrl('admin', 'ratings/create'),
                     controller: 'AdminRatingCreateController'
                 })
                 .state('admin.contests-rating.create.index-pagination', {
                     url: '/page/:pageNumber',
-                    templateUrl: templateUrl('admin', 'admin-rating-create'),
+                    templateUrl: templateUrl('admin', 'ratings/create'),
                     controller: 'AdminRatingCreateController'
                 })
                 .state('admin-contests-rating-table', {
                     url: '/admin/rating/table/:contests',
-                    templateUrl: templateUrl('admin', 'admin-rating-table'),
+                    templateUrl: templateUrl('admin', 'ratings/table'),
                     controller: 'AdminRatingTableController'
                 })
 

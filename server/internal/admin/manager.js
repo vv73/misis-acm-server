@@ -21,6 +21,7 @@ var usersManager = require('../user/manager');
 
 module.exports = {
     searchGroups: SearchGroups,
+    searchUsers: SearchUsers,
     searchProblems: SearchProblems,
     createContest: CreateContest,
     deleteContest: DeleteContest,
@@ -70,6 +71,65 @@ function SearchGroups(q, callback) {
                     return callback(new Error('An error with db', 1001));
                 }
                 callback(null, results);
+            }
+        );
+    }
+}
+
+function SearchUsers(q, count, offset, callback) {
+    if (typeof count === 'function') {
+        callback = count;
+        count = null;
+    } else if (typeof offset === 'function') {
+        callback = offset;
+        offset = null;
+    }
+
+    q = q || '';
+    count = Math.max( Math.min(200, count || 10), 0 );
+    offset = Math.max( 0, offset || 0 );
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        connection.query(
+            'SELECT users.* ' +
+            'FROM users ' +
+            'WHERE username LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
+            'OR first_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
+            'OR last_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
+            'ORDER BY users.id ASC ' +
+            'LIMIT ?, ?; ' +
+            'SELECT COUNT(*) AS all_items_count ' +
+            'FROM users ' +
+            'WHERE username LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
+            'OR first_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%" ' +
+            'OR last_name LIKE "%' + connection.escape(q).replace(/(\')/gi, '') + '%"',
+            [ offset, count ],
+            function (err, results, fields) {
+                if (err || !results || !Array.isArray(results) || !Array.isArray(results[0])) {
+                    return callback(err);
+                }
+                var result = {
+                    users: results[0].map(function (row) {
+                        var user = new User();
+                        user.setObjectRow(row);
+                        return user.getObjectFactory();
+                    }),
+                    all_items_count: results[1][0].all_items_count
+                };
+                callback(null, result);
             }
         );
     }

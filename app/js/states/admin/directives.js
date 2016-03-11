@@ -24,7 +24,7 @@ angular.module('Qemy.directives.admin', [])
     .directive('contestListItemAdmin', function() {
         return {
             restrict: 'E',
-            templateUrl: templateUrl('admin', 'admin-contest-list-item'),
+            templateUrl: templateUrl('admin', 'contests/list-item'),
             scope: {
                 contest: '='
             },
@@ -151,7 +151,7 @@ angular.module('Qemy.directives.admin', [])
     .directive('contestListItemAdminRating', function() {
         return {
             restrict: 'E',
-            templateUrl: templateUrl('admin', 'admin-contest-list-item-rating'),
+            templateUrl: templateUrl('admin', 'ratings/list-item'),
             scope: true,
             controller: ['$scope', '$rootScope', '$mdDialog', 'ContestsManager', '$state', 'AdminManager',
                 function($scope, $rootScope, $mdDialog, ContestsManager, $state, AdminManager) {
@@ -276,7 +276,7 @@ angular.module('Qemy.directives.admin', [])
     .directive('userListItemAdmin', function() {
         return {
             restrict: 'E',
-            templateUrl: templateUrl('admin', 'admin-users-list-item'),
+            templateUrl: templateUrl('admin', 'users/list-item'),
             scope: {
                 user: '='
             },

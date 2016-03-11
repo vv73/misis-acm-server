@@ -1,0 +1,28 @@
+md-content(layout='column', layout-fill, ng-controller='AdminGroupsUserControlController')
+   div.group-users
+      div.group-users__inner(layout='column')
+
+         md-tabs.md-primary(md-dynamic-height, md-border-bottom)
+            md-tab(label='Поиск')
+               md-content.md-padding
+                  div.group-users__search(ng-if='searchUserText || !params.offset')
+                     div.contest-creation__row
+                        div(layout)
+                           md-input-container(flex)
+                              label Поиск по пользователям
+                              input(name='searchUsers', ng-model='searchUserText', ng-keyup='searchUsers($event, searchUserText)')
+
+                  div.group-users__items
+                     div(ng-if='pageNumber > 1')
+                        include pagination
+
+                     div(ng-repeat='item in users') {{item.username}}
+                        hr
+
+                     include pagination
+
+            md-tab(label='Выбранные пользователи')
+               md-content.md-padding
+                  div.group-users__items
+                     span Items
+

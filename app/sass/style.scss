@@ -1362,3 +1362,25 @@ md-color-picker {
     }
   }
 }
+
+.group-users {
+  border-radius: 3px;
+  overflow: hidden;
+
+  md-content md-tabs {
+    background: #f6f6f6;
+
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    overflow: hidden;
+
+    md-tabs-wrapper {
+      background: white;
+    }
+  }
+
+  md-tab-content {
+    border: 1px solid #ccc;
+    border-top: 0;
+  }
+}

@@ -1360,6 +1360,82 @@ angular.module('Qemy.controllers.admin', [])
         }
     ])
 
+    .controller('AdminGroupsUserControlController', ['$scope', '$rootScope', '$state', 'AdminManager', '_',
+        function($scope, $rootScope, $state, AdminManager, _) {
+
+			var defaultCount = 10;
+
+			$scope.pageNumber = parseInt($state.params.pageNumber || 1);
+			$scope.params = {
+				count: defaultCount,
+				offset: ($scope.pageNumber - 1) * defaultCount
+			};
+
+			$scope.all_items_count = 0;
+			$scope.pagination = [];
+			$scope.users = [];
+			$scope.allPages = 0;
+			$scope.searchUserText = '';
+
+			function generatePaginationArray(offsetCount) {
+				var pages = [],
+					curPage = $scope.pageNumber,
+					allItems = $scope.all_items_count,
+					backOffsetPages = offsetCount,
+					upOffsetPages = offsetCount,
+					allPages = Math.floor(allItems / defaultCount) +
+						(allItems && allItems % defaultCount ? 1 : 0);
+				if (!defaultCount) {
+					allPages = 1e6;
+				}
+				$scope.allPages = allPages;
+				for (var cur = Math.max(curPage - backOffsetPages, 1);
+					 cur <= Math.min(curPage + upOffsetPages, allPages); ++cur) {
+					pages.push({
+						number: cur,
+						active: cur === curPage
+					});
+				}
+				return pages;
+			}
+
+			function updateUsersList() {
+				var contestsPromise; //= AdminManager.($scope.params);
+				if (!$scope.searchUserText) {
+					contestsPromise = AdminManager.getUsers($scope.params);
+				} else {
+					var params = angular.extend($scope.params, {
+						q: $scope.searchUserText
+					});
+					contestsPromise = AdminManager.searchUsers(params);
+				}
+				contestsPromise.then(function (result) {
+					if (!result || !result.hasOwnProperty('all_items_count')) {
+						return;
+					}
+					$scope.all_items_count = result.all_items_count;
+					$scope.users = result.users;
+					$scope.pagination = generatePaginationArray(5);
+				}).catch(function (err) {
+					console.log(err);
+				});
+			}
+
+			updateUsersList();
+
+			$scope.searchUsers = function (ev, q) {
+				$scope.searchUserText = q;
+				updateUsersList();
+			};
+
+			$scope.setPageNumber = function (ev, pageNumber) {
+				$scope.pageNumber = pageNumber;
+				$scope.params.offset = (pageNumber - 1) * defaultCount;
+				updateUsersList();
+			};
+        }
+    ])
+
     .controller('AdminGroupsEditController', ['$scope', '$rootScope', '$state', 'AdminManager', '_',
         function($scope, $rootScope, $state, AdminManager, _) {
             $scope.$emit('change_title', {

@@ -19,6 +19,9 @@ div.admin-content-layer
 
           div.contest-creation__row
             div.contest-creation__row-title Цвет группы
+            div(ng-if='group.color && group.name')
+              div.contests-list__groups-item(style='background-color: {{group.color}}')
+                span {{group.name}}
             div(layout)
               md-color-picker(name='color', ng-model='group.color')
 

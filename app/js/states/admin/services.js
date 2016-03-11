@@ -100,6 +100,15 @@ angular.module('Qemy.services.admin', [
 			});
 		}
 
+		function searchUsers(params) {
+			return $http({
+				method: 'get',
+				url: '/api/admin/searchUsers?' + dataEncode(params)
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
 		function deleteUser(params) {
 			return $http({
 				method: 'post',
@@ -300,6 +309,7 @@ angular.module('Qemy.services.admin', [
 			getContestInfo: getContestInfo,
 			updateContest: updateContest,
 			getUsers: getUsers,
+			searchUsers: searchUsers,
 			deleteUser: deleteUser,
 			createUser: createUser,
 			getUser: getUser,
