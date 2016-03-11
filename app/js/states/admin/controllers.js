@@ -1513,6 +1513,9 @@ angular.module('Qemy.controllers.admin', [])
                         }
                         $scope.group = result.group;
                         $scope.group.users = result.users;
+                        if (result.users.length) {
+                            $scope.selectedIndex = 1;
+                        }
                         $scope.$broadcast('users sync', {
                             users: $scope.group.users
                         });
