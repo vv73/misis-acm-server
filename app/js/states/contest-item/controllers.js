@@ -571,7 +571,7 @@ angular.module('Qemy.controllers.contest-item', [])
             });
 
             $scope.$on('new solution', function (ev, data) {
-                console.log(data);
+                //console.log(data);
                 var userId = data.contestant_id,
                     select = $scope.params.select;
                 if (select === 'my'
@@ -678,7 +678,7 @@ angular.module('Qemy.controllers.contest-item', [])
             function showVerdictSelectionDialog(ev, item) {
                 $mdDialog.show({
                     controller: ['$scope', 'sentItem', function ($scope, sentItem) {
-                        console.log(sentItem);
+                        //console.log(sentItem);
                         $scope.close = function () {
                             $mdDialog.hide();
                         };
@@ -838,7 +838,7 @@ angular.module('Qemy.controllers.contest-item', [])
             });
 
             $scope.$on('new solution', function (ev, data) {
-                console.log(data);
+                //console.log(data);
                 var userId = data.contestant_id;
                 if (userId !== $scope.currentUser.id) {
                     return;
@@ -948,7 +948,7 @@ angular.module('Qemy.controllers.contest-item', [])
             function showVerdictSelectionDialog(ev, item) {
                 $mdDialog.show({
                     controller: ['$scope', 'sentItem', function ($scope, sentItem) {
-                        console.log(sentItem);
+                        //console.log(sentItem);
                         $scope.close = function () {
                             $mdDialog.hide();
                         };

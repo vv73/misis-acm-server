@@ -166,7 +166,7 @@ angular.module('Qemy.controllers.contests', [])
     .controller('ContestListItem', [
         '$scope', 'ContestsManager', '$mdDialog', '$state',
         function ($scope, ContestsManager, $mdDialog, $state) {
-            console.log($scope.contest);
+            //console.log($scope.contest);
 
             $scope.loadingData = false;
             $scope.updateContest = function () {
@@ -181,7 +181,7 @@ angular.module('Qemy.controllers.contests', [])
                         if (!result) {
                             return;
                         }
-                        console.log(result.contest);
+                        //console.log(result.contest);
                         safeReplaceObject($scope.contest, result.contest);
                     });
             };

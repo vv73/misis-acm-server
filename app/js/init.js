@@ -82,4 +82,91 @@ function initApplication () {
             }
         });
     });
+
+    function initAutoUpgrade () {
+
+        // Prevent click-jacking
+        try {
+            if (window == window.top || window.chrome && chrome.app && chrome.app.window) {
+                document.documentElement.style.display = 'block';
+            } else {
+                top.location = self.location;
+            }
+        } catch (e) {console.error('CJ protection', e)};
+
+        window.safeConfirm = function (params, callback) {
+            if (typeof params === 'string') {
+                params = {message: params};
+            }
+            var result = false;
+            try {
+                result = confirm(params.message);
+            } catch (e) {
+                result = true;
+            }
+            setTimeout(function () {callback(result)}, 10);
+        };
+
+        if (!window.applicationCache || !window.addEventListener) {
+            return;
+        }
+
+        var appCache = window.applicationCache,
+            declined = false,
+            updateTimeout = false,
+            scheduleUpdate = function (delay) {
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(function () {
+                    try {
+                        appCache.update();
+                    } catch (ex) {
+                        console.log('appCache.update: ' + ex);
+                    }
+                }, delay || 10000);
+            },
+            downloadProgress = function (e) {
+                var total = e && +e.total || 0;
+                //console.log(total);
+            },
+            attach = function () {
+                appCache.addEventListener('updateready', function(e) {
+                    if (appCache.status == appCache.UPDATEREADY) {
+                        // Browser downloaded a new app cache.
+                        try {
+                            var injector = angular
+                                && angular.element(document.body)
+                                && angular.element(document.body).injector();
+                            var $mdDialog = injector.get('$mdDialog');
+                        } catch (e) { console.log(e); }
+                        if (injector && $mdDialog) {
+                            // Angular Material is exists
+                            var confirmDialog = $mdDialog.confirm()
+                                .title('Предупреждение')
+                                .content('A new version of this app is available. Load it?')
+                                .clickOutsideToClose(false)
+                                .ariaLabel('Application cache update confirm')
+                                .ok('Ok')
+                                .cancel('Cancel');
+                            $mdDialog.show(confirmDialog).then(function() {
+                                window.location.reload();
+                            });
+                        } else {
+                            if (confirm('A new version of this app is available. Load it?')) {
+                                window.location.reload();
+                            }
+                        }
+                    } else {
+                        // Manifest didn't changed. Nothing new to server.
+                    }
+                }, false);
+                appCache.addEventListener('noupdate', function () {scheduleUpdate()}, false);
+                appCache.addEventListener('error', function () {scheduleUpdate()}, false);
+                appCache.addEventListener("progress", function (e) {downloadProgress(e);}, false);
+            };
+
+        scheduleUpdate(1000);
+        window.addEventListener('load', attach);
+    }
+
+    initAutoUpgrade();
 }

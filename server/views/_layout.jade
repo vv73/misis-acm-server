@@ -1,10 +1,10 @@
 include mixins/mixins
   
 doctype html
-html(ng-controller='PageCtrl')
+html(ng-controller='PageCtrl', manifest='/manifest.appcache')
   head
     base(href='/')
     include index/head
-    include metrics/yandex
+    //include metrics/yandex
   body(ng-controller='AppCtrl')
     block content
