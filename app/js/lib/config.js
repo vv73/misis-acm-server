@@ -3,7 +3,7 @@ var Config = window.Config = window.Config || {};
 Config.App = {
     id: 132,
     hash: '8da85b0d5bfe62527e5b244c309159c3',
-    version: '0.2.7-rc1',
+    version: '0.2.7-rc2',
     domains: [
         'localhost:3000',
         'acm.alexbelov.xyz'

@@ -232,6 +232,16 @@ angular.module('Qemy.services.admin', [
 			});
 		}
 
+		function refreshAllSolutions(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/refreshAllSolutions',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
 		function deleteSolution(params) {
 			return $http({
 				method: 'post',
@@ -323,6 +333,7 @@ angular.module('Qemy.services.admin', [
 			setVerdictForSent: setVerdictForSent,
 			sendSolutionAgain: sendSolutionAgain,
 			refreshSolution: refreshSolution,
+			refreshAllSolutions: refreshAllSolutions,
 			deleteSolution: deleteSolution,
 			getRatingTable: getRatingTable,
 			getGroups: getGroups,

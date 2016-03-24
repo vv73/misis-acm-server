@@ -1057,6 +1057,34 @@ router.post('/admin/refreshSolution', function(req, res) {
     }
 });
 
+router.post('/admin/refreshAllSolutions', function(req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.refreshAllSolutions(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
 router.post('/admin/deleteSolution', function(req, res) {
 
     execute(function (err, result) {

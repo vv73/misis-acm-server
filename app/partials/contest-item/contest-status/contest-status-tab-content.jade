@@ -43,7 +43,7 @@ div.sent-list
         div.sent-list__loading(style='display: inline-block;')
           div.content-spin__layer
             div.search-spin-layer_
-              div.search-spin(ng-class='{"waiting": !sent.verdict_id || sent.verdict_id === -1}')
+              div.search-spin(ng-class='{"waiting": sent.verdict_id === -1}')
         span(ng-if='sent.verdict_id === -1', style='display: inline-block;') {{sent.verdict_name}}
       span(ng-switch-default) {{sent.verdict_name}}
     div.sent-list__cell(ng-switch='sent.test_num === 0')

@@ -18,6 +18,7 @@ var Problem     = require('../problemset/problem');
 var contestManager = require('../contest/manager');
 var Contest     = require('../contest/contest');
 var usersManager = require('../user/manager');
+var sockets     = require('../../sockets/sockets');
 
 module.exports = {
     searchGroups: SearchGroups,
@@ -36,6 +37,7 @@ module.exports = {
     setVerdictForContest: SetVerdictForContest,
     sendSolutionAgain: SendSolutionAgain,
     refreshSolution: RefreshSolution,
+    refreshAllSolutions: RefreshAllSolutions,
     deleteSolution: DeleteSolution,
     getRatingTable: GetRatingTable,
     getGroups: GetGroups,
@@ -717,6 +719,96 @@ function SendSolutionAgain(params, callback) {
     }
 }
 
+function RefreshAllSolutions(params, callback) {
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contestId = params.contest_id;
+        if (!contestId) {
+            return callback('Params are not specified');
+        }
+        connection.query(
+            'SELECT id, user_id, contest_id ' +
+            'FROM sent_solutions ' +
+            'WHERE contest_id = ? AND (verdict_id IS NULL OR verdict_id <> 12) ' +
+            'ORDER BY id ASC',
+            [ contestId ],
+            function (err, results, fields) {
+                if (err) {
+                    return callback(new Error('An error with db'));
+                }
+                callback(null, { result: true });
+                var sents = results;
+                if (!sents.length) {
+                    return;
+                }
+
+                //reset all sents for the contest
+                connection.query(
+                    'UPDATE sent_solutions ' +
+                    'SET verdict_id = NULL ' +
+                    'WHERE contest_id = ? AND (verdict_id IS NULL OR verdict_id <> 12)',
+                    [ contestId ],
+                    function (err) {
+                        if (err) {
+                            return console.log(new Error('An error with db'));
+                        }
+
+                        //start async queue for resending solutions
+                        var queue = async.queue(function (sent, callback) {
+                            var contestHashKey = sockets.getRoomHash(sent.contest_id);
+                            var io = sockets.getIo();
+                            io.to(contestHashKey).emit('verdict updated', {
+                                verdict_id: '',
+                                memory: 0,
+                                time: 0,
+                                testNum: 1,
+                                contest_id: sent.contest_id,
+                                solution_id: sent.id,
+                                user_id: sent.user_id
+                            });
+                            io.to(contestHashKey).emit('table update');
+
+                            RefreshSolution({ sent_id: sent.id }, function (err, result) {
+                                if (err) {
+                                    return callback(err);
+                                }
+                                setTimeout(function () {
+                                    callback(null, result);
+                                }, 1000);
+                            });
+                        }, 10);
+
+                        //event will fired when queue reach the end
+                        queue.drain = function() {
+                            console.log('All sents have been refreshed');
+                        };
+
+                        queue.push(sents, function (err) {
+                            if (err) {
+                                return console.log('Error when solution is resent', err);
+                            }
+                            console.log('Finished processing item');
+                        });
+                    }
+                );
+            }
+        );
+    }
+}
+
 function RefreshSolution(params, callback) {
 
     mysqlPool.connection(function (err, connection) {
@@ -749,7 +841,7 @@ function RefreshSolution(params, callback) {
                 if (Array.isArray(result) && result.length > 0) {
                     result = result[0];
                 } else {
-                    return callback('Something went wrong (db)', 1001);
+                    return callback(new Error('Something went wrong (db)', 1001));
                 }
                 var contestId = result.contest_id,
                     solution = result.source_code,

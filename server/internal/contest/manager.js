@@ -944,7 +944,7 @@ function RefreshSolution(params, callback) {
                 if (!result.can || !result.joined) {
                     return callback(new Error('Access denied'));
                 }
-                if ([ 'NOT_ENABLED', 'REMOVED', 'FINISHED', 'WAITING' ].indexOf(contest.getStatus()) !== -1) {
+                if ([ 'NOT_ENABLED', 'REMOVED', 'WAITING' ].indexOf(contest.getStatus()) !== -1) {
                     return callback(new Error('Access denied'));
                 }
                 connection.query(

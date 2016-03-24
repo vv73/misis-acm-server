@@ -795,6 +795,23 @@ angular.module('Qemy.controllers.contest-item', [])
                     .targetEvent(ev);
                 return $mdDialog.show(confirm);
             }
+
+            $scope.refreshAllSolutions = function (ev) {
+                var confirm = $mdDialog.confirm()
+                    .title('Подтверждение')
+                    .content('Вы действительно хотите переотправить все решения в этом контесте?')
+                    .ariaLabel('Refresh confirmation')
+                    .ok('Да, хочу')
+                    .cancel('Отмена')
+                    .targetEvent(ev);
+                $mdDialog.show(confirm).then(function () {
+                    AdminManager.refreshAllSolutions({ contest_id: contestId }).then(function (result) {
+                        if (result && result.error) {
+                            return alert('Произошла ошибка: ' + result.error);
+                        }
+                    });
+                });
+            };
         }
     ])
 
