@@ -1522,7 +1522,7 @@ ui-view, [ui-view] {
     transition: all .2s cubic-bezier(0.860, 0.000, 0.070, 1.000);
   }
   &.ng-enter {
-    transform: scale(0.9);
+    transform: scale(0.97);
     opacity: 0;
   }
   &.ng-enter-active {
@@ -1536,7 +1536,7 @@ ui-view, [ui-view] {
   }
   &.ng-leave-active {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.97);
   }
 }
 .page-loading {
