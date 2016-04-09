@@ -968,12 +968,14 @@ router.post('/admin/restart', function(req, res) {
                 console.error(err);
                 return process.exit(2);
             }
+            console.log('Restarting...');
             pm2.restart({
                 script    : 'bin/www',  // Script to be run
                 exec_mode : 'cluster',  // Allow your app to be clustered
                 instances : 1           // Optional: Scale your app by 1
             }, function(err, apps) {
                 pm2.disconnect();
+                console.log('Restarted!');
             });
         });
     }
