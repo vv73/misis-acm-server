@@ -19,7 +19,7 @@ angular.module('Qemy.ui.auth', [
             $stateProvider
                 .state('auth', {
                     url: '/auth',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     abstract: true
                 })
                 .state('auth.form', {

@@ -120,6 +120,9 @@ angular.module('Qemy.controllers.contests', [])
                 var contestsPromise = ContestsManager.getContests($scope.params);
                 contestsPromise.then(function (result) {
                     $rootScope.$broadcast('data loaded');
+                    if (result && result.error) {
+                        return $state.go('auth.form');
+                    }
                     if (!result || !result.hasOwnProperty('all_items_count')) {
                         return;
                     }
@@ -160,6 +163,8 @@ angular.module('Qemy.controllers.contests', [])
                 updateContestsList();
                 console.log('updating contests list...');
             });
+
+            $scope.$on('contests list update needed', updateContestsList);
         }
     ])
 

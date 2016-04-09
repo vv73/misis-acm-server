@@ -22,7 +22,7 @@ angular.module('Qemy.ui.contest-item', [
             $stateProvider
                 .state('contest', {
                     url: '/contest/{contestId:[0-9]+}',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     abstract: true,
                     controller: 'ContestItemBaseController'
                 })

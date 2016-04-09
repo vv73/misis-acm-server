@@ -21,7 +21,7 @@ angular.module('Qemy.ui.contests', [
             $stateProvider
                 .state('contests', {
                     url: '/contests',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     abstract: true
                 })
                 .state('contests.list', {

@@ -83,13 +83,13 @@ angular.module('Qemy.ui.admin', [
                 })
                 .state('admin.contests-rating', {
                     url: '/rating',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     controller: 'AdminRatingBaseController',
                     abstract: true
                 })
                 .state('admin.contests-rating.create', {
                     url: '/create',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     controller: 'AdminRatingCreateBaseController',
                     abstract: true
                 })
@@ -111,7 +111,7 @@ angular.module('Qemy.ui.admin', [
 
                 .state('admin.groups', {
                     url: '/groups',
-                    template: '<ui-view/>',
+                    template: '<div ui-view/>',
                     controller: 'AdminGroupsBaseController',
                     abstract: true
                 })

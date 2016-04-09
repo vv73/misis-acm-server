@@ -126,6 +126,14 @@ angular.module('Qemy.controllers', [
                 $scope.headerMenu.contest = null;
                 $scope.headerMenu = {};
             });
+
+            $scope.logoClick = function (ev) {
+                if ($state.current
+                    && $state.current.name
+                    && $state.current.name === 'contests.list') {
+                    $rootScope.$broadcast('contests list update needed')
+                }
+            };
         }
     ])
 

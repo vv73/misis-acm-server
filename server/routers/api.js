@@ -94,12 +94,18 @@ router.get('/contests/get', function (req, res) {
 
     execute(function (err, result) {
         if (err) {
-            return res.json(err);
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
         }
         res.json(result);
     });
 
     function execute(callback) {
+        var user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('Access denied'));
+        }
         var q = req.query;
         contestManager.getContests(q.count, q.offset, q.category, q.sort, q.sort_order, function (err, result) {
             if (err) {
