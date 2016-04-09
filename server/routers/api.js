@@ -969,18 +969,15 @@ router.post('/admin/restart', function(req, res) {
                 return process.exit(2);
             }
             console.log('Connected. Restarting...');
-            pm2.delete('acm', function(err, apps) {
-                console.log('Deleted...');
-                pm2.start({
-                    name: 'acm',
-                    script    : 'bin/www',  // Script to be run
-                    exec_mode : 'cluster',  // Allow your app to be clustered
-                    instances : 1,           // Optional: Scale your app by 1
-                    max_memory_restart : '180M'
-                }, function(err, apps) {
-                    pm2.disconnect();
-                    console.log('Restarted!');
-                });
+            pm2.restart({
+                name: 'acm',
+                script    : 'bin/www',  // Script to be run
+                exec_mode : 'cluster',  // Allow your app to be clustered
+                instances : 1,           // Optional: Scale your app by 1
+                max_memory_restart : '180M'
+            }, function(err, apps) {
+                pm2.disconnect();
+                console.log('Restarted!');
             });
         });
     }
