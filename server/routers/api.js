@@ -969,11 +969,13 @@ router.post('/admin/restart', function(req, res) {
                 return process.exit(2);
             }
             console.log('Restarting...');
-            pm2.restart({
+            pm2.reload('acm'/*{
+                name: 'acm',
                 script    : 'bin/www',  // Script to be run
                 exec_mode : 'cluster',  // Allow your app to be clustered
-                instances : 1           // Optional: Scale your app by 1
-            }, function(err, apps) {
+                instances : 1,           // Optional: Scale your app by 1
+                max_memory_restart : '180M'
+            }*/, function(err, apps) {
                 pm2.disconnect();
                 console.log('Restarted!');
             });
