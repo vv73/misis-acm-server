@@ -425,12 +425,11 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ContestItemStatusController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', '$timeout', 'UserManager', '$mdDialog', 'AdminManager',
-        function ($scope, $rootScope, $state, ContestItemManager, _, $timeout, UserManager, $mdDialog, AdminManager) {
+    .controller('ContestItemStatusController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', '$timeout', '$interval', 'UserManager', '$mdDialog', 'AdminManager',
+        function ($scope, $rootScope, $state, ContestItemManager, _, $timeout, $interval, UserManager, $mdDialog, AdminManager) {
             $scope.$emit('change_title', {
                 title: 'Мои посылки | ' + _('app_name')
             });
-
             var contestId = $state.params.contestId;
             var select = $state.params.select;
             var defaultCount = 15;
@@ -472,7 +471,7 @@ angular.module('Qemy.controllers.contest-item', [])
                 return pages;
             }
 
-            var firstInvokeStateChanged = true;
+            /*var firstInvokeStateChanged = true;
             $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
                 if (firstInvokeStateChanged) {
                     return firstInvokeStateChanged = false;
@@ -482,14 +481,15 @@ angular.module('Qemy.controllers.contest-item', [])
                 $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
                 $scope.params.select = toParams.select || 'my';
                 updateSentsList();
-            });
+                return false;
+            });*/
 
             updateSentsList();
 
-            function updateSentsList() {
+            function updateSentsList(page) {
                 $rootScope.$broadcast('data loading');
                 $scope.loadingData = true;
-                    ContestItemManager.getSents($scope.params)
+                ContestItemManager.getSents($scope.params)
                     .then(function (result) {
                         $timeout(function () {
                             $rootScope.$broadcast('data loaded');
@@ -502,7 +502,16 @@ angular.module('Qemy.controllers.contest-item', [])
                             return;
                         }
                         $scope.all_items_count = result.all_items_count;
-                        $scope.sents = result.sents;
+                        $scope.sents = [];
+                        var sents = result.sents;
+                        $timeout(function () {
+                            var interval = $interval(function () {
+                                if (!sents.length) {
+                                    return $interval.cancel(interval);
+                                }
+                                $scope.sents.push.apply($scope.sents, sents.splice(0, Math.min(8, sents.length)));
+                            }, 0);
+                        }, 500);
                         $scope.pagination = generatePaginationArray(5);
                     }).catch(function (err) {
                         console.log(err);
@@ -510,18 +519,33 @@ angular.module('Qemy.controllers.contest-item', [])
             }
 
             $scope.selectedTabIndex = select === 'my' ? 0 : 1;
+            var firstInvokeStateChanged = true;
             $scope.$watch('selectedTabIndex', function(current, old) {
-                var nextPage;
+                if (firstInvokeStateChanged) {
+                    return (firstInvokeStateChanged = false);
+                }
+                $scope.pageNumber = current === old ? ($state.params.pageNumber || 1) : 1;
+                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
+                $scope.params.select = current === 0 ? 'my' : 'all';
                 switch (current) {
                     case 0: {
                         $scope.$emit('change_title', {
                             title: 'Мои посылки | ' + _('app_name')
                         });
                         if ($scope.pageNumber === 1) {
-                            $state.go('^.status', {select: 'my'});
+                            $state.transitionTo(
+                                'contest.status',
+                                { select: 'my' },
+                                { location: true, inherit: true, relative: $state.$current, notify: false }
+                            );
+                            //$state.go('^.status', {select: 'my'});
                         } else {
-                            nextPage = old === current ? $scope.pageNumber : 1;
-                            $state.go('^.status-pagination', { select: 'my', pageNumber: nextPage });
+                            $state.transitionTo(
+                                'contest.status-pagination',
+                                { select: 'my', pageNumber: $scope.pageNumber },
+                                { location: true, inherit: true, relative: $state.$current, notify: false }
+                            );
+                            //$state.go('^.status-pagination', { select: 'my', pageNumber: nextPage });
                         }
                         break;
                     }
@@ -530,14 +554,24 @@ angular.module('Qemy.controllers.contest-item', [])
                             title: 'Все посылки | ' + _('app_name')
                         });
                         if ($scope.pageNumber === 1) {
-                            $state.go('^.status', {select: 'all'});
+                            $state.transitionTo(
+                                'contest.status',
+                                { select: 'all' },
+                                { location: true, inherit: true, relative: $state.$current, notify: false }
+                            );
+                            //$state.go('^.status', {select: 'all'});
                         } else {
-                            nextPage = old === current ? $scope.pageNumber : 1;
-                            $state.go('^.status-pagination', { select: 'all', pageNumber: nextPage });
+                            $state.transitionTo(
+                                'contest.status-pagination',
+                                { select: 'all', pageNumber: $scope.pageNumber },
+                                { location: true, inherit: true, relative: $state.$current, notify: false }
+                            );
+                            //$state.go('^.status-pagination', { select: 'all', pageNumber: nextPage });
                         }
                         break;
                     }
                 }
+                updateSentsList();
             });
 
             $scope.currentUser = {};

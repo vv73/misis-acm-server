@@ -66,4 +66,8 @@ div.sent-list
                   p(flex, ng-bind='action.name')
 
   div.no-sents(ng-if='sents.length === 0 && !loadingData')
-    span Отправки отсутствуют
+    span(ng-if='all_items_count === 0') Отправки отсутствуют
+    div(ng-if='all_items_count > 0', style='display: inline-block;')
+      div.content-spin__layer
+        div.search-spin-layer_
+          div.search-spin
