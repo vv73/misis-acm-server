@@ -60,9 +60,7 @@ angular.module('Qemy.directives', [])
         return {
             restrict: 'EA',
             templateUrl: templateUrl('page', 'loading-layer'),
-            scope: {
-                active: '='
-            },
+            scope: true,
             link: function (scope, element, attrs) {
                 element.addClass('page__loading');
             }

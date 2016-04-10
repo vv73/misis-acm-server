@@ -1,5 +1,2 @@
-div.page-loading(ng-if='active')
-  div.page-loading__content
-    div.content-spin__layer
-      div.search-spin-layer_
-        div.search-spin
+div.page-loading(ng-if='pageLoading')
+  div.page-loading__progress(ng-class='{"page-loading__progress_type_active": pageLoading}', ng-attr-style="width: {{progress + '%'}}")

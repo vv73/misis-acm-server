@@ -302,11 +302,46 @@ body, html {
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.1);
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+
+  &.ng-leave {
+    transition: .2s;
+    transition-delay: .5s;
+    opacity: 1;
+    .page-loading__progress {
+      width: 100% !important;
+      -webkit-transition: width 0.4s ease;
+      transition: width 0.4s ease;
+    }
+  }
+
+  &.ng-leave-active {
+    opacity: 0;
+  }
+
+  &__progress {
+    position: fixed;
+    z-index: 100000000;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: #77b6ff;
+    box-shadow: 0 0 10px rgba(119,182,255,0.7);
+    -webkit-transition: width 4s ease;
+    transition: width 4s ease;
+    will-change: width;
+    width: 100%;
+
+    &_type_active {
+      -webkit-transition: width 4s ease;
+      transition: width 4s ease;
+      width: 0;
+    }
+  }
 }
 .page-loading__content {
   padding: 100px;
@@ -1537,22 +1572,6 @@ ui-view, [ui-view] {
   &.ng-leave-active {
     opacity: 0;
     transform: scale(0.97);
-  }
-}
-.page-loading {
-  /* start 'enter' transition */
-  &.ng-leave {
-    /* transition on leave for .5s */
-    transition: .2s;
-
-    /* start with opacity 0 (invisible) */
-    opacity: 1;
-  }
-
-  /* end 'enter' transition */
-  &.ng-leave-active {
-    /* end with opacity 1 (fade in) */
-    opacity: 0;
   }
 }
 .header__contest-menu {
