@@ -9,8 +9,24 @@ md-dialog(aria-label="Problem")
 
     md-dialog-content(style="max-width: 800px; max-height: 810px;")
       md-content.md-padding
-        div.task__problem(ng-class='{"task__problem-timus": problem.system_type === "timus", "task__problem-sgu": problem.system_type === "sgu", "task__problem-cf": problem.system_type === "cf", "task__problem-acmp": problem.system_type === "acmp"}')
+        div.task__problem(ng-if='!problem.attachments.config.replaced')(
+        ng-class='{"task__problem-timus": problem.system_type === "timus", \
+                "task__problem-sgu": problem.system_type === "sgu", \
+                "task__problem-cf": problem.system_type === "cf", \
+                "task__problem-acmp": problem.system_type === "acmp", \
+                "task__problem-cf_type_gym": problem.system_problem_number.indexOf("gym") >= 0 }')
           div(ng-bind-html='problem.formatted_text')
+
+        div.task__own(ng-if='problem.attachments')
+          div(ng-if='problem.attachments.content.text')
+            div(ng-switch='problem.attachments.config.markup')
+              div(ng-switch-when='markdown')
+                div.markdown(marked='problem.attachments.content.text')
+              div(ng-switch-default)
+                p Not implemented
+
+          div(ng-if='problem.attachments.files && problem.attachments.files.length > 0')
+            div Current files: {{problem.attachments.files.length}}
 
     div.md-actions(layout="row")
       md-button(ng-click="close()", style="margin-right: 20px;") Закрыть
