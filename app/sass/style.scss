@@ -598,6 +598,10 @@ my-timer-element {
   text-align: justify;
   line-height: 1.6 !important;
   margin-top: 10px;
+  pre {
+    background-color: transparent;
+    color: #222;
+  }
 }
 .task__problem-timus {
   .sample {
@@ -1604,5 +1608,73 @@ ui-view, [ui-view] {
   &.ng-leave-active {
     opacity: 0;
     transform: translateY(-100%);
+  }
+}
+
+.markdown {
+
+  &__rainbow {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  &__lang-header {
+    width: 100%;
+    background-color: rgb(255,23,68);
+    color: #fff;
+    box-sizing: border-box;
+    padding: 5px 10px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+  }
+  &__simple-insert {
+    background: #EEEEEE;
+    color: #222;
+    border-radius: 3px;
+    padding: 7px 10px;
+    pre {
+      background: inherit;
+      color: inherit;
+      margin: 0;
+      padding: 0;
+    }
+  }
+  &__divider {
+    height: 1px;
+    margin: 10px 0;
+    background-color: #ccc;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  h1, h2, h3, h4 {
+    font-weight: bold;
+  }
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+    width: 100%;
+    overflow: auto;
+    word-break: normal;
+    word-break: keep-all;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+  table th, table td {
+    padding: 6px 13px;
+    border: 1px solid #ddd;
+  }
+  table tr {
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+  }
+  table tr:nth-child(2n) {
+    background-color: #f8f8f8;
+  }
+  &__image {
+    max-width: 100%;
+  }
+  &__tex {
+    font-size: 2em;
+    font-family: Arial;
   }
 }

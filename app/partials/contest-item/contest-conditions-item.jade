@@ -9,13 +9,24 @@ div.contest
           div.task__title-index
             span(ng-bind='condition.internal_index + ". " + condition.title + ""')
 
-        div.task__problem(
+        div.task__problem(ng-if='!condition.attachments.config.replaced')(
         ng-class='{"task__problem-timus": condition.system_type === "timus", \
         "task__problem-sgu": condition.system_type === "sgu", \
         "task__problem-cf": condition.system_type === "cf", \
         "task__problem-acmp": condition.system_type === "acmp", \
         "task__problem-cf_type_gym": condition.system_problem_number.indexOf("gym") >= 0 }')
           div(ng-bind-html='condition.formatted_text')
+
+        div.task__own(ng-if='condition.attachments')
+          div(ng-if='condition.attachments.content.text')
+            div(ng-switch='condition.attachments.config.markup')
+              div(ng-switch-when='markdown')
+                div.markdown(marked='condition.attachments.content.text')
+              div(ng-switch-default)
+                p Not implemented
+
+          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0')
+            div Current files: {{condition.attachments.files.length}}
 
         div.task__send-layer
           div.task__send
