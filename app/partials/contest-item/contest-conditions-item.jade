@@ -14,7 +14,7 @@ div.contest
             div
               h4 Файлы: {{condition.attachments.files.length}}
             include ./contest-conditions/files
-          div.markdown__divider
+            div.markdown__divider(ng-if='!condition.attachments.config.replaced')
 
         div.task__problem(ng-if='!condition.attachments.config.replaced',
         ng-class='{"task__problem-timus": condition.system_type === "timus", \
@@ -32,8 +32,8 @@ div.contest
               div(ng-switch-default)
                 p Not implemented
 
-          div.markdown__divider
           div(ng-if='condition.attachments.files && condition.attachments.files.length > 0 && (!condition.attachments.config.files_location || condition.attachments.config.files_location === "bottom")')
+            div.markdown__divider
             div
               h4 Файлы: {{condition.attachments.files.length}}
             include ./contest-conditions/files
