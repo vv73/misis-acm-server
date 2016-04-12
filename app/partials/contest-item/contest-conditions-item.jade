@@ -9,6 +9,26 @@ div.contest
           div.task__title-index
             span(ng-bind='condition.internal_index + ". " + condition.title + ""')
 
+        div.task__own(ng-if='condition.attachments')
+          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0 && condition.attachments.config.files_location === "top"')
+            div
+              h4 Файлы: {{condition.attachments.files.length}}
+            div.task__files
+              div.task__file-wrap(ng-repeat='file in condition.attachments.files | orderBy:" file.type"')
+                div(ng-switch='file.type')
+                  div(ng-switch-when='image')
+                    a.link(ng-href='{{file.url}}', target='_blank')
+                      img.image.markdown__image(ng-src='{{file.url}}')
+
+                  div(ng-switch-default)
+                    a.link(ng-href='{{file.url}}', target='_blank')
+                      div.task__file(tabindex='{{$index}}')
+                        div.task__file-title {{"Приложение" + (condition.attachments.files.length > 1 ? (" " + ($index + 1)) : "")}}
+                        div.task__file-ext
+                          div(class='task__file-ext-icon task__file-ext-icon_type_{{file.type}}')
+                          span {{file.type}}
+          div.markdown__divider
+
         div.task__problem(ng-if='!condition.attachments.config.replaced',
         ng-class='{"task__problem-timus": condition.system_type === "timus", \
         "task__problem-sgu": condition.system_type === "sgu", \
@@ -25,8 +45,25 @@ div.contest
               div(ng-switch-default)
                 p Not implemented
 
-          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0')
-            div Current files: {{condition.attachments.files.length}}
+          div.markdown__divider
+          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0 && (!condition.attachments.config.files_location || condition.attachments.config.files_location === "bottom")')
+            div
+              h4 Файлы: {{condition.attachments.files.length}}
+            div.task__files
+              div.task__file-wrap(ng-repeat='file in condition.attachments.files | orderBy:" file.type"')
+                div(ng-switch='file.type')
+                  div(ng-switch-when='image')
+                    a.link(ng-href='{{file.url}}', target='_blank')
+                      img.image.markdown__image(ng-src='{{file.url}}')
+
+                  div(ng-switch-default)
+                    a.link(ng-href='{{file.url}}', target='_blank')
+                      div.task__file(tabindex='{{$index}}')
+                        div.task__file-title {{"Приложение" + (condition.attachments.files.length > 1 ? (" " + ($index + 1)) : "")}}
+                        div.task__file-ext
+                          div(class='task__file-ext-icon task__file-ext-icon_type_{{file.type}}')
+                          span {{file.type}}
+
 
         div.task__send-layer
           div.task__send

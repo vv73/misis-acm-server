@@ -1676,3 +1676,98 @@ ui-view, [ui-view] {
   &__tex {
   }
 }
+.task__files {
+
+  .task__file-wrap {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    text-decoration: none;
+    vertical-align: top;
+    -webkit-transition: background-color .15s cubic-bezier(.4,0,.2,1),box-shadow .15s cubic-bezier(.4,0,.2,1);
+    transition: background-color .15s cubic-bezier(.4,0,.2,1),box-shadow .15s cubic-bezier(.4,0,.2,1);
+    margin-right: 12px;
+    margin-bottom: 12px;
+
+    .link {
+      text-decoration: none;
+      display: inline-block;
+    }
+    .task__file {
+      box-shadow: 0 0 1px rgba(0,0,0,.11),0 1px 2px rgba(0,0,0,.22);
+      box-sizing: border-box;
+      padding: 12px;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+      -webkit-justify-content: center;
+      justify-content: center;
+      background: rgba(0,0,0,.03);
+      border-radius: 2px;
+      height: 88px;
+      position: relative;
+      width: 146px;
+      -webkit-transition: background-color .15s cubic-bezier(.4,0,.2,1),box-shadow .15s cubic-bezier(.4,0,.2,1);
+      transition: background-color .15s cubic-bezier(.4,0,.2,1),box-shadow .15s cubic-bezier(.4,0,.2,1);
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+
+      &:hover {
+        box-shadow: 0 0 3px rgba(0,0,0,.13),0 3px 6px rgba(0,0,0,.26);
+      }
+      &:active, &:focus {
+        box-shadow: 0 0 5px rgba(0,0,0,.15),0 5px 10px rgba(0,0,0,.3);
+        background-color: rgba(0,0,0,.06);
+        border-color: #f2f2f2;
+        outline-color: #4285f4;
+      }
+      &-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-height: 1.5;
+        max-height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
+        word-break: break-word;
+        word-wrap: normal;
+        color: #212121;
+        height: 3em;
+        text-decoration: none;
+      }
+      &-ext {
+        color: #757575;
+        line-height: 16px;
+        margin-top: 4px;
+        white-space: nowrap;
+        &-icon {
+          display: inline-block;
+          position: relative;
+          width: 16px;
+          height: 16px;
+          margin-right: 10px;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-size: 100%;
+          top: 2px;
+          &_type_pdf {
+            background-image: url('/img/icon_3_pdf_x32.png');
+          }
+          &_type_image {
+
+          }
+        }
+        span {
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+}
