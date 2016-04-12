@@ -1718,6 +1718,12 @@ ui-view, [ui-view] {
       -ms-user-select: none;
       user-select: none;
 
+      &_type_image {
+        background-position: center center;
+        background-size: 100%;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
       &:hover {
         box-shadow: 0 0 3px rgba(0,0,0,.13),0 3px 6px rgba(0,0,0,.26);
       }
