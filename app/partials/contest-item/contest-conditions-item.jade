@@ -14,7 +14,7 @@ div.contest
             div
               h4 Файлы: {{condition.attachments.files.length}}
             include ./contest-conditions/files
-            div.markdown__divider(ng-if='!condition.attachments.config.replaced')
+            div.markdown__divider(ng-if='!condition.attachments.config.replaced || !!condition.attachments')
 
         div.task__problem(ng-if='!condition.attachments.config.replaced',
         ng-class='{"task__problem-timus": condition.system_type === "timus", \
