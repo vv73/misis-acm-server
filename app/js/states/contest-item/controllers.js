@@ -282,8 +282,8 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ConditionsItemController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_',
-        function ($scope, $rootScope, $state, ContestItemManager, _) {
+    .controller('ConditionsItemController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', '$mdMedia', '$mdDialog',
+        function ($scope, $rootScope, $state, ContestItemManager, _, $mdMedia, $mdDialog) {
             $scope.$emit('change_title', {
                 title: 'Условия | ' + _('app_name')
             });
@@ -301,6 +301,25 @@ angular.module('Qemy.controllers.contest-item', [])
                         .replace(/(\<\!\–\–\s?google_ad_section_(start|end)\s?\–\–\>)/gi, '');
                     $scope.condition = result;
                 });
+            
+            $scope.openImage = function (ev, file) {
+                var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'));
+                $mdDialog.show({
+                    controller: ['$scope', function ($scope) {
+                        $scope.file = file;
+                        $scope.close = function () {
+                            $mdDialog.hide();
+                        };
+                    }],
+                    template: '<md-dialog aria-label="Image"  ng-cloak>\n  <form>\n    <md-toolbar>\n      <div class="md-toolbar-tools">\n        <h2>{{file.title ? file.title : "Изображение"}}</h2>\n        <span flex></span>\n        <md-button class="md-icon-button" ng-click="close()">\n          <md-icon md-svg-src="/img/icons/ic_close_48px.svg" aria-label="Close dialog"></md-icon>\n        </md-button>\n      </div>\n    </md-toolbar>\n    <md-dialog-content>\n      <div class="md-dialog-content">\n        <img class="markdown__image" ng-src="{{file.url}}" title="{{file.title}}">\n      </div>\n    </md-dialog-content>\n    <md-dialog-actions layout="row">\n      <md-button style="margin-right: 20px;" ng-click="close()">\n        Закрыть\n      </md-button>\n    </md-dialog-actions>\n  </form>\n</md-dialog>',
+                    parent: angular.element(document.body),
+                    targetEvent: ev,
+                    clickOutsideToClose: true
+                });
+                
+                ev.preventDefault();
+                return false;
+            };
         }
     ])
 
