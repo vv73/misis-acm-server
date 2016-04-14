@@ -280,6 +280,15 @@ angular.module('Qemy.services.admin', [
 			});
 		}
 
+		function getCondition(params) {
+			return $http({
+				method: 'get',
+				url: '/api/admin/getCondition?' + dataEncode(params)
+			}).then(function (response) {
+				return response.data;
+			});
+		}
+
 		function createGroup(params) {
 			return $http({
 				method: 'post',
@@ -304,6 +313,26 @@ angular.module('Qemy.services.admin', [
 			return $http({
 				method: 'post',
 				url: '/api/admin/deleteGroup',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
+		function updateCondition(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/updateCondition',
+				data: params
+			}).then(function (data) {
+				return data.data;
+			});
+		}
+
+		function createEjudgeProblem(params) {
+			return $http({
+				method: 'post',
+				url: '/api/admin/createEjudgeProblem',
 				data: params
 			}).then(function (data) {
 				return data.data;
@@ -340,7 +369,10 @@ angular.module('Qemy.services.admin', [
 			getGroup: getGroup,
 			createGroup: createGroup,
 			updateGroup: updateGroup,
-			deleteGroup: deleteGroup
+			deleteGroup: deleteGroup,
+			getCondition: getCondition,
+			updateCondition: updateCondition,
+			createEjudgeProblem: createEjudgeProblem
 		}
 	}])
 ;

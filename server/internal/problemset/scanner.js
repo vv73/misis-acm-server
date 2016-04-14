@@ -155,7 +155,7 @@ function ScanTimusTasks(user, callback) {
                             return console.log(err);
                         }
                         if (results.length) {
-                            connection.query(
+                            /*connection.query(
                                 'UPDATE problemset ' +
                                 'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
                                 'WHERE foreign_problem_id = ? AND system_type = ?',
@@ -167,7 +167,7 @@ function ScanTimusTasks(user, callback) {
                                     updateCounter++;
                                     console.log('Finished processing item:', problem.number);
                                 }
-                            );
+                            );*/
                         } else {
                             connection.query(
                                 'INSERT INTO problemset ' +
@@ -366,7 +366,7 @@ function ScanCodeforcesTasks(user, callback) {
                                 return console.log(err);
                             }
                             if (results.length) {
-                                connection.query(
+                                /*connection.query(
                                     'UPDATE problemset ' +
                                     'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
                                     'WHERE foreign_problem_id = ? AND system_type = ?',
@@ -378,7 +378,7 @@ function ScanCodeforcesTasks(user, callback) {
                                         console.log('Finished processing item (update):', problem.number);
                                         problem.dispose();
                                     }
-                                );
+                                );*/
                             } else {
                                 connection.query(
                                     'INSERT INTO problemset ' +
@@ -655,7 +655,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                     return console.log(err);
                                 }
                                 if (results.length) {
-                                    connection.query(
+                                    /*connection.query(
                                         'UPDATE problemset ' +
                                         'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
                                         'WHERE foreign_problem_id = ? AND system_type = ?',
@@ -667,7 +667,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                             console.log('Finished processing item (update):', problem.number);
                                             problem.dispose();
                                         }
-                                    );
+                                    );*/
                                 } else {
                                     connection.query(
                                         'INSERT INTO problemset ' +
@@ -845,7 +845,7 @@ function ScanAcmpTasks(user, callback) {
                                 return console.log(err);
                             }
                             if (results.length) {
-                                connection.query(
+                                /*connection.query(
                                     'UPDATE problemset ' +
                                     'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
                                     'WHERE foreign_problem_id = ? AND system_type = ?',
@@ -857,7 +857,7 @@ function ScanAcmpTasks(user, callback) {
                                         console.log('Finished processing item (update):', problem.number);
                                         problem.dispose();
                                     }
-                                );
+                                );*/
                             } else {
                                 connection.query(
                                     'INSERT INTO problemset ' +
@@ -1007,7 +1007,7 @@ function ScanSguTasks(user, callback) {
                             return console.log(err);
                         }
                         if (results.length) {
-                            connection.query(
+                            /*connection.query(
                                 'UPDATE problemset ' +
                                 'SET title = ?, formatted_text = ?, text = ?, creation_time = ? ' +
                                 'WHERE foreign_problem_id = ? AND system_type = ?',
@@ -1019,7 +1019,7 @@ function ScanSguTasks(user, callback) {
                                     updateCounter++;
                                     console.log('Finished processing item:', problem.number);
                                 }
-                            );
+                            );*/
                         } else {
                             connection.query(
                                 'INSERT INTO problemset ' +

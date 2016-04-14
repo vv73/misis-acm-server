@@ -604,6 +604,90 @@ router.get('/admin/searchGroups', function (req, res) {
     }
 });
 
+router.get('/admin/getCondition', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.getCondition(q.problem_id, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.post('/admin/updateCondition', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.updateCondition(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
+router.post('/admin/createEjudgeProblem', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        if (!user || user.isEmpty() || user.getAccessGroup().access_level !== 5) {
+            return callback(new Error('Access denied'));
+        }
+        adminManager.createEjudgeProblem(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        })
+    }
+});
+
 router.get('/admin/searchUsers', function (req, res) {
 
     execute(function (err, result) {

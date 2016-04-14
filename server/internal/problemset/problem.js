@@ -110,6 +110,122 @@ Problem.prototype.getAttachmentsObject = function () {
     }
 };
 
+Problem.prototype.setFormattedText = function (formattedText, cb) {
+    cb = cb || noop;
+    if (typeof formattedText !== 'string') {
+        return;
+    }
+    var _this = this;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            if (connection) {
+                connection.release();
+            }
+            return callback(new Error('An error with db connection', 1001));
+        }
+        connection.query(
+            'UPDATE `problemset` ' +
+            'SET `formatted_text` = ? ' +
+            'WHERE `id` = ?',
+            [ formattedText, _this.getId() ], function (error, results, fields) {
+            if (error) {
+                connection.release();
+                return callback(new Error('An error with db process', 1001));
+            }
+            _this._problemRow.formatted_text = formattedText;
+            cb(null, formattedText);
+            connection.release();
+        });
+    });
+};
+
+Problem.prototype.setTitle = function (text, cb) {
+    cb = cb || noop;
+    if (typeof text !== 'string') {
+        return;
+    }
+    var _this = this;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            if (connection) {
+                connection.release();
+            }
+            return callback(new Error('An error with db connection', 1001));
+        }
+        connection.query(
+            'UPDATE `problemset` ' +
+            'SET `title` = ? ' +
+            'WHERE `id` = ?',
+            [ text, _this.getId() ], function (error, results, fields) {
+                if (error) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._problemRow.title = text;
+                cb(null, text);
+                connection.release();
+            });
+    });
+};
+
+Problem.prototype.setClearedText = function (text, cb) {
+    cb = cb || noop;
+    if (typeof text !== 'string') {
+        return;
+    }
+    var _this = this;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            if (connection) {
+                connection.release();
+            }
+            return callback(new Error('An error with db connection', 1001));
+        }
+        connection.query(
+            'UPDATE `problemset` ' +
+            'SET `text` = ? ' +
+            'WHERE `id` = ?',
+            [ text, _this.getId() ], function (error, results, fields) {
+                if (error) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._problemRow.text = text;
+                cb(null, text);
+                connection.release();
+            });
+    });
+};
+
+Problem.prototype.setAttachments = function (attach, cb) {
+    cb = cb || noop;
+    if (typeof attach === 'object') {
+        attach = JSON.stringify(attach);
+    }
+    var _this = this;
+    mysql.connection(function getConnection(err, connection) {
+        if (err) {
+            if (connection) {
+                connection.release();
+            }
+            return callback(new Error('An error with db connection', 1001));
+        }
+        connection.query(
+            'UPDATE `problemset` ' +
+            'SET `attachments` = ? ' +
+            'WHERE `id` = ?',
+            [ attach, _this.getId() ], function (error, results, fields) {
+                if (error) {
+                    connection.release();
+                    return callback(new Error('An error with db process', 1001));
+                }
+                _this._problemRow.attachments = attach;
+                cb(null, attach);
+                connection.release();
+            });
+    });
+};
+
 Problem.prototype.getObjectFactory = function () {
     if (this.isEmpty()) {
         return {};

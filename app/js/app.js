@@ -15,14 +15,15 @@ angular.module('Qemy', [
     'Qemy.directives',
     'Qemy.controllers',
     'Qemy.services',
+    'Qemy.filters',
 
     'Qemy.ui.contests',
     'Qemy.ui.auth',
     'Qemy.ui.contest-item',
     'Qemy.ui.admin'
 ])
-    .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider', 'markedProvider',
-        function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, markedProvider) {
+    .config(['$locationProvider', 'StorageProvider', '$stateProvider', '$urlRouterProvider', '$mdThemingProvider', 'markedProvider', '$mdIconProvider',
+        function($locationProvider, StorageProvider, $stateProvider, $urlRouterProvider, $mdThemingProvider, markedProvider, $mdIconProvider) {
             if (Config.Modes.test) {
                 StorageProvider.setPrefix('t_');
             }
@@ -98,5 +99,8 @@ angular.module('Qemy', [
                 smartLists: true,
                 smartypants: true
             });
+
+            $mdIconProvider
+                .icon('check', '/img/icons/ic_check_48px.svg')
         }
     ]);

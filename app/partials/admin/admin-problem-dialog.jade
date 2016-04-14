@@ -2,32 +2,42 @@ md-dialog(aria-label="Problem")
   form
     md-toolbar
       div.md-toolbar-tools
-        h2 Задача «{{problem.title}}»
+        h2 Задача «{{condition.title}}»
         span(flex)
         md-button.md-icon-button(ng-click="close()")
           md-icon(md-svg-src="/img/icons/ic_close_48px.svg", aria-label="Close dialog")
 
     md-dialog-content(style="max-width: 800px; max-height: 810px;")
       md-content.md-padding
-        div.task__problem(ng-if='!problem.attachments.config.replaced')(
-        ng-class='{"task__problem-timus": problem.system_type === "timus", \
-                "task__problem-sgu": problem.system_type === "sgu", \
-                "task__problem-cf": problem.system_type === "cf", \
-                "task__problem-acmp": problem.system_type === "acmp", \
-                "task__problem-ejudge": problem.system_type === "ejudge", \
-                "task__problem-cf_type_gym": problem.system_problem_number.indexOf("gym") >= 0 }')
-          div(ng-bind-html='problem.formatted_text')
+        div.task__own(ng-if='condition.attachments')
+          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0 && condition.attachments.config.files_location === "top"')
+            div
+              h4 Файлы: {{condition.attachments.files.length}}
+            include ../contest-item/contest-conditions/files
+            div.markdown__divider(ng-if='!condition.attachments.config.replaced || !!condition.attachments.content.text')
 
-        div.task__own(ng-if='problem.attachments')
-          div(ng-if='problem.attachments.content.text')
-            div(ng-switch='problem.attachments.config.markup')
+        div.task__problem(ng-if='!condition.attachments.config.replaced',
+          ng-class='{"task__problem-timus": condition.system_type === "timus", \
+                "task__problem-sgu": condition.system_type === "sgu", \
+                "task__problem-cf": condition.system_type === "cf", \
+                "task__problem-acmp": condition.system_type === "acmp", \
+                "task__problem-ejudge": condition.system_type === "ejudge", \
+                "task__problem-cf_type_gym": condition.system_problem_number.indexOf("gym") >= 0 }')
+          div(ng-bind-html='condition.formatted_text')
+
+        div.task__own(ng-if='condition.attachments')
+          div(ng-if='condition.attachments.content.text')
+            div(ng-switch='condition.attachments.config.markup')
               div(ng-switch-when='markdown')
-                div.markdown(marked='problem.attachments.content.text')
+                div.markdown(marked='condition.attachments.content.text')
               div(ng-switch-default)
                 p Not implemented
 
-          div(ng-if='problem.attachments.files && problem.attachments.files.length > 0')
-            div Current files: {{problem.attachments.files.length}}
+          div(ng-if='condition.attachments.files && condition.attachments.files.length > 0 && (!condition.attachments.config.files_location || condition.attachments.config.files_location === "bottom")')
+            div.markdown__divider
+            div
+              h4 Файлы: {{condition.attachments.files.length}}
+            include ../contest-item/contest-conditions/files
 
     div.md-actions(layout="row")
       md-button(ng-click="close()", style="margin-right: 20px;") Закрыть

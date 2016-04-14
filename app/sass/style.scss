@@ -116,6 +116,15 @@ body, html {
   margin: 0 auto;
   min-width: 1024px;
 }
+.page-container {
+  &__wrap {
+
+  }
+  &__editing-mode-text {
+    color: #777;
+    font-size: 0.8em;
+  }
+}
 .auth-form {
   width: 350px;
   margin: 20px auto;
@@ -601,6 +610,9 @@ my-timer-element {
   pre {
     background-color: transparent;
     color: #222;
+  }
+  &-editing {
+
   }
 }
 .task__problem-timus {
@@ -1219,11 +1231,44 @@ my-timer-element {
   border: 1px solid #E5E5E5;
   padding: 24px;
   background-color: #fff;
+
+  &__inner {
+    box-sizing: border-box;
+    position: relative;
+  }
+  &__edit-problem {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    background: #00838F;
+    color: #fff;
+    md-content {
+      background-color: #F6F6F6;
+    }
+    & md-tab-item {
+      color: rgba(255, 255, 255, 0.74);
+      &.md-active {
+        color: #fff !important;
+      }
+    }
+    &_reset {
+      md-tabs {
+        background: #f6f6f6;
+        border: 1px solid #e1e1e1;
+        md-tabs-wrapper {
+          background: white;
+        }
+      }
+      & md-tab-item {
+        color: rgba(0,0,0,0.54) !important;
+        &.md-active {
+          color: rgb(33,150,243) !important;
+        }
+      }
+    }
+  }
 }
-.admin-content-layer__inner {
-  box-sizing: border-box;
-  position: relative;
-}
+
 .admin-title {
   font-weight: 100;
 }
@@ -1677,9 +1722,43 @@ ui-view, [ui-view] {
   }
   &__tex {
   }
-}
-.task__files {
 
+  &__editor {
+    .page-container {
+      background-color: #f1f1f1;
+      padding: 32px;
+      &__markdown-textarea {
+        margin-bottom: 0;
+        overflow: auto;
+      }
+      &__markdown-textarea-wrap {
+        margin-top: 10px;
+      }
+    }
+    .page-container__wrap {
+      margin: 0 auto;
+      background-color: white;
+      padding: 24px;
+      max-width: 680px;
+      box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.25);
+    }
+    .page-container__wrap h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-top: 0;
+      font-weight: normal;
+    }
+    .page-container__wrap p {
+      line-height: 1.6rem;
+    }
+  }
+}
+.md-toolbar-input {
+  border: 0;
+  margin-left: 5px;
+}
+
+.task__files {
   .task__file-wrap {
     cursor: pointer;
     display: inline-block;
@@ -1691,6 +1770,16 @@ ui-view, [ui-view] {
     margin-right: 12px;
     margin-bottom: 12px;
 
+    .task__file-delete {
+      position: absolute;
+      top: -4px;
+      right: -12px;
+      z-index: 10000;
+    }
+
+    &__file-add {
+
+    }
     .link {
       text-decoration: none;
       display: inline-block;
@@ -1765,11 +1854,9 @@ ui-view, [ui-view] {
           background-repeat: no-repeat;
           background-size: 100%;
           top: 2px;
+          background-image: url('/img/icon_2_generic_x32.png');
           &_type_pdf {
             background-image: url('/img/icon_3_pdf_x32.png');
-          }
-          &_type_txt {
-            background-image: url('/img/icon_2_generic_x32.png');
           }
         }
         span {

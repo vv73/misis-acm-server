@@ -71,6 +71,11 @@ angular.module('Qemy.ui.admin', [
                     templateUrl: templateUrl('admin', 'admin-problems'),
                     controller: 'AdminProblemsController'
                 })
+                .state('admin.problems-edit', {
+                    url: '/problems/edit/:problemId',
+                    templateUrl: templateUrl('admin', 'problems/edit-item'),
+                    controller: 'AdminProblemsItemEditController'
+                })
                 .state('admin.edit-user', {
                     url: '/users/edit/:userId',
                     templateUrl: templateUrl('admin', 'users/edit'),

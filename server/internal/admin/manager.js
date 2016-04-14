@@ -44,7 +44,10 @@ module.exports = {
     getGroup: GetGroup,
     createGroup: CreateGroup,
     updateGroup: UpdateGroup,
-    deleteGroup: DeleteGroup
+    deleteGroup: DeleteGroup,
+    getCondition: GetCondition,
+    updateCondition: UpdateCondition,
+    createEjudgeProblem: CreateEjudgeProblem
 };
 
 function SearchGroups(q, callback) {
@@ -73,6 +76,118 @@ function SearchGroups(q, callback) {
                     return callback(new Error('An error with db', 1001));
                 }
                 callback(null, results);
+            }
+        );
+    }
+}
+
+function GetCondition(problemId, callback) {
+    if (!problemId) {
+        return callback(new Error('Params are not specified'));
+    }
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var problem = new Problem();
+        problem.allocate(problemId, function (err) {
+            callback(null, !problem.isEmpty() ? problem.getObjectFactory() : {});
+        });
+    }
+}
+
+function UpdateCondition(params, callback) {
+    if (!params) {
+        return callback(new Error('Params are not specified'));
+    }
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var problem = new Problem();
+        problem.allocate(params.id, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            problem.setTitle(params.title);
+            problem.setFormattedText(params.formatted_text);
+            problem.setClearedText(params.cleared_text);
+            problem.setAttachments(params.attachments);
+            callback(null, {
+                result: !problem.isEmpty()
+            });
+        });
+    }
+}
+
+function CreateEjudgeProblem(params, callback) {
+    if (!params) {
+        return callback(new Error('Params are not specified'));
+    }
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var title = params.title || "Noname problem " + Math.random();
+        var contest_id = params.contest_id || 1;
+        var problem_index = params.problem_index || 1;
+        var foreign_problem_id = contest_id.toString() + ':' + problem_index.toString();
+        var system_type = 'ejudge';
+        var attachments = {
+            config: {
+                replaced: true,
+                markup: 'markdown',
+                files_location: 'top'
+            },
+            files: [],
+            content: {
+                text: '# <center>' + title + '</center> \n\n\n\n\`\`\`\nУсловие задачи отсутствует\n\`\`\`'
+            }
+        };
+        var creation_time = new Date().getTime();
+
+        connection.query(
+            'INSERT INTO problemset ' +
+            '(system_type, foreign_problem_id, title, formatted_text, text, creation_time, attachments) ' +
+            'VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [system_type, foreign_problem_id, title, "Условие отсутствует", "", creation_time, JSON.stringify(attachments)],
+            function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, {
+                    result: result.insertId
+                })
             }
         );
     }

@@ -42,26 +42,34 @@ angular.module('Qemy.controllers.admin', [])
         function ($scope, $rootScope, $state, _) {
             $scope.menu = [{
                 uiSref: 'admin.index',
-                name: 'Контесты'
+                name: 'Контесты',
+                group: 'contest'
             }, {
                 uiSref: 'admin.users-list',
-                name: 'Пользователи'
+                name: 'Пользователи',
+                group: 'admin.users-list'
             }, {
                 uiSref: 'admin.problems',
-                name: 'Задачи'
+                name: 'Задачи',
+                group: 'admin.problems'
             }, {
                 uiSref: 'admin.server',
-                name: 'Сервер'
+                name: 'Сервер',
+                group: 'admin.server'
             }, {
                 uiSref: 'admin.contests-rating.create.index',
-                name: 'Рейтинги'
+                name: 'Рейтинги',
+                group: 'admin.contests-rating'
             }, {
                 uiSref: 'admin.groups.index',
-                name: 'Группы пользователей'
+                name: 'Группы пользователей',
+                group: 'admin.groups'
             }/*, {
              uiSref: 'admin.index',
              name: 'Аккаунты в тестирующих системах'
              }*/];
+
+            $rootScope.$state = $state;
         }
     ])
 
@@ -363,7 +371,7 @@ angular.module('Qemy.controllers.admin', [])
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
-                        problem: problem
+                        condition: problem
                     }
                 });
             };
@@ -676,9 +684,9 @@ angular.module('Qemy.controllers.admin', [])
     ])
 
     .controller('AdminProblemDialogController', [
-        '$scope', 'problem', '$mdDialog',
-        function ($scope, problem, $mdDialog) {
-            $scope.problem = problem;
+        '$scope', 'condition', '$mdDialog',
+        function ($scope, condition, $mdDialog) {
+            $scope.condition = condition;
             $scope.close = function () {
                 $mdDialog.hide();
             };
@@ -969,6 +977,280 @@ angular.module('Qemy.controllers.admin', [])
                     });
                 });
             };
+    
+            $scope.systemType = 'all';
+            $scope.problems = [];
+            $scope.qProblems = '';
+            $scope.systems = [{
+                type: 'all',
+                name: 'Все'
+            }, {
+                type: 'timus',
+                name: 'Timus'
+            }, {
+                type: 'acmp',
+                name: 'ACMP'
+            }, {
+                type: 'cf',
+                name: 'Codeforces'
+            }, {
+                type: 'sgu',
+                name: 'SGU'
+            }, {
+                type: 'ejudge',
+                name: 'ejudge'
+            }];
+    
+            $scope.selectedProblems = [];
+    
+            var newQ = '';
+            $scope.searchProblems = function () {
+                newQ = $scope.qProblems;
+                AdminManager.searchProblems({
+                    q: $scope.qProblems,
+                    type: $scope.systemType
+                }).then(function (results) {
+                    if (results.error) {
+                        return alert('Произошла ошибка: ' + results.error);
+                    }
+                    if (newQ !== results.q) {
+                        return console.log('Skipped result');
+                    }
+                    $scope.problems = results.items.map(function (problem) {
+                        switch (problem.system_type) {
+                            case 'cf':
+                                var pTypeObj = problem.system_problem_number.split(':');
+                                if (!pTypeObj || pTypeObj.length !== 2) {
+                                    problem.task_number = problem.system_problem_number;
+                                } else {
+                                    problem.task_number = (pTypeObj[0] === 'gym' ? 'Тренировка' : 'Архив') +
+                                        '. ' + pTypeObj[1];
+                                }
+                                break;
+                            default: {
+                                problem.task_number = problem.system_problem_number;
+                            }
+                        }
+                        return problem;
+                    });
+                });
+            };
+    
+            $scope.$watch('qProblems', function () {
+                $scope.searchProblems();
+            });
+
+            $scope.showProblem = function (ev, problem) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                ev.cancelBubble = true;
+
+                $mdDialog.show({
+                    controller: 'AdminProblemDialogController',
+                    templateUrl: templateUrl('admin', 'admin-problem-dialog'),
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    locals: {
+                        condition: problem
+                    }
+                });
+            };
+
+            $scope.editProblem = function (ev, problem) {
+                if (problem) {
+                    $state.go('admin.problems-edit', { problemId: problem.id });
+                }
+            };
+            
+            $scope.createEjudgeProblem = function (problem) {
+                if (problem) {
+                    AdminManager.createEjudgeProblem(problem)
+                        .then(function (response) {
+                            if (response.error) {
+                                return alert('Error: ' + response.error);
+                            }
+                            var newId = response.result;
+                            if (!newId) {
+                                return;
+                            }
+                            $state.go('admin.problems-edit', {problemId: newId});
+                        });
+                }
+            };
+        }
+    ])
+
+    .controller('AdminProblemsItemEditController', ['$scope', '$rootScope', '_', '$mdDialog', '$state', 'AdminManager', 'ContestItemManager',
+        function($scope, $rootScope, _, $mdDialog, $state, AdminManager, ContestItemManager) {
+            $scope.$emit('change_title', {
+                title: 'Редактирование задачи | ' + _('app_name')
+            });
+
+            $scope.confirmExit = false;
+            $scope.problemId = $state.params.problemId;
+
+            $scope.action = function(name, ev) {
+                var actions = {
+                    exit: exitAction,
+                    save: saveAction
+                };
+                if (name && name in actions) {
+                    actions[name].call(this, ev);
+                }
+            };
+
+            function exitAction(ev) {
+                $state.go('admin.problems');
+            }
+
+            function saveAction(ev) {
+                syncWithCondition();
+                $scope.confirmExit = false;
+                AdminManager.updateCondition($scope.condition)
+                    .then(function (res) {
+                        if (res.error) {
+                            return alert('Произошла ошибка: ' + res.error);
+                        }
+                        $mdDialog.show(
+                            $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title('Сохранено')
+                                .textContent('Действие выполнено успешно.')
+                                .ariaLabel('Saved')
+                                .ok('Ок')
+                                .targetEvent(ev)
+                        );
+                    });
+            }
+
+            $scope.settings = {
+                replace: false,
+                merge: true,
+                mode: {
+                    own: false,
+                    original: true
+                },
+                files_location: 'top',
+                files: [],
+                content: {
+                    text: ''
+                }
+            };
+
+            $scope.$watch('settings.mode.own', function (newVal, oldVal) {
+                $scope.settings.mode.original = !newVal;
+                $scope.confirmExit = true;
+            });
+            $scope.$watch('settings.mode.original', function (newVal, oldVal) {
+                $scope.settings.mode.own = !newVal;
+                $scope.confirmExit = true;
+            });
+
+            $scope.$watch('settings.replace', function (newVal, oldVal) {
+                $scope.settings.merge = !newVal;
+                $scope.confirmExit = true;
+            });
+            $scope.$watch('settings.merge', function (newVal, oldVal) {
+                $scope.settings.replace = !newVal;
+                $scope.confirmExit = true;
+            });
+
+            $scope.condition = {};
+            $rootScope.$broadcast('data loading');
+            AdminManager.getCondition({ problem_id: $scope.problemId })
+                .then(function (result) {
+                    $rootScope.$broadcast('data loaded');
+                    if (result.error) {
+                        return $state.go('^.conditions');
+                    }
+                    result.formatted_text = result.formatted_text
+                        .replace(/(\<\!\–\–\s?google_ad_section_(start|end)\s?\–\–\>)/gi, '');
+                    $scope.condition = result;
+                    if (!$scope.condition.formatted_text.trim()) {
+                        $scope.condition.formatted_text = '<br>';
+                    }
+                    if (result.attachments.config) {
+                        $scope.settings.replace = result.attachments.config.replaced;
+                        $scope.settings.merge = !result.attachments.config.replaced;
+                        $scope.settings.mode.own = result.attachments.config.replaced;
+                        $scope.settings.mode.original = !result.attachments.config.replaced;
+                        $scope.settings.files_location = result.attachments.config.files_location;
+                        $scope.settings.files = result.attachments.files;
+                        $scope.settings.content.text = result.attachments.content.text;
+                    }
+                });
+
+            $scope.addFile = function (ev) {
+                $mdDialog.show({
+                    controller: ['$scope', '$parentScope', function ($scope, $parentScope) {
+                        $scope.close = function () {
+                            $mdDialog.hide();
+                        };
+                        $scope.file = {
+                            type: 'pdf',
+                            url: 'http://',
+                            title: 'Название файла'
+                        };
+                        $scope.save = function () {
+                            $parentScope.settings.files.push($scope.file);
+                            $scope.close();
+                        };
+
+                        $scope.types = [ 'pdf', 'txt', 'doc', 'image' ];
+                    }],
+                    templateUrl: templateUrl('admin', 'problems/edit-section/add-file'),
+                    parent: angular.element(document.body),
+                    targetEvent: ev,
+                    clickOutsideToClose: false,
+                    locals: {
+                        '$parentScope': $scope
+                    }
+                });
+                $scope.confirmExit = true;
+            };
+
+            $scope.deleteFile = function (file) {
+                $scope.settings.files.splice(
+                    $scope.settings.files.reduce(function (acc, cur, i) {
+                        return cur === file ? i : 0;
+                    }, 0), 1
+                );
+                $scope.confirmExit = true;
+            };
+            $scope.tabIndex = 0;
+            $scope.$watch('tabIndex', function (newVal) {
+                if (!newVal) {
+                    return;
+                }
+                syncWithCondition();
+            });
+
+            function syncWithCondition() {
+                if (!$scope.condition.attachments.config) {
+                    $scope.condition.attachments = {};
+                    $scope.condition.attachments.config = {
+                        markup: 'markdown'
+                    };
+                    $scope.condition.attachments.files = [];
+                    $scope.condition.attachments.content = {};
+                }
+                console.log($scope.condition);
+                $scope.condition.attachments.config.replaced = $scope.settings.replace;
+                $scope.condition.attachments.config.files_location = $scope.settings.files_location;
+                $scope.condition.attachments.files = $scope.settings.files;
+                $scope.condition.attachments.content.text = $scope.settings.content.text;
+            }
+
+            $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams, options) {
+                if ($scope.confirmExit) {
+                    var confirm = window.confirm('Вы действительно хотите выйти без сохранения?');
+                    if (!confirm) {
+                        event.preventDefault();
+                    } else {
+                        $scope.confirmExit = false;
+                    }
+                }
+            })
         }
     ])
 

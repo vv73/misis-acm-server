@@ -56,6 +56,7 @@ http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js
 /bower_components/marked/marked.min.js
 /bower_components/angular-marked/dist/angular-marked.min.js
 /bower_components/angular-bindonce/bindonce.min.js
+/bower_components/angular-contenteditable/angular-contenteditable.js
 /vendor/katex/katex.min.js
 /prod/js/build.min.js?0.2.7-rc3
 

@@ -283,4 +283,27 @@ angular.module('Qemy.directives.admin', [])
             controller: 'AdminUserListItemCtrl'
         }
     })
+
+    .directive('taskContenteditable', function() {
+        return {
+            restrict: 'A',
+            require: '?ngBindHtml',
+            scope: true,
+            link: function (scope, element, attrs) {
+                console.log(scope.condition);
+
+                var element = angular.element(element);
+                element.on('keyup keydown mouseup mousedown input', function (ev) {
+                    if (!ev.target) {
+                        return;
+                    }
+                    scope.condition.formatted_text = ev.target.innerHTML;
+                    scope.condition.cleared_text = angular.element(ev.target).text();
+                    scope.confirmExit = true;
+                });
+                element.attr('contenteditable', 'true');
+                element.addClass('task__problem-editing');
+            }
+        }
+    })
 ;
