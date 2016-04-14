@@ -15,7 +15,7 @@ var request = require('request');
 
 var ACM_BASE_URI = 'http://ejudge.asuscomm.com:7080';
 var looperTimeout = 500;
-var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
+var MAX_WAITING_TIMEOUT = 5 * 60 * 1000;
 var watchers = [];
 
 module.exports = {
