@@ -16,12 +16,17 @@ var request = require('request');
 var ACM_BASE_URI = 'http://ejudge.asuscomm.com:7080';
 var looperTimeout = 500;
 var MAX_WAITING_TIMEOUT = 2 * 60 * 1000;
+var watchers = [];
 
 module.exports = {
     watch: Watch
 };
 
 function Watch(params, callback, progressCallback) {
+    if (~watchers.indexOf(params.data.sentId)) {
+        return callback(new Error('There is solution listening right now with this sent_id'));
+    }
+    watchers.push(params.data.sentId);
     var statusUrl = ACM_BASE_URI + '/cgi-bin/new-judge?SID=' + params.data.context.sid,
         beginTime = new Date().getTime();
 
@@ -95,6 +100,10 @@ function Watch(params, callback, progressCallback) {
                     });
 
                     if (terminalExistence) {
+                        var watcherId = watchers.indexOf(params.data.sentId);
+                        if (watcherId) {
+                            watchers.splice(watcherId, 1);
+                        }
                         callback(null, {
                             solutionId: params.data.sentId,
                             verdict: verdict,
