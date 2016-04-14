@@ -91,7 +91,7 @@ function Init() {
                 };
             }) );
 
-            for (var i = 0; i < 1; ++i) {
+            /*for (var i = 0; i < 1; ++i) {
                 ejudge.send({
                     contest_id: 25,
                     problem_index: 1,
@@ -102,7 +102,7 @@ function Init() {
                 }, function (result) {
                     console.log(result);
                 });
-            }
+            }*/
 
         });
 
