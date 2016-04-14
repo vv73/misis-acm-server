@@ -21,4 +21,34 @@ angular.module('Qemy.filters', [])
         }).join(seperator);
     };
 }])
+
+.filter('escape', [function(){
+    return function(msg) {
+        var RexStr = /\<|\>|\"|\'|\&/g;
+        msg = (msg + '').replace(RexStr,
+            function(MatchStr){
+                switch(MatchStr){
+                    case "<":
+                        return "&lt;";
+                        break;
+                    case ">":
+                        return "&gt;";
+                        break;
+                    case "\"":
+                        return "&quot;";
+                        break;
+                    case "'":
+                        return "&#39;";
+                        break;
+                    case "&":
+                        return "&amp;";
+                        break;
+                    default :
+                        break;
+                }
+            }
+        );
+        return msg;
+    }
+}])
 ;
