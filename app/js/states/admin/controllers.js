@@ -625,7 +625,7 @@ angular.module('Qemy.controllers.admin', [])
                     targetEvent: ev,
                     clickOutsideToClose: true,
                     locals: {
-                        problem: problem
+                        condition: problem
                     }
                 });
             };
