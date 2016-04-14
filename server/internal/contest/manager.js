@@ -837,6 +837,43 @@ function SendSolution(params, callback) {
                                                     });
                                                 });
                                                 break;
+                                            case 'ejudge':
+                                                var pairCode = problem.system_problem_number.split(':');
+                                                if (pairCode.length !== 2) {
+                                                    return callback(new Error('Something went wrong.'));
+                                                }
+                                                var contestId = pairCode[0],
+                                                    problemIndex = pairCode[1];
+                                                if (!/^\d+/i.test(problemIndex) || !/^\d+/i.test(contestId)) {
+                                                    return callback(new Error('Something went wrong. Please contact your administrator.'));
+                                                }
+                                                acmManager.send(problem.system_type, {
+                                                    lang_id: lang.foreign_id,
+                                                    contest_id: contestId,
+                                                    problem_index: problemIndex,
+                                                    source: solution
+                                                }, function (err, verdict) {
+                                                    if (err) {
+                                                        saveWithErrors(err);
+                                                        return callback(err);
+                                                    }
+                                                    saveResult(verdict);
+                                                }, function (progressCurrentTest) {
+                                                    console.log(progressCurrentTest);
+                                                    var contestHashKey = sockets.getRoomHash(contest.getId());
+                                                    var io = sockets.getIo();
+                                                    io.to(contestHashKey).emit('verdict updated', {
+                                                        verdict_id: -1,
+                                                        verdict_name: progressCurrentTest.verdict,
+                                                        memory: progressCurrentTest.memoryConsumed,
+                                                        time: progressCurrentTest.timeConsumed,
+                                                        testNum: progressCurrentTest.testNum,
+                                                        contest_id: contestId,
+                                                        solution_id: insertedId,
+                                                        user_id: user.getId()
+                                                    });
+                                                });
+                                                break;
                                             default:
                                                 return callback(new Error('System is not defined.'));
                                                 break;
@@ -850,11 +887,11 @@ function SendSolution(params, callback) {
                                                 return 2;
                                             } else if ([ 'compilation error', 'compilation_error' ].indexOf(verdictName) !== -1) {
                                                 return 3;
-                                            } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded' ].indexOf(verdictName) !== -1) {
+                                            } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded', 'run-time error' ].indexOf(verdictName) !== -1) {
                                                 return 4;
                                             } else if ([ 'presentation error', 'presentation_error' ].indexOf(verdictName) !== -1) {
                                                 return 5;
-                                            } else if ([ 'time limit exceeded', 'time_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                            } else if ([ 'time limit exceeded', 'time_limit_exceeded', 'time-limit exceeded' ].indexOf(verdictName) !== -1) {
                                                 return 6;
                                             } else if ([ 'memory limit exceeded', 'memory_limit_exceeded' ].indexOf(verdictName) !== -1) {
                                                 return 7;
@@ -1262,6 +1299,43 @@ function RefreshSolution(params, callback) {
                                             });
                                         });
                                         break;
+                                    case 'ejudge':
+                                        var pairCode = problem.system_problem_number.split(':');
+                                        if (pairCode.length !== 2) {
+                                            return callback(new Error('Something went wrong.'));
+                                        }
+                                        var contestId = pairCode[0],
+                                            problemIndex = pairCode[1];
+                                        if (!/^\d+/i.test(problemIndex) || !/^\d+/i.test(contestId)) {
+                                            return callback(new Error('Something went wrong. Please contact your administrator.'));
+                                        }
+                                        acmManager.send(problem.system_type, {
+                                            language: lang.foreign_id,
+                                            contest_id: contestId,
+                                            problem_index: problemIndex,
+                                            source: solution
+                                        }, function (err, verdict) {
+                                            if (err) {
+                                                saveWithErrors(err);
+                                                return callback(err);
+                                            }
+                                            saveResult(verdict);
+                                        }, function (progressCurrentTest) {
+                                            console.log(progressCurrentTest);
+                                            var contestHashKey = sockets.getRoomHash(contest.getId());
+                                            var io = sockets.getIo();
+                                            io.to(contestHashKey).emit('verdict updated', {
+                                                verdict_id: -1,
+                                                verdict_name: progressCurrentTest.verdict,
+                                                memory: progressCurrentTest.memoryConsumed,
+                                                time: progressCurrentTest.timeConsumed,
+                                                testNum: progressCurrentTest.testNum,
+                                                contest_id: contestId,
+                                                solution_id: insertedId,
+                                                user_id: user.getId()
+                                            });
+                                        });
+                                        break;
                                     default:
                                         return callback(new Error('System is not defined.'));
                                         break;
@@ -1275,11 +1349,11 @@ function RefreshSolution(params, callback) {
                                         return 2;
                                     } else if ([ 'compilation error', 'compilation_error' ].indexOf(verdictName) !== -1) {
                                         return 3;
-                                    } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded' ].indexOf(verdictName) !== -1) {
+                                    } else if ([ 'runtime error', 'runtime_error', 'output limit exceeded', 'run-time error' ].indexOf(verdictName) !== -1) {
                                         return 4;
                                     } else if ([ 'presentation error', 'presentation_error' ].indexOf(verdictName) !== -1) {
                                         return 5;
-                                    } else if ([ 'time limit exceeded', 'time_limit_exceeded' ].indexOf(verdictName) !== -1) {
+                                    } else if ([ 'time limit exceeded', 'time_limit_exceeded', 'time-limit exceeded' ].indexOf(verdictName) !== -1) {
                                         return 6;
                                     } else if ([ 'memory limit exceeded', 'memory_limit_exceeded' ].indexOf(verdictName) !== -1) {
                                         return 7;

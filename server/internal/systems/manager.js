@@ -12,6 +12,7 @@ var timus = require('./timus/timus');
 var codeforces = require('./codeforces/codeforces');
 var sgu = require('./sgu/sgu');
 var acmp = require('./acmp/acmp');
+var ejudge = require('./ejudge/ejudge');
 
 module.exports = {
     send: SendSolution
@@ -28,7 +29,8 @@ function SendSolution(system_type, solution, callback, progressCallback) {
         'timus': SendToTimus,
         'sgu': SendToSgu,
         'cf': SendToCodeforces,
-        'acmp': SendToAcmp
+        'acmp': SendToAcmp,
+        'ejudge': SendToEjudge
     };
     if (system_type in differentHandlers) {
         differentHandlers[system_type].apply(this, args);
@@ -127,4 +129,26 @@ function SendToAcmp(system_type, solution, callback, progressCallback) {
     };
 
     acmp.send(solution, internalCallback, progressCallback);
+}
+
+function SendToEjudge(system_type, solution, callback, progressCallback) {
+    var numOfAttempts = 1;
+
+    var internalCallback = function (err, verdict) {
+        if (err) {
+            console.log(err);
+            if (numOfAttempts > 2) {
+                console.log('Reached maximum number of attempts to send solution.', solution);
+                return callback(new Error('Reached maximum number of attempts to send solution.'));
+            }
+            console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
+            return setTimeout(function () {
+                numOfAttempts++;
+                ejudge.send(solution, internalCallback, progressCallback);
+            }, timeoutAttempts);
+        }
+        callback(null, verdict);
+    };
+
+    ejudge.send(solution, internalCallback, progressCallback);
 }

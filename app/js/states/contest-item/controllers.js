@@ -316,7 +316,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     targetEvent: ev,
                     clickOutsideToClose: true
                 });
-                
+
                 ev.preventDefault();
                 return false;
             };
@@ -490,19 +490,6 @@ angular.module('Qemy.controllers.contest-item', [])
                 return pages;
             }
 
-            /*var firstInvokeStateChanged = true;
-            $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-                if (firstInvokeStateChanged) {
-                    return firstInvokeStateChanged = false;
-                }
-                $scope.pageNumber = toParams.pageNumber ?
-                    parseInt(toParams.pageNumber) : 1;
-                $scope.params.offset = ($scope.pageNumber - 1) * defaultCount;
-                $scope.params.select = toParams.select || 'my';
-                updateSentsList();
-                return false;
-            });*/
-
             updateSentsList();
 
             function updateSentsList(page) {
@@ -557,14 +544,12 @@ angular.module('Qemy.controllers.contest-item', [])
                                 { select: 'my' },
                                 { location: true, inherit: true, relative: $state.$current, notify: false }
                             );
-                            //$state.go('^.status', {select: 'my'});
                         } else {
                             $state.transitionTo(
                                 'contest.status-pagination',
                                 { select: 'my', pageNumber: $scope.pageNumber },
                                 { location: true, inherit: true, relative: $state.$current, notify: false }
                             );
-                            //$state.go('^.status-pagination', { select: 'my', pageNumber: nextPage });
                         }
                         break;
                     }
@@ -578,14 +563,12 @@ angular.module('Qemy.controllers.contest-item', [])
                                 { select: 'all' },
                                 { location: true, inherit: true, relative: $state.$current, notify: false }
                             );
-                            //$state.go('^.status', {select: 'all'});
                         } else {
                             $state.transitionTo(
                                 'contest.status-pagination',
                                 { select: 'all', pageNumber: $scope.pageNumber },
                                 { location: true, inherit: true, relative: $state.$current, notify: false }
                             );
-                            //$state.go('^.status-pagination', { select: 'all', pageNumber: nextPage });
                         }
                         break;
                     }

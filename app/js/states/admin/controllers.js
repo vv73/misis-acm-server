@@ -285,6 +285,9 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 type: 'sgu',
                 name: 'SGU'
+            }, {
+                type: 'ejudge',
+                name: 'ejudge'
             }];
 
             $scope.selectedProblems = [];
@@ -536,6 +539,9 @@ angular.module('Qemy.controllers.admin', [])
             }, {
                 type: 'sgu',
                 name: 'SGU'
+            }, {
+                type: 'ejudge',
+                name: 'ejudge'
             }];
 
             $scope.selectedProblems = [];

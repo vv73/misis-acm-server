@@ -21,6 +21,7 @@ div.contest
         "task__problem-sgu": condition.system_type === "sgu", \
         "task__problem-cf": condition.system_type === "cf", \
         "task__problem-acmp": condition.system_type === "acmp", \
+        "task__problem-ejudge": condition.system_type === "ejudge", \
         "task__problem-cf_type_gym": condition.system_problem_number.indexOf("gym") >= 0 }')
           div(ng-bind-html='condition.formatted_text')
 
