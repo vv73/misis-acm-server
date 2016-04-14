@@ -54,8 +54,8 @@ function SendSolution(solution, callback, progressCallback) {
             return callback(err);
         }
         SendAndGetContext(solution, acmAccount, function (err, context) {
-            onAccountFinished();
             if (err) {
+                onAccountFinished();
                 return callback(err);
             }
             looper.watch({
@@ -66,6 +66,7 @@ function SendSolution(solution, callback, progressCallback) {
                 if (err) {
                     return callback(err);
                 }
+                onAccountFinished();
                 callback(null, verdict);
             }, progressCallback);
         });
