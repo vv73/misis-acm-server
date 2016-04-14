@@ -1310,7 +1310,7 @@ function RefreshSolution(params, callback) {
                                             return callback(new Error('Something went wrong. Please contact your administrator.'));
                                         }
                                         acmManager.send(problem.system_type, {
-                                            language: lang.foreign_id,
+                                            lang_id: lang.foreign_id,
                                             contest_id: contestId,
                                             problem_index: problemIndex,
                                             source: solution
