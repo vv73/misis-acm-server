@@ -10,6 +10,7 @@ angular.module('Qemy', [
     'ngAria',
     'ngMessages',
     'hc.marked',
+    'pasvaz.bindonce',
 
     'Qemy.directives',
     'Qemy.controllers',

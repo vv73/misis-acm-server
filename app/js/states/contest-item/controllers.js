@@ -508,16 +508,7 @@ angular.module('Qemy.controllers.contest-item', [])
                             return;
                         }
                         $scope.all_items_count = result.all_items_count;
-                        $scope.sents = [];
-                        var sents = result.sents;
-                        $timeout(function () {
-                            var interval = $interval(function () {
-                                if (!sents.length) {
-                                    return $interval.cancel(interval);
-                                }
-                                $scope.sents.push.apply($scope.sents, sents.splice(0, Math.min(5, sents.length)));
-                            }, 0);
-                        }, 500);
+                        $scope.sents = result.sents;
                         $scope.pagination = generatePaginationArray(5);
                     }).catch(function (err) {
                         console.log(err);
