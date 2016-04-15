@@ -42,7 +42,9 @@ module.exports = {
     getSourceCodeRaw: GetSourceCodeRaw,
     getTable: GetTable,
     getSentsForCell: GetSentsForCell,
-    getRatingTable: GetRatingTable
+    getRatingTable: GetRatingTable,
+    postMessage: PostMessage,
+    getUnreadMessages: GetUnreadMessages
 };
 
 
@@ -2239,5 +2241,103 @@ function GetRatingTable(params, callback) {
                 callback(null, readyTable);
             }
         );
+    }
+}
+
+function PostMessage(params, callback) {
+
+    var contestId = params.contest_id;
+    var user = params.user;
+
+    params.as_admin = typeof params.as_admin !== 'undefined' ?
+        params.as_admin : true;
+    var publishAsAdmin = user.getAccessGroup().access_level !== 5 ?
+        0 : +params.as_admin;
+
+    var attachments = params.attachments && typeof params.attachments === 'object' ?
+        JSON.stringify(params.attachments) : params.attachments;
+    var message = params.message || '';
+    var time = new Date().getTime();
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                connection.query(
+                    'INSERT INTO messages ' +
+                    '(user_id, contest_id, as_admin, attachments, message, time) ' +
+                    'VALUES (?, ?, ?, ?, ?, ?)',
+                    [ user.getId(), contest.getId(), publishAsAdmin, attachments, message, time ],
+                    function (err, result) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, {
+                            result: result.insertId
+                        });
+                    }
+                );
+            });
+        });
+    }
+}
+
+function GetUnreadMessages(params, callback) {
+
+    var contestId = params.contest_id;
+    var user = params.user;
+    var time = new Date().getTime();
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                //todo
+            });
+        });
     }
 }

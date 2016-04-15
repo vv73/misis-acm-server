@@ -41,6 +41,7 @@ CACHE:
 /partials/page/wrapper.html
 /partials/page/loading-layer.html
 /partials/contests/contest-list-item.html
+/vendor/math-tex/dist/math-tex.html
 
 # js
 /socket.io/socket.io.js

@@ -1404,4 +1404,90 @@ router.post('/admin/deleteGroup', function (req, res) {
     }
 });
 
+router.get('/contest/getUnreadMessages', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var q = req.query,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('Access denied'));
+        }
+        contestManager.getUnreadMessages(q, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+
+router.post('/contest/markAsRead', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('Access denied'));
+        }
+        contestManager.markAsRead(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
+router.post('/contest/postMessage', function (req, res) {
+
+    execute(function (err, result) {
+        if (err) {
+            return res.json(err.error ? err : {
+                error: err.toString()
+            });
+        }
+        res.json(result);
+    });
+
+    function execute(callback) {
+        var body = req.body,
+            user = req.currentUser;
+        if (!user || user.isEmpty()) {
+            return callback(new Error('Access denied'));
+        }
+        body.user = user;
+        contestManager.postMessage(body, function (err, result) {
+            if (err) {
+                return callback({
+                    error: err.toString()
+                });
+            }
+            callback(null, result);
+        });
+    }
+});
+
 module.exports = router;

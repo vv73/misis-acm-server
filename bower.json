@@ -21,6 +21,7 @@
     "angular-material": "~1.0.6",
     "angular-messages": "~1.4.7",
     "angular-marked": "^1.0.1",
-    "angular-bindonce": "^0.3.3"
+    "angular-bindonce": "^0.3.3",
+    "math-tex": "^0.3.1"
   }
 }
