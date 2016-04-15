@@ -66,10 +66,7 @@ angular.module('Qemy', [
                     return '<div class="markdown__tex">' + katex.renderToString(text) + '</div>';
                 }
 
-                var injector = angular.injector(['ng', 'Qemy']);
-                var $filter = injector.get('$filter');
-                //programming langs
-                var code = $filter('escape')(text);
+                var code = text;
                 Rainbow.color(text, lang, function(highlighted_code) {
                     code = highlighted_code;
                 });
