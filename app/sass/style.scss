@@ -1915,9 +1915,21 @@ md-backdrop.md-sidenav-backdrop {
   z-index: 99099 !important;
 }
 
-.inbox {
+md-sidenav {
+  max-width: 400px;
+  width: 400px;
+}
 
+.inbox {
+  .md-button:hover {
+    background-color: rgba(0,0,0,.1) !important;
+  }
   &__no-new-messages {
+    -webkit-transition: opacity .3s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+    -moz-transition: opacity .3s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+    -ms-transition: opacity .3s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+    -o-transition: opacity .3s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+    transition: opacity .3s cubic-bezier(0.860, 0.000, 0.070, 1.000);
     opacity: 0.5;
   }
   &__messages, &__unread-messages {
@@ -1932,19 +1944,41 @@ md-backdrop.md-sidenav-backdrop {
   &__messages {
     background-color: rgb(156, 156, 156);
     color: #fff;
+
+    /* start 'enter' transition */
+    &.ng-enter, &.ng-leave {
+      transition: all .2s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+    }
+    &.ng-enter {
+      transform: scale(0.5);
+      opacity: 0;
+    }
+    &.ng-enter-active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    &.ng-leave {
+      opacity: 1;
+      transform: scale(1);
+    }
+    &.ng-leave-active {
+      opacity: 0;
+      transform: scale(0.5);
+    }
   }
   &__unread-messages {
     background-color: rgb(255,23,68);
     color: #fff;
 
-    animation: blink 2s infinite cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    animation-delay: 2s;
+    animation: shake-it-off 2s infinite cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    animation-delay: 1s;
     animation-fill-mode: forwards;
   }
 }
 
-//blink animation
-@keyframes blink {
+//shake animation
+@keyframes shake-it-off {
   0% {
     transform: rotate(0deg) translateX(0);
   }
@@ -1973,4 +2007,38 @@ md-backdrop.md-sidenav-backdrop {
     transform: rotate(0deg) translateX(0);
   }
 }
-//end blink animation
+//end shake animation
+
+.contest-inbox {
+  background: #F3F3F3 !important;
+
+  md-content {
+    background: #F3F3F3 !important;
+  }
+  &__section-title {
+    font-size: 11px;
+    color: #777;
+    padding: 2px 10px;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+  }
+  &__section {
+
+    &:not(:last-of-type) {
+      margin-bottom: 30px;
+    }
+    &_type_read {
+      md-card {
+        -webkit-transition: opacity .2s ease-out;
+        -moz-transition: opacity .2s ease-out;
+        -ms-transition: opacity .2s ease-out;
+        -o-transition: opacity .2s ease-out;
+        transition: opacity .2s ease-out;
+        opacity: .7;
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}

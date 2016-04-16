@@ -23,6 +23,23 @@ angular.module('Qemy.services.contest-item', [
             return paramPairs.join('&');
         }
 
+        function getMessages(params) {
+            return $http({ method: 'get', url: '/api/contest/getMessages?' + dataEncode(params) })
+                .then(function (data) {
+                    return data.data;
+                });
+        }
+
+        function markAsRead(params) {
+            return $http({
+                method: 'post',
+                url: '/api/contest/markAsRead',
+                data: params
+            }).then(function (data) {
+                return data.data;
+            });
+        }
+
         function getConditions(params) {
             return $http({ method: 'get', url: '/api/problemset/getForContest?' + dataEncode(params) })
                 .then(function (data) {
@@ -100,7 +117,9 @@ angular.module('Qemy.services.contest-item', [
             getSents: getSents,
             getSourceCode: getSourceCode,
             getTable: getTable,
-            getSentsForCell: getSentsForCell
+            getSentsForCell: getSentsForCell,
+            getMessages: getMessages,
+            markAsRead: markAsRead
         }
     }])
 ;

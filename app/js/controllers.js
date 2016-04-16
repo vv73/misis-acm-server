@@ -131,25 +131,23 @@ angular.module('Qemy.controllers', [
             $scope.logoClick = function (ev) {
                 if ($state.current
                     && $state.current.name
-                    && $state.current.name === 'contests.list') {
+                    && $state.is('contests.list')) {
                     $rootScope.$broadcast('contests list update needed')
                 }
             };
 
-            $scope.unreadMessagesNumber = 1;
-            $scope.allMessagesNumber = 2;
-            
-            $interval(function () {
-                $scope.unreadMessagesNumber = $scope.unreadMessagesNumber > 0 ? 0 : 1;
-            }, 3000);
+            $scope.unreadMessagesNumber = 0;
+            $scope.allMessagesNumber = 0;
 
             $scope.openInbox = function (ev) {
                 $rootScope.$broadcast('toggleRightSidenav');
             };
 
-            $scope.$on('inbox.messages.update', function (ev, args) {
-                $scope.unreadMessagesNumber = args.unreadMessagesNumber;
-                $scope.allMessagesNumber = args.allMessagesNumber;
+            $scope.$on('inbox.messages.update-numbers', function (ev, args) {
+                $scope.unreadMessagesNumber = typeof args.unreadMessagesNumber !== 'undefined' ?
+                    args.unreadMessagesNumber : $scope.unreadMessagesNumber;
+                $scope.allMessagesNumber = typeof args.allMessagesNumber !== 'undefined' ?
+                    args.allMessagesNumber : $scope.allMessagesNumber;
             });
         }
     ])

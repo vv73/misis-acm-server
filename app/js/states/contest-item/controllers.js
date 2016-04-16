@@ -173,6 +173,8 @@ angular.module('Qemy.controllers.contest-item', [])
                 });
             });
 
+            $rootScope.$broadcast('inbox.messages.update');
+
             $scope.$on('toggleRightSidenav', function (ev, args) {
                 $scope.toggleRight();
             });
@@ -1200,8 +1202,9 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('RightSidenavCtrl', ['$scope', '$timeout', '$mdSidenav', '$log',
-        function ($scope, $timeout, $mdSidenav, $log) {
+    .controller('RightSidenavCtrl', ['$scope', '$rootScope', '$timeout', '$mdSidenav', '$log', '$state', 'ContestItemManager',
+        function ($scope, $rootScope, $timeout, $mdSidenav, $log, $state, ContestItemManager) {
+
             $scope.close = function () {
                 $mdSidenav('right').close()
                     .then(function () {
@@ -1209,7 +1212,88 @@ angular.module('Qemy.controllers.contest-item', [])
                     });
             };
 
-            console.log('Right sidenav has been created');
+            $scope.isOpenRightSidenav = function(){
+                return $mdSidenav('right').isOpen();
+            };
+
+            $scope.$on('toggleRightSidenav', function (ev, args) {
+                var isOpenAction = $scope.isOpenRightSidenav();
+                if (isOpenAction) {
+                    $scope.isMessagesLoading = true;
+                    $timeout(function () {
+                        $scope.updateMessages(true);
+                    }, 100);
+                }
+            });
+
+            $scope.$on('inbox.messages.update', function (ev, args) {
+                $scope.updateMessages();
+            });
+
+            //first initializing
+            $timeout(function () {
+                $scope.updateMessages();
+            });
+
+            $scope.messages = {
+                read: [],
+                unread: []
+            };
+
+            $scope.updateMessages = buildDelayedFunc(function (isImplicitAction) {
+                $scope.isMessagesLoading = true;
+                var contestId = $state.params.contestId;
+                ContestItemManager.getMessages({ contest_id: contestId || 1 })
+                    .then(function (messages) {
+                        $scope.isMessagesLoading = false;
+                        if (messages.error) {
+                            return alert('Error: ' + messages.error);
+                        }
+                        $scope.messages = messages;
+                        $rootScope.$broadcast('inbox.messages.update-numbers', {
+                            unreadMessagesNumber: (messages.unread || []).length,
+                            allMessagesNumber: (messages.read || []).length
+                        });
+                        if (isImplicitAction) {
+                            ContestItemManager.markAsRead({ contest_id: contestId || 1 })
+                                .then(function (res) {
+                                    if (res.error) {
+                                        return console.log(res);
+                                    }
+                                    $rootScope.$broadcast('inbox.messages.update-numbers', {
+                                        unreadMessagesNumber: 0
+                                    });
+                                });
+                        }
+                    });
+            });
+
+            /**
+             * Supplies a function that will continue to operate until the
+             * time is up.
+             */
+            function debounce(func, wait, context) {
+                var timer;
+                return function debounced() {
+                    var context = $scope,
+                        args = Array.prototype.slice.call(arguments);
+                    $timeout.cancel(timer);
+                    timer = $timeout(function() {
+                        timer = undefined;
+                        func.apply(context, args);
+                    }, wait || 10);
+                };
+            }
+
+            /**
+             * Build handler to open/close a SideNav; when animation finishes
+             * report completion in console
+             */
+            function buildDelayedFunc(fn) {
+                return debounce(function() {
+                    fn.apply(this, arguments);
+                }, 200);
+            }
         }
     ])
 ;
