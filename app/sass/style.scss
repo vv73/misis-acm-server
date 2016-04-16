@@ -1730,6 +1730,9 @@ ui-view, [ui-view] {
   h1, h2, h3, h4 {
     font-weight: bold;
     color: #219CF5;
+    &:not(:first-of-type) {
+      margin-top: 50px;
+    }
   }
   table {
     border-collapse: collapse;
@@ -1746,6 +1749,7 @@ ui-view, [ui-view] {
     padding: 6px 13px;
     border: 1px solid #ddd;
     vertical-align: top;
+    line-height: 1.6;
   }
   table tr {
     background-color: #fff;
