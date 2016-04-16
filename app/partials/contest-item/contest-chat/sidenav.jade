@@ -1,7 +1,7 @@
 md-sidenav.md-sidenav-right.md-whiteframe-z2.contest-inbox(md-component-id='right')
   md-toolbar.md-theme-light
     h1.md-toolbar-tools Сообщения
-  md-content(ng-controller='RightSidenavCtrl', layout-padding='')
+  md-content(ng-controller='RightSidenavCtrl', layout-padding)
 
     div(ng-if='!isMessagesLoading')
       div.contest-inbox__section.contest-inbox__section_type_unread(ng-if='messages.unread.length > 0')

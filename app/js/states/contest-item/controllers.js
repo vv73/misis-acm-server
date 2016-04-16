@@ -13,8 +13,8 @@
 
 angular.module('Qemy.controllers.contest-item', [])
 
-    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_', 'SocketService', 'Battery', '$mdToast', '$mdSidenav', '$log',
-        function ($scope, $rootScope, $state, ContestsManager, _, SocketService, Battery, $mdToast, $mdSidenav, $log) {
+    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_', 'SocketService', 'Battery', '$mdToast', '$mdSidenav', '$log', '$timeout',
+        function ($scope, $rootScope, $state, ContestsManager, _, SocketService, Battery, $mdToast, $mdSidenav, $log, $timeout) {
             $scope.$emit('change_title', {
                 title: 'Контест | ' + _('app_name')
             });
@@ -173,7 +173,9 @@ angular.module('Qemy.controllers.contest-item', [])
                 });
             });
 
-            $rootScope.$broadcast('inbox.messages.update');
+            $timeout(function () {
+                $rootScope.$broadcast('inbox.messages.update');
+            });
 
             $scope.$on('toggleRightSidenav', function (ev, args) {
                 $scope.toggleRight();
@@ -1222,12 +1224,14 @@ angular.module('Qemy.controllers.contest-item', [])
                     $scope.isMessagesLoading = true;
                     $timeout(function () {
                         $scope.updateMessages(true);
-                    }, 100);
+                    }, 50);
                 }
             });
 
             $scope.$on('inbox.messages.update', function (ev, args) {
-                $scope.updateMessages();
+                $timeout(function () {
+                    $scope.updateMessages();
+                }, 200);
             });
 
             //first initializing
