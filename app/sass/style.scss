@@ -1732,9 +1732,7 @@ ui-view, [ui-view] {
     color: #219CF5;
   }
   h2 {
-    &:not(:first-of-type) {
-      margin-top: 50px;
-    }
+    margin-top: 50px;
   }
   table {
     border-collapse: collapse;
