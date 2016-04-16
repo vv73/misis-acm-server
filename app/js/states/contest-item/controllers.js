@@ -128,6 +128,10 @@ angular.module('Qemy.controllers.contest-item', [])
 
             $scope.$on('$destroy', function () {
                 $rootScope.$broadcast('header expand close');
+                $rootScope.$broadcast('inbox.messages.update-numbers', {
+                    unreadMessagesNumber: 0,
+                    allMessagesNumber: 0
+                });
                 SocketService.leaveContest(contestId);
                 Battery.dispose();
                 removeEvents();
