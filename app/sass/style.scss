@@ -1727,9 +1727,11 @@ ui-view, [ui-view] {
     width: 100%;
     box-sizing: border-box;
   }
-  h1, h2, h3, h4 {
+  h1, h2, h3, h4, h5 {
     font-weight: bold;
     color: #219CF5;
+  }
+  h2 {
     &:not(:first-of-type) {
       margin-top: 50px;
     }
