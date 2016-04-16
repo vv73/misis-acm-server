@@ -149,6 +149,10 @@ angular.module('Qemy.controllers', [
                 $scope.allMessagesNumber = typeof args.allMessagesNumber !== 'undefined' ?
                     args.allMessagesNumber : $scope.allMessagesNumber;
             });
+
+            $interval(function () {
+                console.log('INBOX BUTTON:', $scope.isAuth, !!$scope.headerMenu.contest, $scope.allMessagesNumber > 0);
+            }, 500);
         }
     ])
 
