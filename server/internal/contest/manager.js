@@ -2447,7 +2447,7 @@ function GetMessagesByGroup(connection, user, contest, callback) {
         'users.username, CONCAT(users.first_name, " ", users.last_name) AS full_name, users.access_level ' +
         'FROM messages LEFT JOIN messages_read ON messages_read.user_id = ? AND messages_read.message_id = messages.id ' +
         'LEFT JOIN users ON users.id = messages.user_id ' +
-        'WHERE messages.contest_id = ? ' +
+        'WHERE messages.contest_id = ? AND messages.removed = 0 ' +
         'ORDER BY messages.time DESC',
         [ user.getId(), contest.getId() ],
         function (err, results, fields) {
