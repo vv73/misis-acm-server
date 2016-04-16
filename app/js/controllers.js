@@ -148,12 +148,7 @@ angular.module('Qemy.controllers', [
                     args.unreadMessagesNumber : $scope.unreadMessagesNumber;
                 $scope.allMessagesNumber = typeof args.allMessagesNumber !== 'undefined' ?
                     args.allMessagesNumber : $scope.allMessagesNumber;
-                $scope.$apply();
             });
-
-            $interval(function () {
-                console.log('INBOX BUTTON:', $scope.isAuth, !!$scope.headerMenu.contest, $scope.allMessagesNumber > 0);
-            }, 500);
         }
     ])
 
