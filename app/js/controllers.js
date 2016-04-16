@@ -53,8 +53,9 @@ angular.module('Qemy.controllers', [
         }
     ])
 
-    .controller('HeaderCtrl', ['$scope', '$rootScope', '$state', 'UserManager', '$mdDialog',
-        function ($scope, $rootScope, $state, UserManager, $mdDialog) {
+    .controller('HeaderCtrl', ['$scope', '$rootScope', '$state', 'UserManager', '$mdDialog', '$interval',
+        function ($scope, $rootScope, $state, UserManager, $mdDialog, $interval) {
+            $scope.$state = $state;
             $scope.user = {};
             $scope.isAuth = false;
             $scope.$on('user updated', function (ev, args) {
@@ -134,6 +135,22 @@ angular.module('Qemy.controllers', [
                     $rootScope.$broadcast('contests list update needed')
                 }
             };
+
+            $scope.unreadMessagesNumber = 1;
+            $scope.allMessagesNumber = 2;
+            
+            $interval(function () {
+                $scope.unreadMessagesNumber = $scope.unreadMessagesNumber > 0 ? 0 : 1;
+            }, 3000);
+
+            $scope.openInbox = function (ev) {
+                $rootScope.$broadcast('toggleRightSidenav');
+            };
+
+            $scope.$on('inbox.messages.update', function (ev, args) {
+                $scope.unreadMessagesNumber = args.unreadMessagesNumber;
+                $scope.allMessagesNumber = args.allMessagesNumber;
+            });
         }
     ])
 

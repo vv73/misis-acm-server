@@ -18,4 +18,22 @@ angular.module('Qemy.directives.contest-item', [])
             template: '<div></div>'
         }
     })
+
+    .directive('chatSidenav', function () {
+        return {
+            restrict: 'E',
+            replace: true,
+            templateUrl: templateUrl('contest-item', 'contest-chat/sidenav')
+        }
+    })
+
+    .directive('insertChatSidenav', function () {
+        return {
+            restrict: 'A',
+            compile: function (tElement, tAttrs, transclude) {
+                angular.element(tElement)
+                    .append('<chat-sidenav/>');
+            }
+        }
+    })
 ;

@@ -13,8 +13,8 @@
 
 angular.module('Qemy.controllers.contest-item', [])
 
-    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_', 'SocketService', 'Battery', '$mdToast',
-        function ($scope, $rootScope, $state, ContestsManager, _, SocketService, Battery, $mdToast) {
+    .controller('ContestItemBaseController', ['$scope', '$rootScope', '$state', 'ContestsManager', '_', 'SocketService', 'Battery', '$mdToast', '$mdSidenav', '$log',
+        function ($scope, $rootScope, $state, ContestsManager, _, SocketService, Battery, $mdToast, $mdSidenav, $log) {
             $scope.$emit('change_title', {
                 title: 'Контест | ' + _('app_name')
             });
@@ -158,7 +158,7 @@ angular.module('Qemy.controllers.contest-item', [])
                     parent: document.body,
                     templateUrl: templateUrl('contest-item/toast', 'battery-charge-low'),
                     controller: ['$scope', function ($scope) {
-                        $scope.dischargingTime = new Date().getTime() + args.dischargingTime * 1000;
+                        $scope.dischargingTime = new Date().getTime() + (args.dischargingTime || 0) * 1000;
                         $scope.closeToast = function() {
                             $mdToast.hide();
                         };
@@ -172,6 +172,57 @@ angular.module('Qemy.controllers.contest-item', [])
                     }
                 });
             });
+
+            $scope.$on('toggleRightSidenav', function (ev, args) {
+                $scope.toggleRight();
+            });
+
+            $scope.isOpenRightSidenav = function(){
+                return $mdSidenav('right').isOpen();
+            };
+
+            $scope.toggleRight = buildToggler('right');
+
+            /**
+             * Supplies a function that will continue to operate until the
+             * time is up.
+             */
+            function debounce(func, wait, context) {
+                var timer;
+                return function debounced() {
+                    var context = $scope,
+                        args = Array.prototype.slice.call(arguments);
+                    $timeout.cancel(timer);
+                    timer = $timeout(function() {
+                        timer = undefined;
+                        func.apply(context, args);
+                    }, wait || 10);
+                };
+            }
+
+            /**
+             * Build handler to open/close a SideNav; when animation finishes
+             * report completion in console
+             */
+            function buildDelayedToggler(navID) {
+                return debounce(function() {
+                    $mdSidenav(navID)
+                        .toggle()
+                        .then(function () {
+                            $log.debug("toggle " + navID + " is done");
+                        });
+                }, 200);
+            }
+
+            function buildToggler(navID) {
+                return function() {
+                    $mdSidenav(navID)
+                        .toggle()
+                        .then(function () {
+                            $log.debug("toggle " + navID + " is done");
+                        });
+                }
+            }
         }
     ])
 
@@ -1146,6 +1197,19 @@ angular.module('Qemy.controllers.contest-item', [])
                 }).catch(function () {
                     $rootScope.$broadcast('data loaded');
                 });
+        }
+    ])
+
+    .controller('RightSidenavCtrl', ['$scope', '$timeout', '$mdSidenav', '$log',
+        function ($scope, $timeout, $mdSidenav, $log) {
+            $scope.close = function () {
+                $mdSidenav('right').close()
+                    .then(function () {
+                        $log.debug("close RIGHT is done");
+                    });
+            };
+
+            console.log('Right sidenav has been created');
         }
     ])
 ;

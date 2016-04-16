@@ -44,7 +44,8 @@ module.exports = {
     getSentsForCell: GetSentsForCell,
     getRatingTable: GetRatingTable,
     postMessage: PostMessage,
-    getUnreadMessages: GetUnreadMessages
+    getMessages: GetMessages,
+    markAsRead: MarkAsRead
 };
 
 
@@ -2294,6 +2295,29 @@ function PostMessage(params, callback) {
                         if (err) {
                             return callback(err);
                         }
+                        var contestHashKey = sockets.getRoomHash(contest.getId());
+                        var io = sockets.getIo();
+                        var messageObject = {
+                            author: user.getObjectFactory(),
+                            message: {
+                                asAdmin: !!publishAsAdmin,
+                                attachments: JSON.parse(attachments),
+                                text: message,
+                                time: time
+                            }
+                        };
+                        if (!!publishAsAdmin) {
+                            messageObject.author = {
+                                username: 'admin',
+                                first_name: 'Admin',
+                                last_name: '',
+                                access_group: {
+                                    access_level: 5,
+                                    name: 'Администратор'
+                                }
+                            };
+                        }
+                        io.to(contestHashKey).emit('broadcast.messages.new', messageObject);
                         callback(null, {
                             result: result.insertId
                         });
@@ -2304,7 +2328,49 @@ function PostMessage(params, callback) {
     }
 }
 
-function GetUnreadMessages(params, callback) {
+function GetMessages(params, callback) {
+
+    var contestId = +params.contest_id;
+    var user = params.user;
+
+    mysqlPool.connection(function (err, connection) {
+        if (err) {
+            return callback(new Error('An error with db', 1001));
+        }
+        execute(connection, function (err, result) {
+            connection.release();
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    });
+
+    function execute(connection, callback) {
+        var contest = new Contest();
+        contest.allocate(contestId, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+            CanJoin({ contest: contest, user: user }, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!result.can || !result.joined) {
+                    return callback(new Error('Access denied'));
+                }
+                GetMessagesByGroup(connection, user, contest, function (err, groups) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, groups);
+                });
+            });
+        });
+    }
+}
+
+function MarkAsRead(params, callback) {
 
     var contestId = params.contest_id;
     var user = params.user;
@@ -2336,8 +2402,92 @@ function GetUnreadMessages(params, callback) {
                 if (!result.can || !result.joined) {
                     return callback(new Error('Access denied'));
                 }
-                //todo
+                GetMessagesByGroup(connection, user, contest, function (err, groups) {
+                    if (err || typeof groups !== 'object') {
+                        return callback(err);
+                    }
+                    var unreadMessages = groups.unread || [];
+                    var userId = user.getId();
+                    var rows = unreadMessages.map(function (unreadMessage, i) {
+                        return [ unreadMessage.message.id, userId, time ];
+                    });
+
+                    if (!rows.length) {
+                        return callback(null, {
+                            result: true
+                        });
+                    }
+
+                    var sql = mysql.format(
+                        'INSERT INTO messages_read (message_id, user_id, time_read) ' +
+                        'VALUES ?',
+                        [ rows ]
+                    );
+                    connection.query(
+                        sql,
+                        function (err, result) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            callback(null, {
+                                result: true
+                            });
+                        }
+                    );
+                });
             });
         });
     }
+}
+
+function GetMessagesByGroup(connection, user, contest, callback) {
+    connection.query(
+        'SELECT messages.id, messages.contest_id, messages.as_admin, messages.attachments, ' +
+        'messages.message, messages.time, (messages_read.message_id IS NOT NULL) AS is_read, messages_read.time_read, ' +
+        'users.username, CONCAT(users.first_name, " ", users.last_name) AS full_name, users.access_level ' +
+        'FROM messages LEFT JOIN messages_read ON messages_read.user_id = ? AND messages_read.message_id = messages.id ' +
+        'LEFT JOIN users ON users.id = messages.user_id ' +
+        'WHERE messages.contest_id = ? ' +
+        'ORDER BY messages.time DESC',
+        [ user.getId(), contest.getId() ],
+        function (err, results, fields) {
+            if (err) {
+                return callback(err);
+            }
+            var groups = {
+                read: [],
+                unread: []
+            };
+            results.forEach(function (row, rowIndex) {
+                var groupName = !!row.is_read ? 'read' : 'unread';
+                var message = {
+                    author: {
+                        username: row.username,
+                        fullname: row.full_name,
+                        access_level: row.access_level
+                    },
+                    message: {
+                        id: row.id,
+                        contestId: row.contest_id,
+                        attachments: typeof row.attachments === 'string' ?
+                            JSON.parse(row.attachments) : {},
+                        text: row.message,
+                        time: row.time,
+                        isRead: row.is_read,
+                        timeRead: row.time_read,
+                        asAdmin: !!row.as_admin
+                    }
+                };
+                if (!!row.as_admin) {
+                    message.author = {
+                        username: 'admin',
+                        fullname: 'Admin',
+                        access_level: 5
+                    }
+                }
+                groups[ groupName ].push( message );
+            });
+            callback(null, groups);
+        }
+    );
 }

@@ -1404,7 +1404,7 @@ router.post('/admin/deleteGroup', function (req, res) {
     }
 });
 
-router.get('/contest/getUnreadMessages', function (req, res) {
+router.get('/contest/getMessages', function (req, res) {
 
     execute(function (err, result) {
         if (err) {
@@ -1416,12 +1416,13 @@ router.get('/contest/getUnreadMessages', function (req, res) {
     });
 
     function execute(callback) {
-        var q = req.query,
+        var q = req.query || {},
             user = req.currentUser;
         if (!user || user.isEmpty()) {
             return callback(new Error('Access denied'));
         }
-        contestManager.getUnreadMessages(q, function (err, result) {
+        q.user = user;
+        contestManager.getMessages(q, function (err, result) {
             if (err) {
                 return callback({
                     error: err.toString()
@@ -1445,11 +1446,12 @@ router.post('/contest/markAsRead', function (req, res) {
     });
 
     function execute(callback) {
-        var body = req.body,
+        var body = req.body || {},
             user = req.currentUser;
         if (!user || user.isEmpty()) {
             return callback(new Error('Access denied'));
         }
+        body.user = user;
         contestManager.markAsRead(body, function (err, result) {
             if (err) {
                 return callback({

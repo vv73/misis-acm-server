@@ -6,5 +6,5 @@ html(ng-controller='PageCtrl', manifest='/manifest.appcache')
     base(href='/')
     include index/head
     //include metrics/yandex
-  body(ng-controller='AppCtrl')
+  body(ng-controller='AppCtrl', insert-chat-sidenav)
     block content

@@ -20,12 +20,14 @@ $phone_max_width: 799px;
   -o-transition: $params;
   transition: $params;
 }
-
 body, html {
   background: #F4F4F4 !important;
   min-height: 100% !important;
 }
-
+html {
+  width: 100vw;
+  overflow-x: hidden;
+}
 .debug {
   @include box-sizing(border-box);
   border: 1px solid #000;
@@ -39,6 +41,7 @@ body, html {
   position: fixed;
   top: 0;
   width: 100%;
+  width: 100vw;
   z-index: 77;
   -webkit-transform: translateZ(0);
 }
@@ -110,6 +113,7 @@ body, html {
 .page__wrapper {
   padding: 24px;
   position: relative;
+  //margin-left: calc(100vw - 100%);
 }
 .page__inner {
   width: 75%;
@@ -298,6 +302,7 @@ body, html {
     border-color: #bbb;
   }
 }
+
 .md-dialog-is-showing {
   overflow: visible !important;
 }
@@ -798,19 +803,45 @@ my-timer-element {
   }
 }
 .contest__conditions-link {
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+  text-decoration: none;
+  color: #7A7A7A;
+  border-bottom: 1px solid #EBEBEB;
+  border-radius: 3px;
+  position: relative;
+  a {
+    text-decoration: none;
     padding: 24px;
     width: 100%;
     display: block;
     box-sizing: border-box;
-    text-decoration: none;
-    color: #7A7A7A;
-    border-bottom: 1px solid #EBEBEB;
-    border-radius: 3px;
+  }
+}
+.contest__condition-send-button-wrap {
+  position: absolute;
+  z-index: 10000;
+  right: 30px;
+  top: 0;
+  height: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  .md-button {
+    border-radius: 50px;
+    &:hover {
+      background-color: rgba(0,0,0,.05) !important;
+    }
+    &:active {
+      background-color: rgba(0,0,0,.3);
+    }
+  }
 }
 .contest__conditions-link:hover {
   background-color: rgba(0, 0, 0, 0.07);
@@ -820,6 +851,7 @@ my-timer-element {
 }
 .contest__condition-index {
   font-weight: bold;
+  color: #777;
 }
 .contest__condition-name {
   color: #219CF5;
@@ -828,8 +860,9 @@ my-timer-element {
 .contest__sytem {
   padding-left: 28px;
   margin-top: 10px;
+  color: #999;
 }
-.contest__conditions-link:visited .contest__condition-name {
+.contest__conditions-link a:visited .contest__condition-name {
   color: #8754C4 !important;
 }
 .send-content__condition-selector {
@@ -1413,8 +1446,11 @@ md-input-container {
   padding: 0 12px;
 }
 @media screen and (max-width: 450px) {
+  html {
+    overflow-x: visible;
+  }
   .contest-menu__layer {
-    min-width: auto;
+    min-width: initial;
     width: 100%;
     overflow-x: auto;
   }
@@ -1442,14 +1478,14 @@ md-input-container {
   }
   .page__inner {
     width: 100%;
-    min-width: auto;
+    min-width: initial;
   }
   .status-content {
     font-size: 0.8em;
   }
   .standart-layer {
     width: auto;
-    min-width: auto;
+    min-width: initial;
   }
   .contests-list {
     font-size: 0.8em;
@@ -1629,6 +1665,7 @@ ui-view, [ui-view] {
   top: 90px;
   z-index: 1;
   width: 100%;
+  width: 100vw;
 
   /* start 'enter' transition */
   &.ng-enter, &.ng-leave {
@@ -1757,7 +1794,11 @@ ui-view, [ui-view] {
   border: 0;
   margin-left: 5px;
 }
-
+html[style*='scroll'] {
+  body {
+    width: 100vw !important;
+  }
+}
 .task__files {
   .task__file-wrap {
     cursor: pointer;
@@ -1866,3 +1907,70 @@ ui-view, [ui-view] {
     }
   }
 }
+
+md-sidenav {
+  z-index: 100000;
+}
+md-backdrop.md-sidenav-backdrop {
+  z-index: 99099 !important;
+}
+
+.inbox {
+
+  &__no-new-messages {
+    opacity: 0.5;
+  }
+  &__messages, &__unread-messages {
+    position: absolute;
+    border-radius: 50px;
+    padding: 2px 5px;
+    line-height: 1;
+    font-size: 10px;
+    top: 4px;
+    right: 4px;
+  }
+  &__messages {
+    background-color: rgb(156, 156, 156);
+    color: #fff;
+  }
+  &__unread-messages {
+    background-color: rgb(255,23,68);
+    color: #fff;
+
+    animation: blink 2s infinite cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+  }
+}
+
+//blink animation
+@keyframes blink {
+  0% {
+    transform: rotate(0deg) translateX(0);
+  }
+  5% {
+    transform: rotate(20deg) translateX(1px);
+  }
+  10% {
+    transform: rotate(-20deg) translateX(-1px);
+  }
+  15% {
+    transform: rotate(20deg) translateX(1px);
+  }
+  20% {
+    transform: rotate(-20deg) translateX(-1px);
+  }
+  25% {
+    transform: rotate(20deg) translateX(1px);
+  }
+  30% {
+    transform: rotate(-20deg) translateX(-1px);
+  }
+  35% {
+    transform: rotate(0deg) translateX(0);
+  }
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+}
+//end blink animation

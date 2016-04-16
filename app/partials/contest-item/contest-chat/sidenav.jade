@@ -1,0 +1,10 @@
+md-sidenav.md-sidenav-right.md-whiteframe-z2(md-component-id='right')
+  md-toolbar.md-theme-light
+    h1.md-toolbar-tools Sidenav Right
+  md-content(ng-controller='RightSidenavCtrl', layout-padding='')
+    form
+      md-input-container
+        label(for='testInput') Test input
+        input#testInput(type='text', ng-model='data', md-autofocus='')
+    md-button.md-primary(ng-click='close()')
+      | Close Sidenav Right
