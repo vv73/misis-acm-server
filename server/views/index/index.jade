@@ -1,8 +1,8 @@
 extends ../_layout
 
 block content
-  page-header.header
-  page-content.page
+  page-header.header(ng-cloak)
+  page-content.page(ng-cloak)
     div.content(ui-view)
 
   +js_list([

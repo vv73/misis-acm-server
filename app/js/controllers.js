@@ -10,6 +10,7 @@ angular.module('Qemy.controllers', [
         $scope.$on('change_title', function(e, args) {
             $scope.title = args.title !== undefined && args.title.length ? args.title : defaultTitle;
         });
+        $scope.isPageReady = true;
     }])
 
     .controller('AppCtrl', ['$scope', '$rootScope', 'UserManager', '$state', function($scope, $rootScope, UserManager, $state) {
