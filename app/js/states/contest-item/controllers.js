@@ -1254,6 +1254,7 @@ angular.module('Qemy.controllers.contest-item', [])
                             return alert('Error: ' + messages.error);
                         }
                         $scope.messages = messages;
+                        console.log('Recieved messages:', messages);
                         $rootScope.$broadcast('inbox.messages.update-numbers', {
                             unreadMessagesNumber: (messages.unread || []).length,
                             allMessagesNumber: (messages.read || []).length
