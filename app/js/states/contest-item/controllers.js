@@ -1240,7 +1240,10 @@ angular.module('Qemy.controllers.contest-item', [])
 
             //first initializing
             $timeout(function () {
-                $scope.updateMessages();
+                var contestId = $state.params.contestId;
+                if (contestId) {
+                    $scope.updateMessages();
+                }
             });
 
             $scope.messages = {
