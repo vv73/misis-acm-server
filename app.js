@@ -33,7 +33,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(formData.parse());
-app.use(formData.json());
+//app.use(formData.json());
 app.use(formData.stream());
 app.use(formData.union());
 app.use(cookieParser());

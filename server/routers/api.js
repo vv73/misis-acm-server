@@ -1031,7 +1031,7 @@ router.post('/admin/updateUser', function (req, res) {
 });
 
 router.post('/admin/restart', function(req, res) {
-    
+
     execute(function (err, result) {
         if (err) {
             return res.json(err.error ? err : {
@@ -1494,12 +1494,12 @@ router.post('/contest/postMessage', function (req, res) {
 });
 
 router.post('/contest/pipe', function (req, res) {
-    console.log(req.files.file.type);
-    if (req.files.file.type && ~req.files.file.type.indexOf('text/')) {
+    //console.log(req.files.file.type);
+    //if (req.files.file.type && ~req.files.file.type.indexOf('text/')) {
         req.stream.file.pipe(res);
-    } else {
-        res.end();
-    }
+    //} else {
+    //    res.end();
+    //}
 });
 
 module.exports = router;
