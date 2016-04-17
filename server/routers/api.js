@@ -10,6 +10,7 @@
 'use strict';
 
 var express = require('express');
+var stream = require('stream');
 var pm2 = require('pm2');
 var router = express.Router();
 var app = express();
@@ -1489,6 +1490,15 @@ router.post('/contest/postMessage', function (req, res) {
             }
             callback(null, result);
         });
+    }
+});
+
+router.post('/contest/pipe', function (req, res) {
+    console.log(req.files.file.type);
+    if (req.files.file.type && ~req.files.file.type.indexOf('text/')) {
+        req.stream.file.pipe(res);
+    } else {
+        res.end();
     }
 });
 

@@ -29,5 +29,11 @@ div.contest
               label Решение
               textarea.textarea.send-content__textarea-element(ng-model='solution')
 
+          div.send-content__file-upload-button(ng-if='solution.length === 0')
+            form(name='form')
+              md-button.md-raised(ngf-select="upload($file)", name="file", ngf-max-size="20MB")
+                md-icon(md-svg-src='/img/icons/ic_file_upload_48px.svg')
+                | Выбрать файл
+
           div.send-content__submit
             md-button.md-raised.md-primary(ng-disabled='solution.length === 0 || !selectedCondition || sent', ng-click='submitSolution()') Отправить

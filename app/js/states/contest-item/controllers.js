@@ -382,8 +382,8 @@ angular.module('Qemy.controllers.contest-item', [])
         }
     ])
 
-    .controller('ContestItemSendController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', 'Storage',
-        function ($scope, $rootScope, $state, ContestItemManager, _, Storage) {
+    .controller('ContestItemSendController', ['$scope', '$rootScope', '$state', 'ContestItemManager', '_', 'Storage', 'Upload',
+        function ($scope, $rootScope, $state, ContestItemManager, _, Storage, Upload) {
             $scope.$emit('change_title', {
                 title: 'Отправить решение | ' + _('app_name')
             });
@@ -498,6 +498,22 @@ angular.module('Qemy.controllers.contest-item', [])
                         return alert('Произошла ошибка: ' + result.error);
                     }
                     $state.go('^.status', { select: 'my' });
+                });
+            };
+
+            // upload on file select or drop
+            $scope.upload = function (file) {
+                Upload.upload({
+                    url: '/api/contest/pipe',
+                    data: {file: file}
+                }).then(function (resp) {
+                    console.log('Success ' + resp.config.data.file.name + 'uploaded.');
+                    $scope.solution = resp.data;
+                }, function (resp) {
+                    console.log('Error status: ' + resp.status);
+                }, function (evt) {
+                    var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                    console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
                 });
             };
         }
@@ -1240,6 +1256,7 @@ angular.module('Qemy.controllers.contest-item', [])
 
             //first initializing
             $timeout(function () {
+                //if contest id is not specified - pass the update
                 var contestId = $state.params.contestId;
                 if (contestId) {
                     $scope.updateMessages();

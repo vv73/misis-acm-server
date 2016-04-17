@@ -11,6 +11,7 @@ angular.module('Qemy', [
     'ngMessages',
     'hc.marked',
     'pasvaz.bindonce',
+    'ngFileUpload',
 
     'Qemy.directives',
     'Qemy.controllers',

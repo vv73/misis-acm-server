@@ -15,6 +15,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var formData = require("express-form-data");
 var auth = require('./server/internal/user/auth/auth');
 //var pmx = require('pmx');
 var routes = require('./server/routers/router');
@@ -31,6 +32,10 @@ app.use(favicon(__dirname + '/app/img/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(formData.parse());
+app.use(formData.json());
+app.use(formData.stream());
+app.use(formData.union());
 app.use(cookieParser());
 app.enable('trust proxy');
 app.use(session({
