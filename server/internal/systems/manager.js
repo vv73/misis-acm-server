@@ -44,7 +44,7 @@ function SendToTimus(system_type, solution, callback, progressCallback) {
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfAttempts > 2) {
+            if (numOfAttempts > 4) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -66,7 +66,7 @@ function SendToSgu(system_type, solution, callback, progressCallback) {
 
     var internalCallback = function (err, verdict) {
         if (err) {
-            if (numOfAttempts > 2) {
+            if (numOfAttempts > 4) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -115,7 +115,7 @@ function SendToAcmp(system_type, solution, callback, progressCallback) {
     var internalCallback = function (err, verdict) {
         if (err) {
             console.log(err);
-            if (numOfAttempts > 2) {
+            if (numOfAttempts > 4) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
@@ -137,7 +137,7 @@ function SendToEjudge(system_type, solution, callback, progressCallback) {
     var internalCallback = function (err, verdict) {
         if (err) {
             console.log(err);
-            if (numOfAttempts > 2) {
+            if (numOfAttempts > 10) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
