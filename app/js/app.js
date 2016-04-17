@@ -10,7 +10,6 @@ angular.module('Qemy', [
     'ngAria',
     'ngMessages',
     'hc.marked',
-    'pasvaz.bindonce',
     'ngFileUpload',
 
     'Qemy.directives',

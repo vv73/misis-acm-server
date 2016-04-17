@@ -588,7 +588,7 @@ function SendSolution(params, callback) {
                                             && time <= contest.getAbsoluteDurationTimeMs();
                                         };
 
-                                        connection.query(
+                                        var sql = mysql.format(
                                             'SELECT users.id AS contestant_id, users.username, CONCAT(users.first_name, " ", users.last_name) AS user_full_name, ' +
                                             'verdicts.id AS verdict_id, verdicts.name AS verdict_name, verdicts.scored, sent_solutions.sent_time, ' +
                                             'sent_solutions.id AS sent_id, sent_solutions.verdict_time, sent_solutions.execution_time, sent_solutions.memory, sent_solutions.test_num, ' +
@@ -605,7 +605,10 @@ function SendSolution(params, callback) {
                                             (inFreeze(curTime)
                                                 ? 'AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
                                             'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ')' : ''),
-                                            [ contestId, insertedId ],
+                                            [ contest.getId(), insertedId ]
+                                        );
+                                        connection.query(
+                                            sql,
                                             function (err, results, fields) {
                                                 if (err) {
                                                     return console.log(err);
@@ -618,7 +621,7 @@ function SendSolution(params, callback) {
                                                     return;
                                                 }
                                                 var solution = list[0];
-                                                solution.internal_index = problemIndex;
+                                                solution.internal_index = problem.internal_index;
 
                                                 var contestHashKey = sockets.getRoomHash(contest.getId());
                                                 var io = sockets.getIo();
@@ -1071,7 +1074,7 @@ function RefreshSolution(params, callback) {
                                     (inFreeze(curTime)
                                         ? 'AND (sent_solutions.sent_time < ' + contest.getAbsoluteFreezeTimeMs() + ' ' +
                                     'OR sent_solutions.sent_time > ' + contest.getAbsoluteDurationTimeMs() + ')' : ''),
-                                    [ contestId, insertedId ],
+                                    [ contest.getId(), insertedId ],
                                     function (err, results, fields) {
                                         if (err) {
                                             return console.log(err);
