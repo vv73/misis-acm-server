@@ -24,7 +24,7 @@ module.exports = {
 
 function Watch(params, callback, progressCallback) {
     if (~watchers.indexOf(params.data.sentId)) {
-        return callback(new Error('There is solution listening right now with this sent_id'));
+        return callback(new Error('This solution has been listened'));
     }
     watchers.push(params.data.sentId);
     var statusUrl = ACM_BASE_URI + '/cgi-bin/new-judge?SID=' + params.data.context.sid,
@@ -100,10 +100,13 @@ function Watch(params, callback, progressCallback) {
                     });
 
                     if (terminalExistence) {
+                        //The comment below does fix with receiving verdict from another solution
+                        /*
                         var watcherId = watchers.indexOf(params.data.sentId);
                         if (watcherId) {
-                            watchers.splice(watcherId, 1);
+                            //watchers.splice(watcherId, 1);
                         }
+                        */
                         callback(null, {
                             solutionId: params.data.sentId,
                             verdict: verdict,
