@@ -1087,7 +1087,7 @@ function RefreshSolution(params, callback) {
                                             return;
                                         }
                                         var solution = list[0];
-                                        solution.internal_index = problemIndex;
+                                        solution.internal_index = problem.internal_index;
                                     }
                                 );
 
