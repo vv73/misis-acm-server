@@ -1011,6 +1011,9 @@ function RefreshSolution(params, callback) {
                                     fallIndexMapping[ 'ind' + iIndex ] = id;
                                 }
                             }
+                            if (!(('id' + result.problem_id) in indexMapping)) {
+                                return callback(new Error('Index mapping is not contain specified problem\'s id'));
+                            }
                             problemIndex = indexMapping[ 'id' + result.problem_id].index;
                             contestManager.refreshSolution({
                                 contestId: contestId,

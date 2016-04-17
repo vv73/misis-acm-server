@@ -6,23 +6,18 @@ CACHE:
 
 # Templates
 /partials/contests/index.html
-/partials/contests/index.html
 /partials/user/auth-form.html
 /partials/contest-item/contest-info.html
 /partials/contest-item/contest-monitor.html
 /partials/contest-item/contest-conditions.html
 /partials/contest-item/contest-conditions-item.html
 /partials/contest-item/contest-send.html
-/partials/contest-item/contest-send.html
-/partials/contest-item/contest-status.html
 /partials/contest-item/contest-status.html
 /partials/contest-item/contest-source.html
 /partials/admin/admin-base.html
 /partials/admin/contests/index.html
-/partials/admin/contests/index.html
 /partials/admin/contests/edit.html
 /partials/admin/contests/create.html
-/partials/admin/users/list.html
 /partials/admin/users/list.html
 /partials/admin/users/create.html
 # /partials/admin/users/create-into-group.html
@@ -30,9 +25,7 @@ CACHE:
 /partials/admin/users/edit.html
 /partials/admin/admin-server.html
 /partials/admin/ratings/create.html
-/partials/admin/ratings/create.html
 /partials/admin/ratings/table.html
-/partials/admin/groups/index.html
 /partials/admin/groups/index.html
 /partials/admin/groups/create.html
 /partials/admin/groups/edit.html
