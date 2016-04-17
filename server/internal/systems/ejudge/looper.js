@@ -100,7 +100,7 @@ function Watch(params, callback, progressCallback) {
                     });
 
                     if (terminalExistence) {
-                        //The comment below does fix with receiving verdict from another solution
+                        //The comment below fixes receiving strange verdict from another solution
                         /*
                         var watcherId = watchers.indexOf(params.data.sentId);
                         if (watcherId) {
