@@ -21,7 +21,7 @@ div.sent-list
     div.sent-list__cell(ng-if='currentUser.access_group.access_level === 5')
       span &nbsp;
 
-  div.sent-list__item(bindonce, ng-repeat='sent in sents track by sent.sent_id',
+  div.sent-list__item(ng-repeat='sent in sents track by sent.sent_id',
   ng-class='{"sent-list__success": sent.verdict_id === 1, \
    "sent-list__failed": [2, 4, 5, 6, 7, 8, 9, 12].indexOf(sent.verdict_id) !== -1, \
    "sent-list__failed_type_highlighted": sent.verdict_id === 12, \
