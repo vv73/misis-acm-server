@@ -28,8 +28,8 @@ div.sent-list
    "sent-list__unknown": [3, 10, 11].indexOf(sent.verdict_id) !== -1}')
     div.sent-list__cell(ng-switch='sent.contestant_id === currentUser.id || currentUser.access_group.access_level === 5')
       span(ng-switch-when='true')
-        a.link.sent-list__source-link.sent-list__bold(title='Посмотреть решение', ui-sref='contest.source-code({sourceId: sent.sent_id})') {{::sent.sent_id}}
-      span(ng-switch-default) {{::sent.sent_id}}
+        a.link.sent-list__source-link.sent-list__bold(title='Посмотреть решение', ui-sref='contest.source-code({sourceId: sent.sent_id})') {{sent.sent_id}}
+      span(ng-switch-default) {{sent.sent_id}}
     div.sent-list__cell
       span(title='{{sent.sent_time | date:"HH:mm:ss (dd.MM.yy)"}}') {{(sent.sent_time - sent.contest_start_time) | formatStartTime}}
     div.sent-list__cell
@@ -45,14 +45,14 @@ div.sent-list
             div.search-spin-layer_
               div.search-spin(ng-class='{"waiting": sent.verdict_id === -1}')
         span(ng-if='sent.verdict_id === -1', style='display: inline-block;') {{sent.verdict_name}}
-      span(ng-switch-default) {{::sent.verdict_name}}
+      span(ng-switch-default) {{sent.verdict_name}}
     div.sent-list__cell(ng-switch='sent.test_num === 0')
       span(ng-switch-when='true') -
-      span(ng-switch-default) {{::sent.test_num}}
+      span(ng-switch-default) {{sent.test_num}}
     div.sent-list__cell
-      span {{::(sent.execution_time + ' с')}}
+      span {{(sent.execution_time + ' с')}}
     div.sent-list__cell
-      span {{::sent.memory + ' КБ'}}
+      span {{sent.memory + ' КБ'}}
     div.sent-list__cell(ng-if='currentUser.access_group.access_level === 5')
       div.sent-list__actions-menu
         md-menu
