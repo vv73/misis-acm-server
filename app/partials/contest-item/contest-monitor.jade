@@ -54,10 +54,10 @@ div.contest
               div.monitor-content__cell.monitor-content__cell-solutions
                 span Решения
               div.monitor-content__cell.monitor-content__cell-score
-                span Время
+                span Штраф
 
             div.monitor-content__row(ng-repeat='row in contestTable.rows',
-            ng-class='{"monitor-content__row-my": user.id === row.user.user_id, "monitor-content__row_group_even": row.group % 2 === 0 && row.solutions !== 0, "monitor-content__no-solutions": row.solutions === 0}')
+              ng-class='{"monitor-content__row-my": user.id === row.user.user_id, "monitor-content__row_group_even": row.group % 2 === 0 && row.solutions !== 0, "monitor-content__no-solutions": row.solutions === 0}')
               div.monitor-content__cell
                 span(ng-bind='row.rank')
               div.monitor-content__cell.monitor-content__cell-participant
