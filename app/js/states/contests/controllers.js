@@ -165,9 +165,6 @@ angular.module('Qemy.controllers.contests', [])
             });
 
             $scope.$on('contests list update needed', function() {
-                $scope.curSortItem = null;
-                $scope.curSortOrder = null;
-                $scope.curCategory = null;
                 $scope.pageNumber = 1;
                 $scope.params = {
                     count: defaultCount,
@@ -176,6 +173,9 @@ angular.module('Qemy.controllers.contests', [])
                     sort: 'byId',
                     sort_order: 'desc'
                 };
+                $scope.curSortItem = null;
+                $scope.curSortOrder = null;
+                $scope.curCategory = null;
                 updateContestsList();
             });
         }
