@@ -520,6 +520,7 @@ function ScanCodeforcesTasksGyms(user, callback) {
                                     contest_id: contest.id,
                                     name: taskName
                                 });
+                                console.log('Item pushed:', problems[problems.length - 1]);
                             } catch (err) {
                                 console.log(err);
                             }
