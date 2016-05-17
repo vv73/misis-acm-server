@@ -49,7 +49,7 @@ div.contest
                 span Место
               div.monitor-content__cell.monitor-content__cell-participant
                 span Участник
-              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='headerCell in contestTable.header.row', title='{{headerCell.task.name}}')
+              div.monitor-content__cell.monitor-content__cell-result(ng-repeat='headerCell in contestTable.header.row')
                 a.md-button.md-primary(ui-sref='^.conditions-item({problemIndex: headerCell.task.index})')
                   | {{headerCell.task.index}}
                   md-tooltip {{headerCell.task.name}}
