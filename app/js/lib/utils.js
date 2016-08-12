@@ -82,7 +82,7 @@ function getFieldSelection (field) {
         return 0;
     }
 
-    var c = "\001",
+    var c = "\r",
         sel = document.selection.createRange(),
         txt = sel.text,
         dup = sel.duplicate(),
@@ -143,7 +143,7 @@ function getRichValueWithCaret(field) {
     }
 
     var value = lines.join('\n');
-    var caretPos = value.indexOf('\001');
+    var caretPos = value.indexOf('\r');
     if (caretPos != -1) {
         value = value.substr(0, caretPos) + value.substr(caretPos + 1);
     }
@@ -155,7 +155,7 @@ function getRichElementValue(node, lines, line, selNode, selOffset) {
     if (node.nodeType == 3) { // TEXT
         if (selNode === node) {
             var value = node.nodeValue;
-            line.push(value.substr(0, selOffset) + '\001' + value.substr(selOffset));
+            line.push(value.substr(0, selOffset) + '\r' + value.substr(selOffset));
         } else {
             line.push(node.nodeValue);
         }
@@ -176,7 +176,7 @@ function getRichElementValue(node, lines, line, selNode, selOffset) {
         }
     }
     if (selNode === node) {
-        line.push('\001');
+        line.push('\r');
     }
     var curChild = node.firstChild;
     while (curChild) {
