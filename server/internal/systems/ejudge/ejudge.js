@@ -111,8 +111,6 @@ function loginAndGetContext(solution, account, callback) {
         if (!bodyResponse) {
             return callback(new Error('Resource no reached'));
         }
-        console.log(body);
-        return console.log(response);
         var path = response.request && response.request.path;
         if (!path || !/(sid\=)/i.test(path)) {
             return callback(new Error('Access denied: probably wrong login or password.'))
