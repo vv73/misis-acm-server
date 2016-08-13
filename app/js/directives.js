@@ -55,7 +55,14 @@ angular.module('Qemy.directives', [])
             controller: 'WrapperCtrl'
         }
     })
-
+  
+    .directive('pageFooter', function () {
+      return {
+          restrict: 'EA',
+          templateUrl: templateUrl('page', 'footer')
+      }
+    })
+  
     .directive('pageLoading', function () {
         return {
             restrict: 'EA',

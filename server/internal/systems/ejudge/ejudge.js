@@ -21,7 +21,10 @@ var StreamFromString = require('string-to-stream');
 
 var system_accounts = [];
 
-var ACM_BASE_URI = 'http://ejudge.asuscomm.com:7080';
+var ACM_DOMAIN = 'pat1.misis.ru';
+var ACM_PORT = ':5046';
+var ACM_PROTOCOL = 'http';
+var ACM_BASE_URI = ACM_PROTOCOL + '://' + ACM_DOMAIN + ACM_PORT;
 
 module.exports = {
     addAccounts : AddAcmAccounts,
@@ -110,7 +113,7 @@ function loginAndGetContext(solution, account, callback) {
         }
         var path = response.request && response.request.path;
         if (!path || !/(sid\=)/i.test(path)) {
-            return callback(new Error('Access denied: probably wrong a login or a password.'))
+            return callback(new Error('Access denied: probably wrong login or password.'))
         }
         var sid = extractParam(path, 'SID');
         callback(null, {
@@ -129,7 +132,6 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
         if (err) {
             return callback(err);
         }
-
         var cookieSession = context.cookieJar.getCookieString(ACM_BASE_URI);
         var sid = context.sid,
             problem = solution.problem_index,
@@ -151,9 +153,8 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
         });
         form.append('action_40', action_40);
 
-        form.submit({
-            host: ACM_BASE_URI.replace('http://', '').replace(':7080', ''),
-            port: 7080,
+        var formOptions = {
+            host: ACM_DOMAIN,
             path: submitPath,
             headers: {
                 'Cookie': cookieSession
@@ -161,11 +162,15 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
             followAllRedirects: true,
             followRedirect: true,
             encoding: 'utf8'
-        }, function(err, res) {
+        };
+        if (ACM_PORT) {
+            formOptions.port = ACM_PORT.replace(':', '');
+        }
+        form.submit(formOptions, function(err, res) {
             if (err) {
                 return callback(err);
             }
-            //get an id of the solution
+            //obtaining id of solution
             var sentsUrl = ACM_BASE_URI + '/cgi-bin/new-judge?SID=' + sid;
             var options = {
                 jar: context.cookieJar,
@@ -195,12 +200,12 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
                     if (!sentIdDirty) {
                         return;
                     }
-                    var probablySentId = sentIdDirty.match(/(\d+)/i)[1];
+                    var probablySentId = Number(sentIdDirty.match(/(\d+)/i)[1]);
                     var username = _.find('td').eq(2).text().trim();
-                    if (username.toLowerCase() !== account.nickname.trim().toLocaleLowerCase()) {
+                    if (username.toLowerCase() !== account.login.trim().toLowerCase()) {
                         return;
                     }
-                    var problem_symbol = _.find('td').eq(3).text().trim().toLocaleLowerCase();
+                    var problem_symbol = _.find('td').eq(3).text().trim().toLowerCase();
                     if (problem_symbol !== getProblemSymbol(problem - 1)) {
                         return;
                     }

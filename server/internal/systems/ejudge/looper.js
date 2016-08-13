@@ -13,7 +13,10 @@ var cheerio = require('cheerio');
 var unirest = require('unirest');
 var request = require('request');
 
-var ACM_BASE_URI = 'http://ejudge.asuscomm.com:7080';
+var ACM_DOMAIN = 'pat1.misis.ru';
+var ACM_PORT = ':5046';
+var ACM_PROTOCOL = 'http';
+var ACM_BASE_URI = ACM_PROTOCOL + '://' + ACM_DOMAIN + ACM_PORT;
 var looperTimeout = 500;
 var MAX_WAITING_TIMEOUT = 5 * 60 * 1000;
 var watchers = [];
@@ -63,7 +66,7 @@ function Watch(params, callback, progressCallback) {
                     if (!sentIdDirty) {
                         return;
                     }
-                    var probablySentId = sentIdDirty.match(/(\d+)/i)[1];
+                    var probablySentId = Number(sentIdDirty.match(/(\d+)/i)[1]);
                     if (probablySentId !== params.data.sentId) {
                         return;
                     }
@@ -98,15 +101,8 @@ function Watch(params, callback, progressCallback) {
                     terminalExistence = terminalStates.some(function (val) {
                         return verdict.toLowerCase().indexOf(val.toLowerCase()) !== -1;
                     });
-
+                    console.log(terminalExistence);
                     if (terminalExistence) {
-                        //The comment below fixes receiving strange verdict from another solution
-                        /*
-                        var watcherId = watchers.indexOf(params.data.sentId);
-                        if (watcherId) {
-                            //watchers.splice(watcherId, 1);
-                        }
-                        */
                         callback(null, {
                             solutionId: params.data.sentId,
                             verdict: verdict,

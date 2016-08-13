@@ -22,14 +22,14 @@ md-toolbar.md-menu-toolbar
           button(ng-click='$mdOpenMenu()')
             | Редактирование
           md-menu-content
-            md-menu-item.md-indent
+            md-menu-item
               md-menu
                 md-button(ng-click='$mdOpenMenu()') Режим редактирования
                 md-menu-content(width='3')
                   md-menu-item(type='checkbox', ng-model='settings.mode.original') Оригинальное условие
                   md-menu-item(type='checkbox', ng-model='settings.mode.own') Свое условие (Markdown)
             //md-menu-divider
-            md-menu-item.md-indent
+            md-menu-item
               md-menu
                 md-button(ng-click='$mdOpenMenu()') Объединение условий
                 md-menu-content(width='3')
