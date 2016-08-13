@@ -13,8 +13,8 @@ var cheerio = require('cheerio');
 var unirest = require('unirest');
 var request = require('request');
 
-var ACM_DOMAIN = 'pat1.misis.ru';
-var ACM_PORT = ':5046';
+var ACM_DOMAIN = '10.1.88.253';
+var ACM_PORT = ''; // ':5046';
 var ACM_PROTOCOL = 'http';
 var ACM_BASE_URI = ACM_PROTOCOL + '://' + ACM_DOMAIN + ACM_PORT;
 var looperTimeout = 500;
