@@ -168,8 +168,6 @@ html {
 .search-spin {
   border: 2px solid #2196F3;
   border-top-color: rgba(0, 0, 0, 0);
-}
-.search-spin {
   height: 100%;
   box-sizing: border-box;
   padding: 4px;
@@ -177,8 +175,6 @@ html {
   -webkit-transition: -webkit-transform .15s linear, border .55s linear;
   transition: transform .15s linear, border .55s linear;
   -moz-transition: -moz-transform .15s linear, border .55s linear;
-  border: 2px solid #2196F3;
-  border-top-color: rgba(0, 0, 0, 0);
   border-radius: 50%;
   -webkit-animation: spinner .6s infinite ease;
   -moz-animation: spinner .6s infinite ease;
@@ -190,6 +186,8 @@ html {
   -moz-animation: spinner-waiting .5s infinite linear;
   -ms-animation: spinner-waiting .5s infinite linear;
   animation: spinner-waiting .5s infinite linear;
+  border: 2px solid rgb(255, 23, 68);
+  border-top-color: rgba(0, 0, 0, 0);
 }
 @-moz-keyframes spinner{0%{-webkit-transform:rotate(0deg);-moz-transform:rotate(0deg);transform:rotate(0deg)}
   100%{-webkit-transform:rotate(360deg);-moz-transform:rotate(360deg);transform:rotate(360deg)}
