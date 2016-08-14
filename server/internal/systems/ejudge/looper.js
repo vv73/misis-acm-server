@@ -18,7 +18,7 @@ var ACM_PORT = ''; // ':5046';
 var ACM_PROTOCOL = 'http';
 var ACM_BASE_URI = ACM_PROTOCOL + '://' + ACM_DOMAIN + ACM_PORT;
 var looperTimeout = 500;
-var MAX_WAITING_TIMEOUT = 5 * 60 * 1000;
+var MAX_WAITING_TIMEOUT = 1 * 60 * 1000;
 var watchers = [];
 
 module.exports = {
