@@ -56,23 +56,26 @@ function SendSolution(solution, callback, progressCallback) {
         if (err) {
             return callback(err);
         }
-        SendAndGetContext(solution, acmAccount, function (err, context) {
-            if (err) {
-                onAccountFinished();
-                return callback(err);
-            }
-            looper.watch({
-                acmAccount: acmAccount,
-                solution: solution,
-                data: context
-            }, function (err, verdict) {
-                onAccountFinished();
+        setTimeout(send, 100);
+        function send() {
+            SendAndGetContext(solution, acmAccount, function (err, context) {
                 if (err) {
+                    onAccountFinished();
                     return callback(err);
                 }
-                callback(null, verdict);
-            }, progressCallback);
-        });
+                looper.watch({
+                    acmAccount: acmAccount,
+                    solution: solution,
+                    data: context
+                }, function (err, verdict) {
+                    onAccountFinished();
+                    if (err) {
+                        return callback(err);
+                    }
+                    callback(null, verdict);
+                }, progressCallback);
+            });
+        }
     });
 }
 
@@ -179,44 +182,48 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
                 encoding: 'utf8'
             };
 
-            request.get(sentsUrl, options, function (err, response, body) {
-                var bodyResponse = body;
-                if (!bodyResponse) {
-                    return callback(new Error('Resource no reached'));
-                }
-                var $ = cheerio.load(bodyResponse);
-                var table = $('table.b1');
-                if (!table.length) {
-                    return callback(new Error('Something went wrong'));
-                }
-                var found = false,
-                    sentId;
-                table.find('tr').slice(1).each(function () {
-                    if (found) {
-                        return;
+            setTimeout(getContext, 1000);
+
+            function getContext() {
+                request.get(sentsUrl, options, function (err, response, body) {
+                    var bodyResponse = body;
+                    if (!bodyResponse) {
+                        return callback(new Error('Resource no reached'));
                     }
-                    var _ = $(this);
-                    var sentIdDirty = _.find('td').eq(0).text();
-                    if (!sentIdDirty) {
-                        return;
+                    var $ = cheerio.load(bodyResponse);
+                    var table = $('table.b1');
+                    if (!table.length) {
+                        return callback(new Error('Something went wrong'));
                     }
-                    var probablySentId = Number(sentIdDirty.match(/(\d+)/i)[1]);
-                    var username = _.find('td').eq(2).text().trim();
-                    if (username.toLowerCase() !== account.login.trim().toLowerCase()) {
-                        return;
-                    }
-                    var problem_symbol = _.find('td').eq(3).text().trim().toLowerCase();
-                    if (problem_symbol !== getProblemSymbol(problem - 1)) {
-                        return;
-                    }
-                    sentId = probablySentId;
-                    found = true;
-                    callback(null, {
-                        sentId: sentId,
-                        context: context
+                    var found = false,
+                      sentId;
+                    table.find('tr').slice(1).each(function () {
+                        if (found) {
+                            return;
+                        }
+                        var _ = $(this);
+                        var sentIdDirty = _.find('td').eq(0).text();
+                        if (!sentIdDirty) {
+                            return;
+                        }
+                        var probablySentId = Number(sentIdDirty.match(/(\d+)/i)[1]);
+                        var username = _.find('td').eq(2).text().trim();
+                        if (username.toLowerCase() !== account.login.trim().toLowerCase()) {
+                            return;
+                        }
+                        var problem_symbol = _.find('td').eq(3).text().trim().toLowerCase();
+                        if (problem_symbol !== getProblemSymbol(problem - 1)) {
+                            return;
+                        }
+                        sentId = probablySentId;
+                        found = true;
+                        callback(null, {
+                            sentId: sentId,
+                            context: context
+                        });
                     });
                 });
-            });
+            }
         });
     })
 }

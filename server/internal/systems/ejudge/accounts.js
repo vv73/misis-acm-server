@@ -14,7 +14,7 @@ var system_accounts = [];
 var processing_accounts = [];
 var async_queue = [];
 
-var ACCOUNT_TIMEOUT = 2 * 1000; // ms
+var ACCOUNT_TIMEOUT = 5 * 1000; // ms
 var QUEUE_LENGTH_LIMIT = 2000;
 
 module.exports = {
@@ -80,7 +80,7 @@ function GetIdle(callback) {
                     };
 
                     if (elapsed < ACCOUNT_TIMEOUT) {
-                        var timeout = setTimeout(function () {
+                        setTimeout(function () {
                             releaseAccount(releasedAccount);
                         }, ACCOUNT_TIMEOUT - elapsed);
                     } else {
