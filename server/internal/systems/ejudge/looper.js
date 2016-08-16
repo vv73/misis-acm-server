@@ -27,7 +27,7 @@ module.exports = {
 
 function Watch(params, callback, progressCallback) {
     if (~watchers.indexOf(params.data.sentId)) {
-        console.error('This solution has been listened');
+        return callback(new Error('This solution has been listened'));
     }
     watchers.push(params.data.sentId);
     var statusUrl = ACM_BASE_URI + '/cgi-bin/new-judge?SID=' + params.data.context.sid,
