@@ -26,6 +26,7 @@ module.exports = {
 };
 
 function Watch(params, callback, progressCallback) {
+    console.log('Watchers: ', watchers, '. Current ID', params.data.sentId);
     if (~watchers.indexOf(params.data.sentId)) {
         return callback(new Error('This solution has been listened'));
     }
