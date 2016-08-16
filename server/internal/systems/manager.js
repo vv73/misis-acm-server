@@ -137,13 +137,14 @@ function SendToEjudge(system_type, solution, callback, progressCallback) {
     var internalCallback = function (err, verdict) {
         if (err) {
             console.log(err);
-            if (numOfAttempts > 10) {
+            if (numOfAttempts > 2) {
                 console.log('Reached maximum number of attempts to send solution.', solution);
                 return callback(new Error('Reached maximum number of attempts to send solution.'));
             }
             console.log('[' + system_type + '] Try to send the solution one more time: ', numOfAttempts);
             return setTimeout(function () {
                 numOfAttempts++;
+                solution._ejudge_force = true;
                 ejudge.send(solution, internalCallback, progressCallback);
             }, timeoutAttempts);
         }
