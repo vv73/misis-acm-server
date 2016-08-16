@@ -3,7 +3,7 @@
     "name"        : "acm",
     "script"      : "./bin/www",
     "exec_mode"   : "cluster",
-    "max_memory_restart": "500M",
+    "max_memory_restart": "800M",
     "cron_restart": "0 5 * * *"
   }]
 }
