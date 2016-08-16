@@ -22,6 +22,7 @@ module.exports = {
 
 function RestoreUser(req, res, next) {
     var session = req.session;
+    console.log(session);
     if (!session || !session.user_id) {
         return RestoreUserByCookie.apply(this, arguments);
     }

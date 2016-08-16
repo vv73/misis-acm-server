@@ -56,7 +56,7 @@ function SendSolution(solution, callback, progressCallback) {
         if (err) {
             return callback(err);
         }
-        setTimeout(send, 100);
+        setTimeout(send, 1000);
         function send() {
             SendAndGetContext(solution, acmAccount, function (err, context) {
                 if (err) {
