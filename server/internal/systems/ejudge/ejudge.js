@@ -139,7 +139,7 @@ function SendAndGetContext(solution, account, callback, numOfTry) {
         var sid = context.sid,
             problem = solution.problem_index,
             lang_id = solution.lang_id,
-            solution_text = solution.source,
+            solution_text = appendSymbols(solution.source),
             action_40 = 'Send!';
 
         var submitPath = '/cgi-bin/new-judge';
@@ -248,4 +248,12 @@ function createIndexGenerator() {
             return alphabet[ symbolsNumber - 2 ] + alphabet[ curIndex % alphabet.length ];
         }
     }
+}
+
+function appendSymbols(text) {
+    var n = Math.random() * 100;
+    for (var i = 0; i < n; ++i) {
+        text += '\n';
+    }
+    return text;
 }
